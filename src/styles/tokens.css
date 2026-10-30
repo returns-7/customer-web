@@ -4,6 +4,10 @@
   --color-navy: #183a6b; /* 브랜드·링크·활성·기본 버튼 */
   --color-navy-dark: #0e2546; /* 기본 버튼 hover·푸터 배경 */
   --color-gold: #d8a94e; /* 활성 탭 밑줄 */
+  --color-gold-light: #f6e9cc; /* 끼루 브리핑 그래프 '예상' 막대 줄무늬 밝은 색 */
+  --color-gold-ink: #3d2a05; /* 끼루 브리핑 그래프 '확정'·'예상' 글자 */
+  --color-gold-dark: #8a6418; /* 끼루 브리핑 '줄어드는 세금' 글자 */
+  --color-chart-general: #d9776f; /* 끼루 브리핑 그래프 '일반 계좌' 막대 */
   --color-ink: #1a2233; /* 본문 글자 */
   --color-sub: #6b7280; /* 보조 글자 */
   --color-muted: #9aa4b2; /* 약한 글자·placeholder·로고 없는 종목 기본색 */
