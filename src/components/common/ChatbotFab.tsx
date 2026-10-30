@@ -60,6 +60,11 @@ export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth 
   const open = openProp ?? innerOpen
 
   const setOpen = (next: boolean) => {
+    // 밖에서 창을 열 때도 첫 방문 안내 말풍선은 사라지고 다시 뜨지 않음
+    if (next) {
+      markTipSeen(tipKey)
+      setTip(false)
+    }
     if (openProp === undefined) setInnerOpen(next)
     onOpenChange?.(next)
   }

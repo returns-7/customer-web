@@ -11,6 +11,7 @@ import { assetUrl } from '../common/assetUrl'
 import { cx } from '../common/cx'
 import { useToast } from '../common/useToast'
 import { ASK_CHIPS, ASK_CHIPS_EMPTY, ASK_SEED_QUESTIONS, ETF_TOP, NO_REC_TEXT } from './homeRecData'
+import type { FullAskMsg } from './homeBotLogic'
 import { josa, recAnswer, spark } from './homeRecLogic'
 import styles from './HomeRecBox.module.css'
 
@@ -25,8 +26,8 @@ const INITIAL_ASK: AskMsg[] = ASK_SEED_QUESTIONS.flatMap((q): AskMsg[] => [
 
 interface HomeRecBoxProps {
   className?: string
-  onOpenFullAsk?: () => void // "전체 대화 보기 ›" — 홈 챗봇 창을 옮길 때 연결
-  onAskDeposit?: () => void // "예탁금으로 두면 어떻게 되나요? ›" — 홈 챗봇 창을 옮길 때 연결
+  onOpenFullAsk?: (conv: FullAskMsg[]) => void // "전체 대화 보기 ›" — 지금까지의 대화를 챗봇 창으로 옮김
+  onAskDeposit?: () => void // "예탁금으로 두면 어떻게 되나요? ›" — 챗봇 창에서 대신 물어봄
 }
 
 // 오늘의 추천 박스: 성향별 추천 3종목 + 상세 카드 + 끼루에게 물어보기
@@ -250,7 +251,9 @@ export function HomeRecBox({ className, onOpenFullAsk, onAskDeposit }: HomeRecBo
                 </button>
               ))}
             </div>
-            <button type="button" className={styles.full} onClick={() => onOpenFullAsk?.()}>
+            <button type="button" className={styles.full} onClick={() =>
+                onOpenFullAsk?.(ask.map((m): FullAskMsg => (m.me ? { me: true, text: m.text } : { kk: true, text: recAnswer(m.q, m.focus).text, src: '오늘의 추천' })))
+              }>
               전체 대화 보기 ›
             </button>
           </div>

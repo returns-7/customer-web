@@ -1,22 +1,107 @@
+import { useCallback, useEffect, useMemo, useReducer, useState } from 'react'
+import { useLocation } from 'react-router-dom'
+import { Toast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
+import { HomeAssessModal } from '../components/home/HomeAssessModal'
 import { HomeBriefBox } from '../components/home/HomeBriefBox'
 import { HomeChatBox } from '../components/home/HomeChatBox'
+import { HomeDevPanel } from '../components/home/HomeDevPanel'
 import { HomePackageBox } from '../components/home/HomePackageBox'
 import { HomeRecBox } from '../components/home/HomeRecBox'
 import { HomeNewsBox } from '../components/home/HomeNewsBox'
 import { HomeProfileBox } from '../components/home/HomeProfileBox'
+import { BOT_CHIPS, DEPOSIT_QUESTION, WELCOME_MS } from '../components/home/homeBotData'
+import { botGreeting, botTurn, homeTodos } from '../components/home/homeBotLogic'
+import type { FullAskMsg, HomeBotMsg } from '../components/home/homeBotLogic'
 import { DISCLAIMER } from '../components/home/homeChatData'
 import styles from '../components/home/HomeLayout.module.css'
+import { RETURNS_DATA as RD, demo } from '../data/returns'
+import type { DemoSettings } from '../data/returns'
+import { useAppShell } from '../layouts/appShell'
+import { F } from '../lib/calc'
 
-// 홈 — 1~5번째 부분: 배치 + 프로필·계좌 + AI 뉴스 + 패키지 + 오늘의 추천 + 끼루 브리핑 + 경제 채팅방 + 아래 고지
+
+// 홈 — 1~6번째 부분: 배치 + 박스 6개 + 아래 고지 + 상담 창·알림·성향 알림 창·환영 배너·시연 설정
 export function HomePage() {
+  const shell = useAppShell()
+  const { hash } = useLocation()
+  const { message: toast, showToast } = useToast()
+  const [, refresh] = useReducer((n: number) => n + 1, 0)
+  const [hasPkg, setHasPkg] = useState(true)
+  const [bot, setBot] = useState<HomeBotMsg[]>(() => [botGreeting()])
+  const [aClosed, setAClosed] = useState<string | null>(null)
+  const [welcome, setWelcome] = useState(hash === '#new')
+
+  const assess = demo().assess || 'ok'
+  const profLabel = RD.PROFILES[RD.CUSTOMER.profile].label
+  const modalKind = (assess === 'risky' || assess === 'expired') && aClosed !== assess ? assess : null
+
+  useEffect(() => {
+    if (!welcome) return
+    const t = setTimeout(() => setWelcome(false), WELCOME_MS)
+    return () => clearTimeout(t)
+  }, [welcome])
+
+  // 상단 종 알림: 오늘 확인할 일 + 안 읽은 알림 수(info 아닌 것)
+  const todos = homeTodos(showToast)
+  const todoKey = todos.map((t) => t.title + t.desc).join('|')
+  useEffect(() => {
+    const list = homeTodos(showToast)
+    shell.setTopBar({ todos: list, todoDate: F.short(F.today()), todoAlert: list.filter((t) => t.level !== 'info').length, profLabel })
+  }, [todoKey, profLabel, shell, showToast])
+
+  const ask = useCallback((q: string) => {
+    if (!q.trim()) return
+    setBot((b) => b.concat(botTurn(q)))
+  }, [])
+
+  const chat = useMemo(
+    () => ({ messages: bot, chips: BOT_CHIPS.map((label) => ({ label, onClick: () => ask(label) })), onSend: ask }),
+    [bot, ask]
+  )
+  useEffect(() => {
+    shell.setChat(chat)
+  }, [shell, chat])
+  useEffect(
+    () => () => {
+      shell.setChat(null)
+      shell.setBotOpen(false)
+      shell.setTopBar({})
+    },
+    [shell]
+  )
+
+  const openFullAsk = (conv: FullAskMsg[]) => {
+    setBot((b) => {
+      const rest = b.filter((m) => !m.fromAsk)
+      return [rest[0], ...conv.map((m): HomeBotMsg => ({ ...m, fromAsk: true })), ...rest.slice(1)]
+    })
+    shell.setBotOpen(true)
+  }
+  const askDeposit = () => {
+    shell.setBotOpen(true)
+    ask(DEPOSIT_QUESTION)
+  }
+
+  const changeDemo = (patch: Partial<DemoSettings>) => {
+    if (patch.assess !== undefined) setAClosed(null)
+    RD.setDemo(patch)
+    refresh()
+  }
+
   return (
     <>
+      {welcome && (
+        <div className={styles.welcome} role="status">
+          {RD.CUSTOMER.name} 님, 가입을 환영해요
+        </div>
+      )}
       <div className={styles.page}>
         <div className={styles.colMain}>
           <HomeNewsBox className={styles.news} />
           <div className={styles.pair}>
-            <HomePackageBox className={styles.pkg} />
-            <HomeRecBox className={styles.rec} />
+            <HomePackageBox className={styles.pkg} hasPkg={hasPkg} />
+            <HomeRecBox className={styles.rec} onOpenFullAsk={openFullAsk} onAskDeposit={askDeposit} />
           </div>
         </div>
         <div className={styles.colSide}>
@@ -26,6 +111,9 @@ export function HomePage() {
         </div>
       </div>
       <p className={styles.note}>{DISCLAIMER}</p>
+      {modalKind && <HomeAssessModal kind={modalKind} profLabel={profLabel} onClose={() => setAClosed(assess)} />}
+      <HomeDevPanel hasPkg={hasPkg} onHasPkg={setHasPkg} onChange={changeDemo} />
+      <Toast message={toast} />
     </>
   )
 }
