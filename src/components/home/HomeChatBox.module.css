@@ -1,0 +1,534 @@
+.noShrink {
+  flex: none;
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
+
+.flat {
+  color: var(--color-sub);
+}
+
+/* ===== 머리줄: 제목 · 종목 선택 · 검색 · 커뮤니티 ===== */
+.head {
+  position: relative;
+  height: var(--size-box-head);
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  border-bottom: 1px solid var(--color-line-soft);
+  flex: none;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-extrabold);
+  white-space: nowrap;
+  flex: none;
+}
+
+.stockBtn {
+  all: unset;
+  cursor: pointer;
+  height: var(--size-control-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.stockBtn:hover {
+  color: var(--color-navy);
+}
+
+.stockName {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stockCode {
+  font-size: var(--font-size-13);
+  color: var(--color-sub);
+  flex: none;
+}
+
+.chev {
+  flex: none;
+  color: var(--color-sub);
+}
+
+.chevOpen {
+  transform: rotate(180deg);
+}
+
+.searchBtn {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: -6px;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+  flex: none;
+}
+
+.searchBtn:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-navy);
+}
+
+.searchBtnOn {
+  color: var(--color-navy);
+}
+
+.community {
+  font-size: var(--font-size-13);
+  color: var(--color-sub);
+  white-space: nowrap;
+  flex: none;
+  text-decoration: none;
+}
+
+/* ===== 종목 선택 드롭다운 ===== */
+.dd {
+  position: absolute;
+  z-index: 30;
+  right: var(--space-8);
+  top: var(--size-box-head);
+  width: 400px;
+  max-width: calc(100vw - 24px);
+  max-height: 440px;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-6);
+}
+
+.ddSearch {
+  height: 36px;
+  flex: none;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: 0 var(--space-10);
+  color: var(--color-sub);
+}
+
+.ddInput,
+.searchInput {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  font-size: var(--font-size-14);
+  color: var(--color-ink);
+  background: transparent;
+}
+
+.ddList {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  margin-top: var(--space-4);
+}
+
+.ddTitle {
+  padding: var(--space-8) var(--space-10) var(--space-4);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.opt {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--size-control);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  padding: var(--space-4) var(--space-10);
+  border-radius: var(--radius-4);
+  background: transparent;
+}
+
+.optHi {
+  background: var(--color-surface-hover);
+}
+
+.optRank {
+  width: 18px;
+  flex: none;
+  text-align: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+}
+
+.optRankTop {
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-navy);
+}
+
+.optMain {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  white-space: nowrap;
+}
+
+.optName {
+  font-size: var(--font-size-14);
+  color: var(--color-ink);
+  font-weight: var(--font-weight-bold);
+}
+
+.optNameHl {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.optCode {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  font-weight: var(--font-weight-regular);
+}
+
+.optCodeHl {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-bold);
+}
+
+.optSector {
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-600);
+  background: var(--color-chip);
+  border-radius: var(--radius-4);
+  padding: var(--space-2) 5px;
+  line-height: var(--line-height-tight);
+}
+
+.optSide {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1px;
+}
+
+.optPosts {
+  font-size: var(--font-size-11);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.optChg {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ddEmpty {
+  padding: 14px var(--space-10);
+  font-size: var(--font-size-13);
+  color: var(--color-sub);
+}
+
+/* ===== 탭 · 인기글 범위 ===== */
+.tabs {
+  height: 40px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  border-bottom: 1px solid var(--color-line-soft);
+  flex: none;
+}
+
+.tabList {
+  display: flex;
+  align-items: center;
+  height: 40px;
+  flex: none;
+}
+
+.tabItem {
+  display: flex;
+  align-items: center;
+}
+
+.sep {
+  color: var(--color-line-strong);
+  padding: 0 var(--space-6);
+}
+
+.tab {
+  all: unset;
+  cursor: pointer;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  box-sizing: border-box;
+  white-space: nowrap;
+}
+
+.tabOn {
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-navy);
+  border-bottom-color: var(--color-gold);
+}
+
+.scopes {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-12);
+  white-space: nowrap;
+}
+
+.scopeItem {
+  display: flex;
+  align-items: center;
+}
+
+.scopeSep {
+  color: var(--color-line-strong);
+  padding: 0 var(--space-4);
+}
+
+.scope {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+}
+
+.scope:hover {
+  color: var(--color-navy);
+}
+
+.scopeOn {
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-navy);
+}
+
+/* ===== 채팅 검색 ===== */
+.searchBar {
+  height: 40px;
+  padding: 0 var(--space-10) 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  border-bottom: 1px solid var(--color-line-soft);
+  color: var(--color-sub);
+  flex: none;
+}
+
+.resultN {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.searchClose {
+  all: unset;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-4);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+  flex: none;
+}
+
+.searchClose:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-navy);
+}
+
+/* ===== 글 목록 ===== */
+.list {
+  flex: 1 1 0;
+  min-height: 360px;
+  overflow: auto;
+}
+
+.msg {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--space-10);
+  align-items: start;
+  padding: var(--space-10) var(--space-16);
+  border-bottom: 1px solid var(--color-line-soft);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.msg:hover,
+.hotRow:hover {
+  background: var(--color-surface-sub);
+}
+
+.msgBody {
+  display: block;
+  min-width: 0;
+}
+
+.msgHead {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-6);
+  white-space: nowrap;
+  line-height: 20px;
+}
+
+.msgNick {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.msgPl,
+.msgTime {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  flex: none;
+}
+
+.msgTime {
+  margin-left: auto;
+}
+
+.msgText {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-14);
+  line-height: 20px;
+  margin-top: var(--space-2);
+}
+
+.msgTextWrap {
+  white-space: normal;
+}
+
+.match {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-bold);
+  background: var(--color-gold-pale);
+}
+
+.msgKkiru {
+  display: block;
+  font-size: var(--font-size-12);
+  line-height: 16px;
+  color: var(--color-navy);
+  margin-top: var(--space-2);
+}
+
+.msgMeta {
+  display: block;
+  font-size: var(--font-size-12);
+  line-height: 16px;
+  color: var(--color-sub);
+  margin-top: var(--space-2);
+}
+
+.empty {
+  padding: var(--space-16);
+  font-size: var(--font-size-14);
+  color: var(--color-sub);
+}
+
+/* ===== 인기글 ===== */
+.hotRow {
+  display: grid;
+  grid-template-columns: 16px 24px minmax(0, 1fr);
+  gap: var(--space-10);
+  align-items: center;
+  padding: var(--space-10) var(--space-16);
+  border-bottom: 1px solid var(--color-line-soft);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.hotRank {
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-medium);
+  text-align: center; /* 글자색은 원본처럼 본문색 그대로(순위 색은 적용되지 않음) */
+}
+
+.hotRankTop {
+  font-weight: var(--font-weight-extrabold);
+}
+
+.hotText {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: var(--font-size-14);
+  line-height: 20px;
+}
+
+.hotStock {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  margin-right: var(--space-6);
+}
+
+.hotMeta {
+  display: block;
+  font-size: var(--font-size-12);
+  line-height: 16px;
+  color: var(--color-sub);
+  margin-top: var(--space-2);
+  white-space: nowrap;
+}
+
+/* 목록 맨 아래 줄은 구분선 없음 */
+.msgLast {
+  border-bottom: 0;
+}
+
+.write {
+  height: var(--size-control);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  text-decoration: none;
+}

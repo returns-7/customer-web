@@ -48,6 +48,13 @@
   flex: 1 0 auto;
 }
 
+/* 박스들 아래 공통 고지 한 줄 */
+.note {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
 /* 1280px 이하: 한 열. 두 열·묶음 상자를 풀고 박스를 아래 순서로 세운다(원본의 order 값) */
 @media (max-width: 1280px) {
   .page {
