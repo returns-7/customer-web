@@ -5,24 +5,12 @@ import '../../styles/tokens.css'
 import { cx } from '../common/cx'
 import { Toast } from '../common/Toast'
 import { useToast } from '../common/useToast'
+import { setLoginSession } from './loginSession'
 import styles from './LoginForm.module.css'
 
 interface LoginFormProps {
   active: boolean // 로그인 탭이 선택돼 있는지(아니면 숨기되 입력값은 유지)
   onSignup: () => void
-}
-
-const SESSION_MS = 30 * 60 * 1000 // 로그인 세션 30분(실제 경과 시간)
-
-// 로그인 성공 표시: TopBar의 30분 세션이 이 키들을 읽음
-const setSession = () => {
-  try {
-    sessionStorage.setItem('returns-login', '1')
-    sessionStorage.setItem('returns-session-exp', String(Date.now() + SESSION_MS))
-    sessionStorage.removeItem('returns-session-warned')
-  } catch {
-    // 저장소를 못 쓰면 세션 표시 없이 이동
-  }
 }
 
 export function LoginForm({ active, onSignup }: LoginFormProps) {
@@ -65,7 +53,7 @@ export function LoginForm({ active, onSignup }: LoginFormProps) {
     }
     setLoading(true)
     setLoginErr('')
-    setSession()
+    setLoginSession()
     timer.current = setTimeout(() => navigate('/home'), 900)
   }
 
@@ -80,13 +68,13 @@ export function LoginForm({ active, onSignup }: LoginFormProps) {
       <form className={styles.form} onSubmit={onSubmit}>
         <label className={styles.field}>
           <span className={styles.label}>아이디</span>
-          <input className={inputClass} type="text" value={loginId} onChange={onId} placeholder="아이디를 입력해 주세요" autoComplete="username" />
+          <input className={inputClass} type="text" value={loginId} onChange={onId} placeholder="아이디를 입력해 주세요" autoComplete={active ? 'username' : 'off'} disabled={!active} />
         </label>
         <div className={styles.field}>
           <label className={styles.field}>
             <span className={styles.label}>비밀번호</span>
             <span className={styles.pwWrap}>
-              <input className={cx(inputClass, styles.pwInput)} type={showPw ? 'text' : 'password'} value={loginPw} onChange={onPw} placeholder="비밀번호를 입력해 주세요" autoComplete="current-password" />
+              <input className={cx(inputClass, styles.pwInput)} type={showPw ? 'text' : 'password'} value={loginPw} onChange={onPw} placeholder="비밀번호를 입력해 주세요" autoComplete={active ? 'current-password' : 'off'} disabled={!active} />
               <button type="button" className={styles.eye} onClick={() => setShowPw((v) => !v)} aria-label={showPw ? '비밀번호 숨기기' : '비밀번호 보기'}>
                 {showPw ? (
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

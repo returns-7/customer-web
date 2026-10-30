@@ -36,6 +36,13 @@
   --color-overlay: rgba(16, 24, 40, 0.4); /* 모달 뒤 어두운 막 */
   --color-photo-base: #0b1b33; /* 로그인 사진 영역 바탕(덮개는 이 색의 55%) */
 
+  /* 투자성향 색(가입 결과의 성향 막대) */
+  --color-profile-stable: #6fa8e8;
+  --color-profile-stable-seek: #6ccb9e;
+  --color-profile-neutral: #e0ae3c;
+  --color-profile-active: #ee6e3a;
+  --color-profile-aggressive: #e8435a;
+
   /* ===== 글꼴 ===== */
   --font-sans: 'Pretendard Variable', Pretendard, system-ui, -apple-system, sans-serif;
 

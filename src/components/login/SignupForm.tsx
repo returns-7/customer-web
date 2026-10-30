@@ -6,6 +6,9 @@ import { F } from '../../lib/calc'
 import { cx } from '../common/cx'
 import { Toast } from '../common/Toast'
 import { useToast } from '../common/useToast'
+import { SignupQuiz } from './SignupQuiz'
+import { SignupResult } from './SignupResult'
+import { QUESTIONS, profileKey } from './signupProfile'
 import styles from './SignupForm.module.css'
 
 interface SignupFormProps {
@@ -44,6 +47,7 @@ const CheckIcon = ({ size }: { size: number }) => (
 )
 
 interface FieldProps {
+  active: boolean // 숨겨진 탭이면 입력을 막고 자동완성도 끔
   label: string
   span: number
   value: string
@@ -54,10 +58,10 @@ interface FieldProps {
   inputMode?: InputHTMLAttributes<HTMLInputElement>['inputMode']
 }
 
-const Field = ({ label, span, value, onChange, type, placeholder, autoComplete, inputMode = 'text' }: FieldProps) => (
+const Field = ({ active, label, span, value, onChange, type, placeholder, autoComplete, inputMode = 'text' }: FieldProps) => (
   <label className={styles.field} style={{ gridColumn: 'span ' + span }}>
     <span className={styles.label}>{label}</span>
-    <input className={styles.input} type={type} inputMode={inputMode} value={value} onChange={onChange} placeholder={placeholder} autoComplete={autoComplete} />
+    <input className={styles.input} type={type} inputMode={inputMode} value={value} onChange={onChange} placeholder={placeholder} autoComplete={active ? autoComplete : 'off'} disabled={!active} />
   </label>
 )
 
@@ -73,6 +77,8 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
   const [riaNo, setRiaNo] = useState('')
   const [riaOk, setRiaOk] = useState(false)
   const [riaTried, setRiaTried] = useState(false)
+  const [qi, setQi] = useState(0)
+  const [answers, setAnswers] = useState<(number | null)[]>(QUESTIONS.map(() => null))
 
   const soon = () => showToast('준비 중인 화면이에요')
   const setField = (k: InfoKey) => (e: ChangeEvent<HTMLInputElement>) => {
@@ -105,18 +111,26 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
       if (ria === 'have' && !riaOk) return '계좌번호를 확인해 주세요'
       return ''
     }
+    if (step === 3) return answers[qi] === null ? '보기를 하나 골라 주세요' : ''
     return ''
   }
   const why = reason()
-  const nextDisabled = step === 3 || !!why // 4단계는 내용이 아직 없어 다음 불가
+  const nextDisabled = !!why
+  const lastQuestion = qi === QUESTIONS.length - 1
 
   const goPrev = () => {
     if (step === 0) onLogin()
+    else if (step === 3 && qi > 0) setQi(qi - 1)
     else setStep(step - 1)
   }
   const goNext = () => {
     if (nextDisabled) return
+    if (step === 3 && !lastQuestion) {
+      setQi(qi + 1)
+      return
+    }
     setStep(step + 1)
+    if (step + 1 === 3) setQi(0)
   }
 
   const sendCode = () => {
@@ -187,13 +201,13 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
             <button type="button" className={styles.fill} onClick={demoFill}>시연용으로 채우기</button>
           </div>
           <div className={styles.grid}>
-            <Field label="이름" span={wide ? 1 : 2} type="text" placeholder="김리아" autoComplete="name" value={info.name} onChange={setField('name')} />
-            <Field label="생년월일" span={wide ? 1 : 2} type="text" placeholder="1994.01.01" autoComplete="bday" inputMode="numeric" value={info.birth} onChange={setField('birth')} />
+            <Field active={active} label="이름" span={wide ? 1 : 2} type="text" placeholder="김리아" autoComplete="name" value={info.name} onChange={setField('name')} />
+            <Field active={active} label="생년월일" span={wide ? 1 : 2} type="text" placeholder="1994.01.01" autoComplete="bday" inputMode="numeric" value={info.birth} onChange={setField('birth')} />
           </div>
           <div className={styles.fieldBlock}>
             <span className={styles.label}>휴대폰</span>
             <div className={styles.row}>
-              <input className={cx(styles.input, styles.grow)} type="tel" inputMode="numeric" value={info.phone} onChange={setField('phone')} placeholder="010-0000-0000" autoComplete="tel" aria-label="휴대폰 번호" />
+              <input className={cx(styles.input, styles.grow)} type="tel" inputMode="numeric" value={info.phone} onChange={setField('phone')} placeholder="010-0000-0000" autoComplete={active ? 'tel' : 'off'} disabled={!active} aria-label="휴대폰 번호" />
               <button type="button" className={styles.outlineBtn} onClick={sendCode}>{codeSent ? '다시 받기' : '인증번호 받기'}</button>
             </div>
             {codeSent && (
@@ -208,6 +222,8 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
                     onChange={(e) => setCode(digits(e.target.value).slice(0, 6))}
                     placeholder="인증번호 6자리"
                     aria-label="인증번호 6자리"
+                    autoComplete="off"
+                    disabled={!active}
                   />
                   <span className={styles.codeMsg}>{codeOk ? '인증됐어요' : ''}</span>
                 </div>
@@ -216,10 +232,10 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
             )}
           </div>
           <div className={styles.grid}>
-            <Field label="이메일" span={2} type="email" placeholder="ria@returns.co.kr" autoComplete="email" inputMode="email" value={info.email} onChange={setField('email')} />
-            <Field label="아이디" span={2} type="text" placeholder="4자 이상" autoComplete="username" value={info.uid} onChange={setField('uid')} />
-            <Field label="비밀번호" span={wide ? 1 : 2} type="password" placeholder="8자 이상" autoComplete="new-password" value={info.pw} onChange={setField('pw')} />
-            <Field label="비밀번호 확인" span={wide ? 1 : 2} type="password" placeholder="한 번 더 입력" autoComplete="new-password" value={info.pw2} onChange={setField('pw2')} />
+            <Field active={active} label="이메일" span={2} type="email" placeholder="ria@returns.co.kr" autoComplete="email" inputMode="email" value={info.email} onChange={setField('email')} />
+            <Field active={active} label="아이디" span={2} type="text" placeholder="4자 이상" autoComplete="username" value={info.uid} onChange={setField('uid')} />
+            <Field active={active} label="비밀번호" span={wide ? 1 : 2} type="password" placeholder="8자 이상" autoComplete="new-password" value={info.pw} onChange={setField('pw')} />
+            <Field active={active} label="비밀번호 확인" span={wide ? 1 : 2} type="password" placeholder="한 번 더 입력" autoComplete="new-password" value={info.pw2} onChange={setField('pw2')} />
           </div>
           <div className={styles.rules}>
             <span className={styles.rulesLabel}>비밀번호 조건</span>
@@ -262,6 +278,8 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
                   }}
                   placeholder="계좌번호 숫자만 입력"
                   aria-label="RIA 계좌번호"
+                  autoComplete="off"
+                  disabled={!active}
                 />
                 <button
                   type="button"
@@ -290,17 +308,27 @@ export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
         </div>
       )}
 
-      {step === 3 && <p className={styles.placeholder}>다음 단계에서 채움</p>}
+      {step === 3 && (
+        <SignupQuiz
+          qi={qi}
+          answers={answers}
+          onPick={(i) => setAnswers((st) => st.map((v, j) => (j === qi ? i : v)))}
+        />
+      )}
 
-      <div className={styles.nav}>
-        <div className={styles.navRow}>
-          <button type="button" className={styles.prev} onClick={goPrev}>이전</button>
-          <button type="button" className={cx(styles.next, nextDisabled && styles.nextOff)} onClick={goNext} disabled={nextDisabled} aria-disabled={nextDisabled}>
-            다음
-          </button>
+      {step === 4 && <SignupResult name={info.name} profile={profileKey(answers)} />}
+
+      {step < 4 && (
+        <div className={styles.nav}>
+          <div className={styles.navRow}>
+            <button type="button" className={styles.prev} onClick={goPrev}>이전</button>
+            <button type="button" className={cx(styles.next, nextDisabled && styles.nextOff)} onClick={goNext} disabled={nextDisabled} aria-disabled={nextDisabled}>
+              {step === 3 && lastQuestion ? '결과 보기' : '다음'}
+            </button>
+          </div>
+          {why && <span className={styles.reason}>{why}</span>}
         </div>
-        {why && <span className={styles.reason}>{why}</span>}
-      </div>
+      )}
       <div className={styles.login}>
         이미 계정이 있나요? <button type="button" className={styles.loginLink} onClick={onLogin}>로그인 ›</button>
       </div>
