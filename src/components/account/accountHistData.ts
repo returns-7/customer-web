@@ -2,6 +2,7 @@ import { RETURNS_DATA as RD } from '../../data/returns'
 import { F } from '../../lib/calc'
 import type { Tone } from './accountData'
 import type { AddedIn } from './accountApplyData'
+import type { AddedSell, AddedSettle } from './accountSellData'
 
 // 거래·신청 내역 박스의 탭(원본 TABS 순서·이름)
 export const HIST_TABS = [
@@ -124,12 +125,16 @@ export interface SellRowView extends StockCell {
   qty: number
   amt: string
   gain: string
+  review: boolean // 방금 접수한 매도 신청(심사 중) — 차익·상태가 다르게 보임
 }
 
-export function sellRows(): { rows: SellRowView[]; rate: string; sum: { amt: string; gain: string } } {
+// added: 방금 접수한 매도 신청(심사 중) — 가장 위에 보임
+export function sellRows(added: AddedSell[] = []): { rows: SellRowView[]; rate: string; sum: { amt: string; gain: string } } {
   const date = F.short(RD.SOLD.filled)
+  const bizShort = F.short(RD.C.BUSINESS_DATE)
+  const review = added.map((a): SellRowView => ({ t: a.t, name: a.name, color: 'var(--stock-' + a.t.toLowerCase() + ')', ini: a.t[0], labeled: false, date: bizShort, qty: a.qty, amt: F.won(a.amt), gain: '-', review: true }))
   return {
-    rows: SOLD_ROWS.map(([t, , , qty, amt, gain]) => ({ ...stockCell(t), date, qty, amt: F.won(amt), gain: F.won(gain) })),
+    rows: [...review, ...SOLD_ROWS.map(([t, , , qty, amt, gain]): SellRowView => ({ ...stockCell(t), date, qty, amt: F.won(amt), gain: F.won(gain), review: false }))],
     rate: Math.round(RD.SOLD.bandRate * 100) + '%',
     sum: { amt: F.won(SOLD_ROWS.reduce((a, r) => a + r[4], 0)), gain: F.won(SOLD_ROWS.reduce((a, r) => a + r[5], 0)) }
   }
@@ -154,7 +159,8 @@ export interface SettleRowView {
   steps: SettleStepView[]
 }
 
-export function settleRows(): { rows: SettleRowView[]; soldConf: string; wdDate: string } {
+// added: 방금 접수한 매도 신청(심사 중, 체결 전) — 가장 위에 보임
+export function settleRows(added: AddedSettle[] = []): { rows: SettleRowView[]; soldConf: string; wdDate: string } {
   const D = RD
   const TD = D.TRADE_DEMO
   const step = (labels: string[], dates: string[], cur: number): SettleStepView[] =>
@@ -176,7 +182,10 @@ export function settleRows(): { rows: SettleRowView[]; soldConf: string; wdDate:
     st[k] = { ...st[k], date: d ? (conf ? d + ' 확정' : '예상 ' + d) : '' }
     return { ...r, steps: st, amt: conf ? r.amt : '예상 ' + r.amt }
   }
-  const rows: SettleRowView[] = []
+  const bizShort = F.short(RD.C.BUSINESS_DATE)
+  const rows: SettleRowView[] = added.map((a) =>
+    fin({ title: bizShort + ' ' + a.title + ' 매도 신청', sub: '심사 중 · 체결 전', amt: '₩' + F.won(a.amt), steps: step(RD.TRADE_DEMO.steps, [bizShort, '', ''], 0) }, false)
+  )
   if (TD.on) {
     rows.push(
       fin(

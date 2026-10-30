@@ -13,8 +13,6 @@ export const GEN_HOLDINGS: [ticker: string, now: number, base: number][] = [
 export const FOOT_STATUS = '금액은 예시이며 다른 계좌의 해외주식 순매수가 없다고 가정했어요 · 투자 판단은 고객님께 있어요'
 export const FOOT_FLOW = '자금 흐름은 RIA 계좌 안의 돈만 보여드려요 · 다른 계좌 거래는 포함하지 않아요'
 
-export const APPLY_TOAST = '다음 단계에서 연결'
-
 export type PageKey = 'status' | 'flow'
 
 export const PAGE_TABS = [

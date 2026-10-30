@@ -7,6 +7,7 @@ import { StockLabel } from '../common/StockLabel'
 import { Tabs } from '../common/Tabs'
 import { DEPOSIT_BASE_DOT, HIST_TABS, SHOW_DOM, SHOW_INS, SHOW_SELLS, depositRows, domesticRows, sellRows, settleRows, withdrawRequests, withdrawValues } from './accountHistData'
 import type { AddedIn, AddedOut } from './accountApplyData'
+import type { AddedSell, AddedSettle } from './accountSellData'
 import type { DepRowView, HistTab, StockCell } from './accountHistData'
 import styles from './AccountHistBox.module.css'
 
@@ -18,6 +19,8 @@ interface AccountHistBoxProps {
   onApplyOut: () => void // 인출 신청 ›
   addedIn: AddedIn[] // 방금 접수한 입고 신청(심사 중)
   addedOut: AddedOut[] // 방금 접수한 인출 신청(심사 중)
+  addedSell: AddedSell[] // 방금 접수한 매도 신청(심사 중)
+  addedSettle: AddedSettle[] // 같은 매도 신청의 정산 상태 줄
 }
 
 type MoreKey = 'ins' | 'sells' | 'dom'
@@ -37,7 +40,7 @@ function StockCellView({ s, plain = false }: { s: StockCell; plain?: boolean }) 
 }
 
 // 거래·신청 내역 박스(data-box="hist") — 입고 / 매도 / 정산 상태 / 국내 매매 / 인출 다섯 탭
-export function AccountHistBox({ className, tab, onTab, onApplyIn, onApplyOut, addedIn, addedOut }: AccountHistBoxProps) {
+export function AccountHistBox({ className, tab, onTab, onApplyIn, onApplyOut, addedIn, addedOut, addedSell, addedSettle }: AccountHistBoxProps) {
   const [more, setMore] = useState<Record<MoreKey, boolean>>({ ins: false, sells: false, dom: false })
   const [openIn, setOpenIn] = useState<number | null>(null)
 
@@ -56,8 +59,8 @@ export function AccountHistBox({ className, tab, onTab, onApplyIn, onApplyOut, a
       actions={<span className={styles.range}>최근 3개월</span>}
     >
       {tab === 'deposits' && <Deposits added={addedIn} more={more.ins} openIn={openIn} setOpenIn={setOpenIn} onMore={() => showMore('ins')} onApplyIn={onApplyIn} />}
-      {tab === 'sells' && <Sells more={more.sells} onMore={() => showMore('sells')} />}
-      {tab === 'settle' && <Settle />}
+      {tab === 'sells' && <Sells added={addedSell} more={more.sells} onMore={() => showMore('sells')} />}
+      {tab === 'settle' && <Settle added={addedSettle} />}
       {tab === 'domestic' && <Domestic more={more.dom} onMore={() => showMore('dom')} />}
       {tab === 'withdraw' && <Withdraw added={addedOut} onApplyOut={onApplyOut} />}
     </Box>
@@ -133,8 +136,8 @@ function Deposits({ added, more, openIn, setOpenIn, onMore, onApplyIn }: { added
   )
 }
 
-function Sells({ more, onMore }: { more: boolean; onMore: () => void }) {
-  const s = sellRows()
+function Sells({ added, more, onMore }: { added: AddedSell[]; more: boolean; onMore: () => void }) {
+  const s = sellRows(added)
   const rows = more ? s.rows : s.rows.slice(0, SHOW_SELLS)
   const moreN = s.rows.length - SHOW_SELLS
 
@@ -150,17 +153,17 @@ function Sells({ more, onMore }: { more: boolean; onMore: () => void }) {
           <span className={styles.right}>적용 공제율</span>
           <span>상태</span>
         </div>
-        {rows.map((r) => (
-          <div key={r.t} className={cx(styles.row, styles.sellCols, styles.body, styles.line)}>
+        {rows.map((r, i) => (
+          <div key={i} className={cx(styles.row, styles.sellCols, styles.body, styles.line)}>
             <span className={styles.date}>{r.date}</span>
             <span className={styles.stockCell}>
               <StockCellView s={r} plain />
             </span>
             <span className={styles.right}>{r.qty}주</span>
             <span className={styles.right}>{r.amt}</span>
-            <b className={cx(styles.right, styles.strong, styles.up)}>{r.gain}</b>
+            <b className={cx(styles.right, styles.strong, r.review ? styles.faint : styles.up)}>{r.gain}</b>
             <span className={styles.right}>{s.rate}</span>
-            <span className={cx(styles.status, styles.toneDone)}>정산 완료</span>
+            <span className={cx(styles.status, r.review ? styles.toneReview : styles.toneDone)}>{r.review ? '심사 중' : '정산 완료'}</span>
           </div>
         ))}
         {!more && moreN > 0 && (
@@ -182,8 +185,8 @@ function Sells({ more, onMore }: { more: boolean; onMore: () => void }) {
   )
 }
 
-function Settle() {
-  const st = settleRows()
+function Settle({ added }: { added: AddedSettle[] }) {
+  const st = settleRows(added)
 
   return (
     <div>

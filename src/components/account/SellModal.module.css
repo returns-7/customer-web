@@ -1,0 +1,837 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-session-modal);
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.panel {
+  width: min(960px, 100%);
+  height: 86vh;
+  background: var(--color-surface);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.right {
+  text-align: right;
+}
+
+.center {
+  text-align: center;
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.gold {
+  color: var(--color-gold);
+}
+
+/* ---- 머리줄 ---- */
+.head {
+  height: 56px;
+  flex: none;
+  padding: 0 var(--space-12) 0 var(--space-20);
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-extrabold);
+  white-space: nowrap;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-12);
+}
+
+.stepWrap {
+  display: contents;
+}
+
+.stepSep {
+  color: var(--color-line-strong);
+}
+
+.stepItem {
+  --step-c: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--step-c);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.stepOn {
+  --step-c: var(--color-navy);
+}
+
+.stepCur {
+  font-weight: var(--font-weight-extrabold);
+}
+
+.stepNo {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: var(--radius-round);
+  border: 1.5px solid var(--step-c);
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: var(--font-size-10);
+  font-weight: var(--font-weight-extrabold);
+  display: grid;
+  place-items: center;
+}
+
+.stepNoDone {
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+
+.stepNoCur {
+  color: var(--color-navy);
+}
+
+.headSum {
+  margin-left: auto;
+  font-size: var(--font-size-13);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.close {
+  all: unset;
+  cursor: pointer;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+}
+
+.close:hover {
+  background: var(--color-surface-hover);
+}
+
+.close:focus-visible,
+.cb:focus-visible,
+.stepBtn:focus-visible,
+.fill:focus-visible,
+.resetPlan:focus-visible,
+.kkSend:focus-visible,
+.agree:focus-visible,
+.back:focus-visible,
+.next:focus-visible,
+.nextWide:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+/* ---- 1단계: 두 칸 ---- */
+.cols {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.left {
+  min-width: 0;
+  overflow: auto;
+  padding: var(--space-8) var(--space-16) var(--space-16);
+}
+
+.right2 {
+  min-width: 0;
+  overflow: auto;
+  padding: var(--space-8) var(--space-16) var(--space-16);
+  border-left: 1px solid var(--color-line-soft);
+  display: flex;
+  flex-direction: column;
+}
+
+.secHead {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.secSub {
+  margin-left: auto;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+}
+
+.secSub0 {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.sCols {
+  display: grid;
+  grid-template-columns: 20px minmax(96px, 1fr) 36px 64px 72px 40px;
+  gap: var(--space-6);
+  align-items: center;
+}
+
+.sColsWide {
+  grid-template-columns: 20px minmax(180px, 1fr) 36px 64px 72px 40px;
+}
+
+.thead {
+  height: 32px;
+  border-top: 1px solid var(--color-line-soft);
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.sRow {
+  height: 52px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-13);
+}
+
+.sRowOn {
+  background: var(--color-surface-sub);
+}
+
+.stockCell {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.stack {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.stackTxt {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.stackTicker {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-ink);
+}
+
+.stackName {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.cb {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-4);
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  color: var(--color-on-navy);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.cbOn {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  box-sizing: border-box;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  overflow: hidden;
+  background: var(--color-surface);
+}
+
+.stepBtn {
+  all: unset;
+  cursor: pointer;
+  width: 20px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  color: var(--color-gray-600);
+  font-size: var(--font-size-16);
+}
+
+.stepBtn:hover {
+  background: var(--color-surface-hover);
+}
+
+.stepInput {
+  width: 22px;
+  height: 30px;
+  box-sizing: border-box;
+  border: 0;
+  border-left: 1px solid var(--color-line-soft);
+  border-right: 1px solid var(--color-line-soft);
+  text-align: center;
+  font-family: inherit;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  outline: 0;
+  padding: 0;
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.tableNote {
+  margin-top: var(--space-8);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+/* ---- 1단계: 한도를 꽉 채운 안 ---- */
+.planHead {
+  min-height: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.planTitle {
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.pCols {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 40px 56px 44px 64px;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.pHead {
+  margin-top: var(--space-6);
+  height: 32px;
+  border-top: 1px solid var(--color-line-soft);
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.pRow {
+  height: 44px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-14);
+}
+
+.pNo {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-navy);
+}
+
+.partial {
+  justify-self: end;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.planTotal {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-14);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.planTotalAmt {
+  margin-left: auto;
+  font-weight: var(--font-weight-extrabold);
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  padding: var(--space-12) 0 var(--space-8);
+}
+
+.planRight {
+  border-left: 1px solid var(--color-line-soft);
+  padding-left: var(--space-16);
+}
+
+.planLabel {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.planVal {
+  font-size: var(--font-size-20);
+  font-weight: var(--font-weight-extrabold);
+  margin-top: var(--space-2);
+}
+
+.planRange {
+  font-size: var(--font-size-12);
+  color: var(--color-gray-600);
+  padding-bottom: var(--space-10);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.planBtns {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-top: var(--space-12);
+}
+
+.fill {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 40px;
+  padding: 0 18px;
+  border-radius: var(--radius-6);
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.fill:hover {
+  background: var(--color-navy-dark);
+}
+
+.resetPlan {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.kkForm {
+  margin-top: var(--space-12);
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.kkInput {
+  flex: 1;
+  min-width: 0;
+  height: 36px;
+  box-sizing: border-box;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  padding: 0 var(--space-10);
+  font-family: inherit;
+  font-size: var(--font-size-14);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  outline: none;
+}
+
+.kkSend {
+  all: unset;
+  cursor: pointer;
+  flex: none;
+  height: 36px;
+  padding: 0 var(--space-12);
+  border-radius: var(--radius-6);
+  border: 1px solid var(--color-navy);
+  box-sizing: border-box;
+  color: var(--color-navy);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+}
+
+.kkSend:hover {
+  background: var(--color-chip-navy-strong);
+}
+
+.kkReply {
+  margin-top: var(--space-10);
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+
+.kkFace {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex: none;
+}
+
+.kkBody {
+  min-width: 0;
+}
+
+.kkBubble {
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-13);
+  line-height: 1.6;
+}
+
+.kkNote {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-11);
+  color: var(--color-sub);
+}
+
+.planFoot {
+  margin: var(--space-12) 0 0;
+  font-size: var(--font-size-12);
+  line-height: 1.6;
+  color: var(--color-gray-600);
+  text-wrap: pretty;
+}
+
+/* ---- 아래 고정 합산 줄 ---- */
+.sumBar {
+  flex: none;
+  border-top: 1px solid var(--color-line-strong);
+  background: var(--color-surface-bar);
+  padding: var(--space-12) var(--space-20);
+  display: flex;
+  align-items: center;
+  gap: var(--space-20);
+}
+
+.sumMain {
+  flex: 1;
+  min-width: 0;
+}
+
+.sumTrack {
+  position: relative;
+  height: 8px;
+  background: var(--color-line-soft);
+  border-radius: var(--radius-4);
+  overflow: hidden;
+}
+
+.sumNavy,
+.sumRed {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+}
+
+.sumNavy {
+  left: 0;
+  background: var(--color-navy);
+}
+
+.sumRed {
+  background: var(--color-red);
+}
+
+.sumLine {
+  margin-top: var(--space-8);
+  display: flex;
+  align-items: baseline;
+  gap: 6px 14px;
+  flex-wrap: wrap;
+  font-size: var(--font-size-13);
+}
+
+.sumTotal {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.sumItem {
+  color: var(--color-sub);
+}
+
+.sumB {
+  color: var(--color-ink);
+  font-weight: var(--font-weight-bold);
+}
+
+.sumSave {
+  color: var(--color-gold-text);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.overMsg {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-red);
+  margin-top: var(--space-6);
+}
+
+.nextWide {
+  all: unset;
+  cursor: default;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 var(--space-32);
+  border-radius: var(--radius-6);
+  background: var(--color-line-strong);
+  color: var(--color-on-navy);
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* ---- 2단계 확인 ---- */
+.pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-20);
+}
+
+.confirm {
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.cCols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 80px 130px;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+.cHead {
+  height: 32px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.cRow {
+  height: 46px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-14);
+}
+
+.cSum {
+  height: 44px;
+  font-size: var(--font-size-14);
+  background: var(--color-surface-sub);
+  padding: 0 var(--space-8);
+  margin: 0 -8px;
+}
+
+.sumBold {
+  font-weight: var(--font-weight-extrabold);
+}
+
+.overMsg2 {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-red);
+}
+
+.confirmNote {
+  margin: 0;
+  font-size: var(--font-size-14);
+  line-height: 1.6;
+}
+
+.agree {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ---- 3단계 완료 ---- */
+.pane2 {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-24) var(--space-20);
+}
+
+.doneWrap {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-6);
+}
+
+.doneIcon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-round);
+  background: var(--color-green-bg);
+  color: var(--color-green);
+  display: grid;
+  place-items: center;
+}
+
+.doneTitle {
+  margin: var(--space-4) 0 0;
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.doneSum {
+  font-size: var(--font-size-14);
+  color: var(--color-gray-600);
+}
+
+.nextHead {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-extrabold);
+  margin-bottom: var(--space-4);
+}
+
+.nextRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  min-height: 40px;
+  border-top: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-14);
+}
+
+.nextNo {
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border-radius: var(--radius-round);
+  border: 1.5px solid var(--color-navy);
+  color: var(--color-navy);
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-extrabold);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.nextTxt {
+  line-height: 1.5;
+}
+
+/* ---- 바닥 버튼 · 안내 ---- */
+.foot {
+  flex: none;
+  padding: var(--space-12) var(--space-20);
+  border-top: 1px solid var(--color-line-soft);
+  display: flex;
+  justify-content: center;
+}
+
+.footIn {
+  width: 640px;
+  max-width: 100%;
+  display: flex;
+  gap: var(--space-8);
+}
+
+.back,
+.next {
+  all: unset;
+  box-sizing: border-box;
+  height: 48px;
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+}
+
+.back {
+  cursor: pointer;
+  flex: 1;
+  border: 1px solid var(--color-line-strong);
+}
+
+.back:hover {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+}
+
+.next {
+  flex: 2;
+  cursor: default;
+  background: var(--color-line-strong);
+  color: var(--color-on-navy);
+}
+
+.nextOn {
+  cursor: pointer;
+  background: var(--color-navy);
+}
+
+.note {
+  flex: none;
+  padding: var(--space-8) var(--space-20);
+  border-top: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}

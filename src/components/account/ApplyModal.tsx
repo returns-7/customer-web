@@ -436,7 +436,7 @@ export function ApplyModal({ kind, onClose, onGoHist, onSubmitIn, onSubmitOut, o
 }
 
 // 입력 중에 닫으려 할 때 뜨는 확인 창 — Esc는 '계속 작성'
-function AskClose({ onKeep, onLeave }: { onKeep: () => void; onLeave: () => void }) {
+export function AskClose({ onKeep, onLeave }: { onKeep: () => void; onLeave: () => void }) {
   useEscape(onKeep)
   return createPortal(
     <div className={styles.askBackdrop}>

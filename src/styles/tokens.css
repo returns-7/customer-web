@@ -11,6 +11,7 @@
   --color-gold-pale: #fbf3e2; /* 경제 채팅방 검색 일치 글자 배경 · 가입 환영 배너 배경 */
   --color-gold-border: #ebd9b0; /* 가입 환영 배너 테두리 */
   --color-gold-brown: #5c4210; /* 가입 환영 배너 글자 */
+  --color-gold-text: #b8862c; /* 매도 신청 창 '예상 절세액' 글자 */
   --color-ink: #1a2233; /* 본문 글자 */
   --color-sub: #6b7280; /* 보조 글자 */
   --color-muted: #9aa4b2; /* 약한 글자·placeholder·로고 없는 종목 기본색 */
@@ -25,6 +26,7 @@
   --color-surface: #ffffff; /* 박스·모달 배경 */
   --color-surface-hover: #f3f5f7; /* 목록·버튼 hover, 말풍선 */
   --color-surface-sub: #f8f9fb;
+  --color-surface-bar: #fafbfc; /* 매도 신청 창 아래 합산 줄 배경 */
   --color-surface-row: #f7f8fa;
   --color-surface-select: #f3f6fa; /* 선택된 행 */
   --color-chip: #eef1f5; /* 업종 배지 배경 */
