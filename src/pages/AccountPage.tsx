@@ -16,14 +16,14 @@ import type { PageKey } from '../components/account/accountData'
 import { isHistTab } from '../components/account/accountHistData'
 import type { HistTab } from '../components/account/accountHistData'
 import styles from '../components/account/AccountLayout.module.css'
-import { Box } from '../components/common/Box'
+import { FlowAllocBox, FlowCutBox, FlowMonthlyBox, FlowStepsBox } from '../components/account/AccountFlowBoxes'
 import { Tabs } from '../components/common/Tabs'
 import { Toast } from '../components/common/Toast'
 import { useToast } from '../components/common/useToast'
 import { RETURNS_DATA as RD } from '../data/returns'
 import { F } from '../lib/calc'
 
-// 내 계좌 — 1~4번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역. 나머지 박스는 머리줄 제목만 있는 자리
+// 내 계좌 — 1~5번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역 + 자금 흐름 탭 박스 4개
 export function AccountPage() {
   const { hash, pathname } = useLocation()
   const navigate = useNavigate()
@@ -124,12 +124,12 @@ export function AccountPage() {
       {opened && page === 'flow' && (
         <div className={styles.flow}>
           <div className={styles.asOf}>{F.asOf(RD.C.BUSINESS_DATE)} · 매일 새벽 집계</div>
-          <Box data-box="flow" title="돌아온 돈의 흐름" />
+          <FlowStepsBox />
           <div className={styles.flowGrid}>
-            <Box data-box="monthly" title="월별 흐름" />
+            <FlowMonthlyBox />
             <div className={styles.flowSide}>
-              <Box data-box="alloc" title="어디에 운용하고 있나" />
-              <Box data-box="cut-vs-invest" title="감면과 국내 운용" />
+              <FlowAllocBox />
+              <FlowCutBox />
             </div>
           </div>
         </div>
