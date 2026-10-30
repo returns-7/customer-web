@@ -1,0 +1,223 @@
+.top {
+  padding: var(--space-16) var(--space-16) var(--space-12);
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr) auto;
+  gap: var(--space-14);
+  align-items: center;
+}
+
+.figure {
+  height: 64px;
+  width: 64px;
+  flex: none;
+  display: grid;
+  place-items: center;
+}
+
+.figure img {
+  height: 64px;
+  width: auto;
+}
+
+.info {
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.profName {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.expired {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-red);
+}
+
+.assessLine {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.assessNone {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-12);
+}
+
+.assessNone a {
+  font-weight: var(--font-weight-bold);
+}
+
+.reassessBadge {
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-orange);
+  border: 1px solid var(--color-orange);
+  border-radius: var(--radius-4);
+  padding: 0 5px;
+  line-height: 16px;
+}
+
+.soon {
+  color: var(--color-orange);
+}
+
+.side {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: var(--space-8);
+  white-space: nowrap;
+}
+
+.edit {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.myAcct {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.acct {
+  border-top: 1px solid var(--color-line-soft);
+  padding: var(--space-12) var(--space-16) var(--space-16);
+}
+
+.acctRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+}
+
+.acctName {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.acctNo {
+  font-size: var(--font-size-13);
+  color: var(--color-ink);
+}
+
+.copy {
+  all: unset;
+  cursor: pointer;
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-4);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+}
+
+.copy:hover {
+  background: var(--color-surface-hover);
+  color: var(--color-navy);
+}
+
+.limit {
+  margin-top: var(--space-10);
+}
+
+.limitRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--font-size-12);
+}
+
+.limitLabel {
+  color: var(--color-sub);
+}
+
+.limitRemain {
+  color: var(--color-navy);
+}
+
+.bar {
+  height: 6px;
+  background: var(--color-line-soft);
+  border-radius: var(--radius-2);
+  margin-top: var(--space-6);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  background: var(--color-navy);
+}
+
+.state {
+  border-top: 1px solid var(--color-line-soft);
+  padding: var(--space-12) var(--space-16);
+  display: flex;
+  flex-direction: column;
+}
+
+.stateNone {
+  composes: state;
+  gap: var(--space-10);
+}
+
+.stateNote {
+  composes: state;
+  gap: var(--space-6);
+}
+
+.stateTitle {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+}
+
+.stateTitleRed {
+  composes: stateTitle;
+  color: var(--color-red);
+}
+
+.reason {
+  font-size: var(--font-size-13);
+  color: var(--color-gray-600);
+}
+
+.linkRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.linkRow a {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.open {
+  height: 48px;
+  border-radius: var(--radius-6);
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+  display: grid;
+  place-items: center;
+  text-decoration: none;
+}
+
+.open:hover {
+  background: var(--color-navy-dark);
+  text-decoration: none;
+}

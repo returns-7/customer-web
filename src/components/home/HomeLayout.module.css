@@ -1,0 +1,86 @@
+/* 넓은 화면: 왼쪽(뉴스·패키지·추천) 2 : 오른쪽(프로필·브리핑·채팅방) 1 */
+.page {
+  margin-top: var(--space-4); /* 원본 홈은 위 여백 20px(AppLayout 16px + 4px) */
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-16);
+  align-items: stretch;
+}
+
+.colMain,
+.colSide {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.colMain {
+  flex: 2 1 0;
+}
+
+.colSide {
+  flex: 1 1 0;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-16);
+  align-items: stretch;
+}
+
+.pkg,
+.rec {
+  grid-column: 1 / -1;
+}
+
+.news,
+.tax {
+  min-height: 0;
+}
+
+.rec {
+  position: relative;
+}
+
+.chat {
+  flex: 1 0 auto;
+}
+
+/* 1280px 이하: 한 열. 두 열·묶음 상자를 풀고 박스를 아래 순서로 세운다(원본의 order 값) */
+@media (max-width: 1280px) {
+  .page {
+    flex-direction: column;
+  }
+
+  .colMain,
+  .colSide,
+  .pair {
+    display: contents;
+  }
+
+  .prof {
+    order: 1;
+  }
+
+  .tax {
+    order: 3;
+  }
+
+  .pkg {
+    order: 5;
+  }
+
+  .news {
+    order: 6;
+  }
+
+  .rec {
+    order: 7;
+  }
+
+  .chat {
+    order: 8;
+  }
+}
