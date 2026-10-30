@@ -1,0 +1,123 @@
+/* 크기별 값: 아이콘 옆 간격 · 종목명 글자 · 보조 글자(티커 옆 이름 = 종목명 -1px) · 종목 코드 */
+.sm {
+  --label-gap: var(--space-6);
+  --label-fs: var(--font-size-13);
+  --label-fs2: var(--font-size-12);
+  --label-fc: var(--font-size-12);
+}
+
+.md {
+  --label-gap: var(--space-8);
+  --label-fs: var(--font-size-15);
+  --label-fs2: var(--font-size-14);
+  --label-fc: var(--font-size-13);
+}
+
+.lg {
+  --label-gap: var(--space-10);
+  --label-fs: var(--font-size-17);
+  --label-fs2: var(--font-size-16);
+  --label-fc: var(--font-size-13);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: var(--label-gap);
+  min-width: 0;
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+}
+
+/* 해외: 티커 + 이름 */
+.overseas {
+  display: flex;
+  align-items: baseline;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.ticker {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--label-fs);
+  color: var(--color-ink);
+}
+
+.overseasName {
+  font-size: var(--label-fs2);
+  color: var(--color-sub);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 국내: 한 줄 */
+.inline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* 국내: 두 줄(이름 위, 코드·업종 아래) */
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.stackRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  white-space: nowrap;
+}
+
+.name {
+  font-weight: var(--font-weight-bold);
+  font-size: var(--label-fs);
+  color: var(--color-ink);
+}
+
+.nameEllipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nameStack {
+  white-space: nowrap;
+  line-height: var(--line-height-tight);
+}
+
+.code {
+  font-size: var(--label-fc);
+  color: var(--color-sub);
+  font-variant-numeric: tabular-nums;
+}
+
+.codeInline {
+  flex: none;
+}
+
+.badge {
+  font-size: var(--font-size-11);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-gray-600);
+  background: var(--color-chip);
+  border-radius: var(--radius-4);
+}
+
+.badgeInline {
+  flex: none;
+  padding: var(--space-2) 5px;
+  line-height: var(--line-height-tight);
+}
+
+.badgeStack {
+  padding: 1px 5px;
+  line-height: 1.35;
+}

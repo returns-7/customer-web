@@ -1,0 +1,87 @@
+.tabs {
+  display: flex;
+  align-items: center;
+  font-family: var(--font-sans);
+  --tab-h: 47px;
+  --tab-fs: var(--font-size-14);
+  --tab-w-on: var(--font-weight-semibold);
+  --tab-w-off: var(--font-weight-regular);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+}
+
+.page {
+  --tab-h: 44px;
+  --tab-fs: var(--font-size-15);
+  --tab-w-on: var(--font-weight-extrabold);
+  --tab-w-off: var(--font-weight-medium);
+  height: 44px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.box {
+  height: 47px;
+}
+
+.compact {
+  --tab-h: 40px;
+  height: 40px;
+}
+
+.login {
+  --tab-h: 48px;
+  --tab-fs: var(--font-size-16);
+  --tab-w-on: var(--font-weight-extrabold);
+  --tab-w-off: var(--font-weight-medium);
+  gap: var(--space-24);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.login .tab {
+  margin-bottom: -1px;
+}
+
+.sep {
+  color: var(--color-line-strong);
+  padding: 0 var(--space-8);
+}
+
+.tab {
+  all: unset;
+  cursor: pointer;
+  height: var(--tab-h);
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--tab-fs);
+  font-weight: var(--tab-w-off);
+  color: var(--color-sub);
+  border-bottom: 2px solid transparent;
+  border-top: 2px solid transparent;
+  white-space: nowrap;
+}
+
+.tab:hover {
+  color: var(--color-navy);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -2px;
+}
+
+.on {
+  font-weight: var(--tab-w-on);
+  color: var(--color-navy);
+  border-bottom-color: var(--color-gold);
+}
+
+.count {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-muted);
+}

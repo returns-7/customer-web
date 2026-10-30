@@ -1,0 +1,278 @@
+.fab {
+  position: fixed;
+  right: var(--space-24);
+  bottom: var(--space-24);
+  z-index: var(--z-fab);
+  width: var(--size-fab);
+  height: var(--size-fab);
+  border-radius: var(--radius-round);
+  border: 0;
+  background: var(--color-navy);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: var(--shadow-fab);
+  padding: 0;
+}
+
+.fab:hover {
+  background: var(--color-navy-dark);
+}
+
+.fab:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.fabSm {
+  width: var(--size-fab-sm);
+  height: var(--size-fab-sm);
+}
+
+.fabImage {
+  width: 36px;
+  height: 36px;
+  display: block;
+  object-fit: contain;
+}
+
+.fabImageSm {
+  width: 34px;
+  height: 34px;
+}
+
+/* 첫 방문 안내 말풍선 */
+.tip {
+  position: fixed;
+  right: 96px;
+  bottom: 36px;
+  z-index: var(--z-fab);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-tip);
+  padding: var(--space-10) var(--space-12);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-14);
+  color: var(--color-ink);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.tipClose {
+  all: unset;
+  cursor: pointer;
+  color: var(--color-sub);
+  display: grid;
+  place-items: center;
+}
+
+/* 창 공통 */
+.panel {
+  position: fixed;
+  right: var(--space-24);
+  bottom: 96px;
+  z-index: var(--z-chat-panel);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.panelSimple {
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  max-height: calc(100vh - 120px);
+}
+
+.panelAboveSm {
+  bottom: 92px;
+}
+
+.panelChat {
+  width: 380px;
+  height: 560px;
+  max-height: calc(100vh - 120px);
+  border-radius: var(--radius-12);
+  box-shadow: var(--shadow-chat);
+}
+
+.head {
+  height: var(--size-box-head);
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  border-bottom: 1px solid var(--color-line-soft);
+  flex: none;
+}
+
+.headFace {
+  width: 24px;
+  height: 24px;
+  display: block;
+  flex: none;
+}
+
+.headFaceChat {
+  width: 28px;
+  height: 28px;
+}
+
+.headTitle {
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.close {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  width: var(--size-control-sm);
+  height: var(--size-control-sm);
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+}
+
+.close:hover {
+  background: var(--color-surface-hover);
+}
+
+/* 간단한 창 */
+.simpleBody {
+  padding: var(--space-12) var(--space-16);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-body);
+}
+
+.simpleBubble {
+  display: inline-block;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+}
+
+/* 대화형 창 */
+.messages {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-4) var(--space-16);
+}
+
+.message {
+  padding: var(--space-12) 0;
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.meRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.meBubble {
+  background: var(--color-chip-navy);
+  color: var(--color-navy);
+  border-radius: var(--radius-8);
+  padding: var(--space-6) var(--space-10);
+  font-size: var(--font-size-14);
+}
+
+.kkRow {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+}
+
+.kkFace {
+  width: 28px;
+  height: 28px;
+  display: block;
+  flex: none;
+}
+
+.kkBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.kkText {
+  margin: 0;
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-body);
+}
+
+.kkSrc {
+  margin-top: var(--space-4);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.chips {
+  padding: var(--space-10) var(--space-16) 0;
+  display: flex;
+  gap: var(--space-6);
+  overflow: hidden;
+  flex: none;
+}
+
+.chip {
+  all: unset;
+  cursor: pointer;
+  flex: none;
+  height: 28px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-4);
+  padding: 0 9px;
+  font-size: var(--font-size-12);
+  white-space: nowrap;
+}
+
+.chip:hover {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+}
+
+.form {
+  display: flex;
+  gap: var(--space-6);
+  padding: var(--space-10) var(--space-16) var(--space-14);
+  flex: none;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: var(--size-control-md);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-6);
+  padding: 0 var(--space-12);
+  font-size: var(--font-size-14);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+}
+
+.send {
+  flex: none;
+  white-space: nowrap;
+  height: var(--size-control-md);
+  padding: 0 var(--space-14);
+  border-radius: var(--radius-6);
+  border: 0;
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}

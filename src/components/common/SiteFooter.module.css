@@ -1,0 +1,29 @@
+.footer {
+  background: var(--color-navy-dark);
+  color: var(--color-footer-text);
+  padding: var(--space-28) var(--layout-gutter);
+  font-family: var(--font-sans);
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-8) var(--space-20);
+  align-items: center;
+  font-size: var(--font-size-13);
+}
+
+.strong {
+  color: var(--color-on-navy);
+  font-weight: var(--font-weight-bold);
+  text-decoration: none;
+}
+
+.plain {
+  color: var(--color-footer-text);
+  text-decoration: none;
+}
+
+.note {
+  margin-left: auto;
+}

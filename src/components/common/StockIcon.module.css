@@ -1,0 +1,18 @@
+.logo {
+  border-radius: var(--radius-round);
+  object-fit: cover;
+  display: block;
+  flex: none;
+}
+
+.initial {
+  border-radius: var(--radius-round);
+  color: var(--color-on-navy);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.02em;
+  display: grid;
+  place-items: center;
+  flex: none;
+  line-height: 1;
+  font-family: var(--font-sans);
+}

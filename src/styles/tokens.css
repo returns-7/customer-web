@@ -1,0 +1,142 @@
+/* Returns 고객 웹 디자인 토큰 — 원본 디자인(home·account·invest·community·myinfo·login, _lib/components.js)에서 쓰인 값 */
+:root {
+  /* ===== 색 ===== */
+  --color-navy: #183a6b; /* 브랜드·링크·활성·기본 버튼 */
+  --color-navy-dark: #0e2546; /* 기본 버튼 hover·푸터 배경 */
+  --color-gold: #d8a94e; /* 활성 탭 밑줄 */
+  --color-ink: #1a2233; /* 본문 글자 */
+  --color-sub: #6b7280; /* 보조 글자 */
+  --color-muted: #9aa4b2; /* 약한 글자·placeholder·로고 없는 종목 기본색 */
+  --color-gray-600: #4b5565; /* 업종 배지 글자 */
+
+  --color-line: #e3e7ed; /* 박스·입력 테두리 */
+  --color-line-soft: #e6ebf2; /* 박스 안 구분선 */
+  --color-line-strong: #cbd3de; /* 버튼·입력 테두리, 비활성 배경 */
+  --color-line-faint: #f0f2f5;
+
+  --color-bg: #f5f6f8; /* 페이지 배경 */
+  --color-surface: #ffffff; /* 박스·모달 배경 */
+  --color-surface-hover: #f3f5f7; /* 목록·버튼 hover, 말풍선 */
+  --color-surface-sub: #f8f9fb;
+  --color-surface-row: #f7f8fa;
+  --color-surface-select: #f3f6fa; /* 선택된 행 */
+  --color-chip: #eef1f5; /* 업종 배지 배경 */
+  --color-chip-navy: #eef2f8; /* 내 말풍선 */
+  --color-chip-navy-strong: #eaf0f8;
+
+  --color-red: #e5484d; /* 오류·경고·빨간 강조 */
+  --color-up: #f04452; /* 상승·안 읽은 알림 */
+  --color-down: #3182f6; /* 하락 */
+  --color-green: #00b386; /* 성공 */
+  --color-green-bg: #e6f7f1;
+  --color-orange: #c2620a; /* 주의 안내 글자 */
+
+  --color-on-navy: #ffffff;
+  --color-footer-text: #c9d3e3; /* 푸터 보조 링크·문구 */
+  --color-overlay: rgba(16, 24, 40, 0.4); /* 모달 뒤 어두운 막 */
+
+  /* ===== 글꼴 ===== */
+  --font-sans: 'Pretendard Variable', Pretendard, system-ui, -apple-system, sans-serif;
+
+  --font-size-10: 10px;
+  --font-size-11: 11px;
+  --font-size-11-5: 11.5px;
+  --font-size-12: 12px;
+  --font-size-12-5: 12.5px;
+  --font-size-13: 13px;
+  --font-size-14: 14px;
+  --font-size-15: 15px;
+  --font-size-16: 16px;
+  --font-size-17: 17px;
+  --font-size-18: 18px;
+  --font-size-20: 20px;
+  --font-size-22: 22px;
+  --font-size-26: 26px;
+  --font-size-28: 28px;
+  --font-size-30: 30px;
+
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-extrabold: 800;
+
+  --line-height-tight: 1.3;
+  --line-height-normal: 1.45;
+  --line-height-body: 1.6;
+
+  /* ===== 간격 ===== */
+  --space-2: 2px;
+  --space-3: 3px;
+  --space-4: 4px;
+  --space-6: 6px;
+  --space-8: 8px;
+  --space-10: 10px;
+  --space-12: 12px;
+  --space-14: 14px;
+  --space-16: 16px;
+  --space-20: 20px;
+  --space-24: 24px;
+  --space-28: 28px;
+  --space-32: 32px;
+  --space-40: 40px;
+
+  /* ===== 크기 ===== */
+  --size-topbar: 64px; /* 상단바 높이 */
+  --size-box-head: 48px; /* 박스 머리줄 */
+  --size-control: 44px; /* 큰 버튼·입력 */
+  --size-control-md: 38px; /* 검색·아이콘 버튼 */
+  --size-control-sm: 32px; /* 닫기 버튼 */
+  --size-control-xs: 26px; /* 연장 버튼 */
+  --size-fab: 60px;
+  --size-fab-sm: 56px;
+  --layout-gutter: max(40px, calc((100% - 1560px) / 2)); /* 화면 좌우 여백(최대 폭 1560px) */
+
+  /* ===== 모서리 ===== */
+  --radius-2: 2px;
+  --radius-3: 3px;
+  --radius-4: 4px;
+  --radius-6: 6px;
+  --radius-8: 8px;
+  --radius-10: 10px;
+  --radius-12: 12px;
+  --radius-round: 50%;
+
+  /* ===== 그림자 ===== */
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04); /* 홈 박스 */
+  --shadow-dropdown: 0 8px 24px rgba(16, 24, 40, 0.1); /* 상단바 알림·사용자 메뉴 */
+  --shadow-pop: 0 8px 24px rgba(16, 24, 40, 0.12); /* 모달·챗봇 창 */
+  --shadow-chat: 0 12px 32px rgba(16, 24, 40, 0.14); /* 홈 챗봇 창 */
+  --shadow-fab: 0 4px 12px rgba(16, 24, 40, 0.18); /* 챗봇 버튼 */
+  --shadow-tip: 0 4px 12px rgba(16, 24, 40, 0.08); /* 챗봇 말풍선 안내 */
+
+  /* ===== 겹침 순서 ===== */
+  --z-topbar: 50;
+  --z-fab: 60;
+  --z-chat-panel: 61;
+  --z-session-modal: 90;
+  --z-modal: 95;
+  --z-confirm: 120;
+  --z-toast: 130;
+
+  /* ===== 종목 대표색 (StockIcon 원 배경) — 로고 이미지가 없을 때 쓰는 값. 실제 운용사·기업 로고는 쓰지 않음 ===== */
+  --stock-tsla: #e31937;
+  --stock-aapl: #1d1d1f;
+  --stock-nvda: #76b900;
+  --stock-msft: #0078d4;
+  --stock-005930: #1428a0;
+  --stock-000660: #ea002c;
+  --stock-005380: #002c5f;
+  --stock-000270: #05141f;
+  --stock-068270: #0a8f5a;
+  --stock-207940: #1c3c8c;
+  --stock-373220: #a50034;
+  --stock-035420: #03a94d;
+  --stock-105560: #60584c;
+  --stock-005490: #05507d;
+  --stock-900010: #2f5d8c;
+  --stock-900020: #7a5c2e;
+  --stock-900030: #5b3f8c;
+  --stock-900040: #3e7d6b;
+  --stock-900050: #b5462f;
+}

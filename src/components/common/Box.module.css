@@ -1,0 +1,45 @@
+.box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.shadow {
+  box-shadow: var(--shadow-card);
+}
+
+.head {
+  height: var(--size-box-head);
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  border-bottom: 1px solid var(--color-line-soft);
+  flex: none;
+}
+
+.headScroll {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-extrabold);
+  white-space: nowrap;
+}
+
+.actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  white-space: nowrap;
+}
