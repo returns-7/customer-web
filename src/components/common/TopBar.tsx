@@ -272,7 +272,10 @@ export function TopBar({ active = 'home', bizDot, profLabel, noSearch = false, s
 
   // 내 정보 화면 안에서는 주소만 바꾸고(#notify · #theme) 부드럽게 이동
   const onUserItem = (e: MouseEvent, hash: string) => {
-    if (active !== 'myinfo') return
+    if (active !== 'myinfo') {
+      setUserOpen(false)
+      return
+    }
     e.preventDefault()
     setUserOpen(false)
     setSecHash(hash)

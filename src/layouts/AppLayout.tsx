@@ -1,15 +1,47 @@
-import { Outlet } from 'react-router-dom'
-import { Footer } from '../components/Footer'
-import { Header } from '../components/Header'
+import { Outlet, useLocation } from 'react-router-dom'
+import { ChatbotFab } from '../components/common/ChatbotFab'
+import { SiteFooter } from '../components/common/SiteFooter'
+import { TopBar } from '../components/common/TopBar'
+import type { TopBarActive } from '../components/common/TopBar'
+import { RETURNS_DATA } from '../data/returns'
+import styles from './AppLayout.module.css'
 
+interface BotConfig {
+  text: string
+  panelWidth: number
+  fabSize?: 'md' | 'sm'
+  tipKey?: string
+}
+
+// 화면별 챗봇 안내(원본 각 페이지의 값). 홈의 대화형 창·답변은 홈 페이지를 옮길 때 연결
+const BOT: Record<TopBarActive, BotConfig> = {
+  home: { text: '안녕하세요, ' + RETURNS_DATA.CUSTOMER.name + ' 님. RIA 계좌·세액·인출 일정에 대해 물어보세요.', panelWidth: 360, tipKey: 'rt_home_kkiru_tip' },
+  account: { text: '내 계좌에 대해 물어보세요. 인출 일정, 남은 한도, 세액을 알려드려요.', panelWidth: 360 },
+  invest: { text: '패키지에 대해 물어보세요. 수익률, 비중, 주문 가능 금액을 알려드려요.', panelWidth: 360 },
+  community: { text: '경제 채팅방은 고객님들끼리 나누는 대화예요. 종목이나 계좌가 궁금하면 여기서 물어보세요.', panelWidth: 340, fabSize: 'sm' },
+  myinfo: { text: '회원정보 변경이나 알림 설정이 궁금하면 물어보세요.', panelWidth: 340 }
+}
+
+const isActive = (key: string): key is TopBarActive => key in BOT
+
+// 로그인 후 화면용 — 상단 바 + 푸터 + 챗봇 버튼. 현재 메뉴는 주소(/home …)로 정함
 export function AppLayout() {
+  const { pathname } = useLocation()
+  const key = pathname.split('/')[1]
+  const active: TopBarActive = isActive(key) ? key : 'home'
+  const bot = BOT[active]
+
   return (
-    <div className="app-shell">
-      <Header />
-      <main className="app-main">
+    <div className={styles.shell}>
+      {/* 원본은 다섯 화면 모두 검색창 없음 + 사용자 메뉴는 '내 정보'만 */}
+      <TopBar active={active} noSearch simpleUserMenu />
+      <main className={styles.main}>
         <Outlet />
       </main>
-      <Footer />
+      <SiteFooter />
+      <ChatbotFab key={active} panelWidth={bot.panelWidth} fabSize={bot.fabSize} tipKey={bot.tipKey}>
+        {bot.text}
+      </ChatbotFab>
     </div>
   )
 }
