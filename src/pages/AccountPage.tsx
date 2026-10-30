@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { AccountBalanceBox } from '../components/account/AccountBalanceBox'
 import { AccountDocsBox } from '../components/account/AccountDocsBox'
 import { AccountHoldBox } from '../components/account/AccountHoldBox'
 import { AccountLimitBox } from '../components/account/AccountLimitBox'
@@ -19,7 +20,7 @@ import { useToast } from '../components/common/useToast'
 import { RETURNS_DATA as RD } from '../data/returns'
 import { F } from '../lib/calc'
 
-// 내 계좌 — 1~2번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류. 나머지 박스는 머리줄 제목만 있는 자리
+// 내 계좌 — 1~3번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고. 나머지 박스는 머리줄 제목만 있는 자리
 export function AccountPage() {
   const { hash, pathname } = useLocation()
   const navigate = useNavigate()
@@ -72,7 +73,7 @@ export function AccountPage() {
             <AccountDocsBox className={styles.docs} issued={issued} onIssue={issue} onReissue={reissue} />
           </div>
           <div className={styles.colRight}>
-            <Box data-box="balance" className={styles.balance} title="잔고" />
+            <AccountBalanceBox className={styles.balance} onSell={later} />
             <Box data-box="hist" className={styles.hist} title="거래·신청 내역" />
           </div>
         </div>

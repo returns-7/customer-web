@@ -1,0 +1,186 @@
+.evalTxt {
+  padding-left: var(--space-16);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.link {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.krTable {
+  min-width: 820px;
+}
+
+.frTable {
+  min-width: 640px;
+}
+
+.row {
+  display: grid;
+  gap: var(--space-12);
+  align-items: center;
+  padding: 0 var(--space-16);
+}
+
+.krCols {
+  grid-template-columns: minmax(210px, 2.3fr) 0.65fr 0.85fr 0.95fr 0.95fr 1.05fr 0.95fr 0.75fr 72px;
+}
+
+.frCols {
+  grid-template-columns: minmax(180px, 2fr) 0.7fr 1fr 1.1fr 0.8fr 90px;
+}
+
+.thead {
+  height: 32px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.body {
+  height: 40px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-14);
+}
+
+.noLine {
+  border-bottom: 0;
+}
+
+.sum {
+  height: 40px;
+  background: var(--color-surface-row);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+  border-radius: 0 0 var(--radius-8) var(--radius-8);
+}
+
+.right {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.stock {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.strong {
+  font-weight: var(--font-weight-bold);
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
+
+.flat {
+  color: var(--color-sub);
+}
+
+.sellLess {
+  color: var(--color-navy);
+}
+
+.px {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.chg {
+  font-size: var(--font-size-12);
+}
+
+.risk {
+  font-size: var(--font-size-12);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.sortBtn {
+  all: unset;
+  cursor: pointer;
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-sub);
+}
+
+.sortOn {
+  color: var(--color-navy);
+}
+
+.sortBtn:focus-visible,
+.tipBtn:focus-visible,
+.sellBtn:focus-visible,
+.link:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.arrow {
+  font-size: var(--font-size-10);
+}
+
+.riskHead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
+
+.tipBtn {
+  all: unset;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: var(--color-muted);
+}
+
+.tipBtn:hover {
+  color: var(--color-navy);
+}
+
+.tip {
+  position: absolute;
+  right: 0;
+  top: 22px;
+  z-index: 5;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-8) var(--space-10);
+  font-size: var(--font-size-12);
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+.sellBtn {
+  all: unset;
+  cursor: pointer;
+  justify-self: end;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
