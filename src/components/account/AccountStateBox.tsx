@@ -9,8 +9,8 @@ import styles from './AccountStateBox.module.css'
 
 interface AccountStateBoxProps {
   className?: string
-  onOpen: () => void // 계좌 개설 신청 — 신청 창은 다음 단계에서 연결
-  onCancel: () => void // 신청 취소 — 상태 전환은 다음 단계에서 연결
+  onOpen: () => void // 계좌 개설 신청
+  onCancel: () => void // 신청 취소
 }
 
 // 계좌 상태 박스(data-box="acct-state") — 계좌 없음 / 심사 중 / 반려일 때만 보임(정상 계좌에서는 화면이 그리지 않음)

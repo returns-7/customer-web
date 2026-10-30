@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { ApplyModal } from '../components/account/ApplyModal'
 import { AccountBalanceBox } from '../components/account/AccountBalanceBox'
 import { AccountDocsBox } from '../components/account/AccountDocsBox'
 import { AccountHistBox } from '../components/account/AccountHistBox'
@@ -13,6 +14,7 @@ import { AccountStateBox } from '../components/account/AccountStateBox'
 import { AccountSummaryBox } from '../components/account/AccountSummaryBox'
 import { APPLY_TOAST, FOOT_FLOW, FOOT_STATUS, PAGE_TABS } from '../components/account/accountData'
 import type { PageKey } from '../components/account/accountData'
+import type { AddedIn, AddedOut, ApplyKind } from '../components/account/accountApplyData'
 import { isHistTab } from '../components/account/accountHistData'
 import type { HistTab } from '../components/account/accountHistData'
 import styles from '../components/account/AccountLayout.module.css'
@@ -23,13 +25,27 @@ import { useToast } from '../components/common/useToast'
 import { RETURNS_DATA as RD } from '../data/returns'
 import { F } from '../lib/calc'
 
-// 내 계좌 — 1~5번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역 + 자금 흐름 탭 박스 4개
+// 내 계좌 — 1~6번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역 + 자금 흐름 탭 박스 4개 + 입고·인출·계좌 개설 신청 창(매도 신청 창은 다음 부분)
 export function AccountPage() {
   const { hash, pathname } = useLocation()
   const navigate = useNavigate()
   const { message: toast, showToast } = useToast()
 
+  // 시연 설정(계좌 상태 등)이 바뀌면 다시 그림(원본 returns-demo 이벤트)
+  const [, redraw] = useReducer((n: number) => n + 1, 0)
+  useEffect(() => {
+    window.addEventListener('returns-demo', redraw)
+    return () => window.removeEventListener('returns-demo', redraw)
+  }, [])
+
   const [calcOpen, setCalcOpen] = useState(false)
+
+  // 신청 창 — 입고 / 인출 / 계좌 개설. 주소 끝이 #open이고 계좌가 없거나 반려일 때도 열림(원본 onHash)
+  const canOpenAcct = () => RD.ACCOUNT_STATE !== 'opened' && RD.ACCOUNT_STATE !== 'reviewing'
+  const [applyKind, setApplyKind] = useState<ApplyKind | null>(() => (hash === '#open' && canOpenAcct() ? 'open' : null))
+  // 접수한 신청 — 거래·신청 내역 해당 탭 맨 위에 '심사 중' 줄로 보임
+  const [addedIn, setAddedIn] = useState<AddedIn[]>([])
+  const [addedOut, setAddedOut] = useState<AddedOut[]>([])
   const [issued, setIssued] = useState<IssueRecord[]>(initialIssued)
 
   // 거래·신청 내역 탭 — 주소 끝(#deposits 등)이 탭 이름이면 그 탭을 연다(원본 onHash). 자금 흐름 화면에 다녀와도 유지
@@ -39,6 +55,7 @@ export function AccountPage() {
   if (seenHash !== hash) {
     setSeenHash(hash)
     if (isHistTab(hash.slice(1))) setHistTab(hash.slice(1) as HistTab)
+    if (hash === '#open' && canOpenAcct()) setApplyKind('open')
   }
 
   const opened = RD.ACCOUNT_STATE === 'opened'
@@ -90,6 +107,23 @@ export function AccountPage() {
     scrollToHist()
   }
 
+  // 신청 창 — 접수 결과를 내역에 올리고, 계좌 개설은 시연 상태를 '심사 중'으로 바꿈
+  // TODO: 8번째 부분에서 상단 종 알림에 '입고 신청 · …' / '인출 신청 · …' 1건 추가(내역 보기로 해당 탭 이동)
+  const goHist = (tab: HistTab) => {
+    setApplyKind(null)
+    pickHistTab(tab)
+    scrollToHist()
+  }
+  const finishOpen = () => {
+    setApplyKind(null)
+    RD.setDemo({ account: 'reviewing' })
+    showToast('계좌 개설 신청이 접수됐어요')
+  }
+  const cancelOpen = () => {
+    RD.setDemo({ account: 'none' })
+    showToast('계좌 개설 신청을 취소했어요')
+  }
+
   // PDF 받기 — 발급 기록 맨 앞에 오늘 날짜로 추가
   const issue = (name: string) => {
     setIssued((prev) => [[F.short(RD.C.BUSINESS_DATE), name], ...prev])
@@ -102,12 +136,12 @@ export function AccountPage() {
       <h1 className={styles.srOnly}>내 계좌</h1>
       {opened && <Tabs variant="page" ariaLabel="내 계좌 화면" items={PAGE_TABS} value={page} onChange={setPage} />}
 
-      {!opened && <AccountStateBox onOpen={later} onCancel={later} />}
+      {!opened && <AccountStateBox onOpen={() => setApplyKind('open')} onCancel={cancelOpen} />}
 
       {opened && page === 'status' && (
         <div className={styles.status}>
           <div className={styles.colLeft}>
-            <AccountSummaryBox className={styles.summary} onCopy={copyAcct} onApply={later} />
+            <AccountSummaryBox className={styles.summary} onCopy={copyAcct} onApply={(k) => (k === 'sell' ? later() : setApplyKind(k))} />
             <AccountLimitBox className={styles.limit} onApply={later} />
             {/* TODO: 8번째 부분에서 챗봇 창이 생기면, 계산 근거를 열 때 챗봇 창을 닫기(원본 openCalc) */}
             <AccountTaxBox className={styles.tax} onOpenCalc={() => setCalcOpen(true)} />
@@ -116,7 +150,7 @@ export function AccountPage() {
           </div>
           <div className={styles.colRight}>
             <AccountBalanceBox className={styles.balance} onSell={later} />
-            <AccountHistBox className={styles.hist} tab={histTab} onTab={pickHistTab} onApplyIn={later} onApplyOut={later} />
+            <AccountHistBox className={styles.hist} tab={histTab} onTab={pickHistTab} onApplyIn={() => setApplyKind('in')} onApplyOut={() => setApplyKind('out')} addedIn={addedIn} addedOut={addedOut} />
           </div>
         </div>
       )}
@@ -136,6 +170,16 @@ export function AccountPage() {
       )}
 
       <p className={styles.foot}>{opened && page === 'flow' ? FOOT_FLOW : FOOT_STATUS}</p>
+      {applyKind && (
+        <ApplyModal
+          kind={applyKind}
+          onClose={() => setApplyKind(null)}
+          onGoHist={goHist}
+          onSubmitIn={(rows) => setAddedIn((prev) => [...rows, ...prev])}
+          onSubmitOut={(amt) => setAddedOut((prev) => [{ amt }, ...prev])}
+          onFinishOpen={finishOpen}
+        />
+      )}
       <TaxCalcModal open={calcOpen} onClose={() => setCalcOpen(false)} />
       <Toast message={toast} />
     </>

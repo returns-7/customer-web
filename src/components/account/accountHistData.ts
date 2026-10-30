@@ -1,6 +1,7 @@
 import { RETURNS_DATA as RD } from '../../data/returns'
 import { F } from '../../lib/calc'
 import type { Tone } from './accountData'
+import type { AddedIn } from './accountApplyData'
 
 // 거래·신청 내역 박스의 탭(원본 TABS 순서·이름)
 export const HIST_TABS = [
@@ -81,18 +82,22 @@ export interface DepRowView extends StockCell {
   retOn: boolean
 }
 
-export function depositRows(): DepRowView[] {
+// added: 방금 접수한 입고 신청(심사 중) — 가장 위에 보임
+export function depositRows(added: AddedIn[] = []): DepRowView[] {
   const dep = RD.DATES.deposit
+  const bizShort = F.short(RD.C.BUSINESS_DATE)
+  const review = added.map((a) => ({ t: a.t, req: a.req, base: a.base, now: a.now, rej: false, review: true, date: bizShort }))
   const rej = {
     t: DEP_REJ[0],
     req: DEP_REJ[1],
     base: 0,
     now: 0,
     rej: true,
+    review: false,
     date: F.short(F.bizAdd(dep, -1))
   }
-  const rest = DEP_ROWS.map(([t, req, base, now]) => ({ t, req, base, now, rej: false, date: F.short(F.bizAdd(dep, -2)) }))
-  return [rej, ...rest].map((x): DepRowView => {
+  const rest = DEP_ROWS.map(([t, req, base, now]) => ({ t, req, base, now, rej: false, review: false, date: F.short(F.bizAdd(dep, -2)) }))
+  return [...review, rej, ...rest].map((x): DepRowView => {
     const got = Math.min(x.req, x.base, x.now)
     const ret = x.rej ? 0 : x.req - got
     return {
@@ -103,12 +108,12 @@ export function depositRows(): DepRowView[] {
       now: x.now,
       rej: x.rej,
       rejMsg: DEP_REJ[2],
-      gotTxt: x.rej ? '-' : got + '주',
-      minTxt: '→ 가장 작은 수량 ' + got + '주 입고',
-      status: x.rej ? '반려' : ret ? '일부 반환' : '입고 완료',
-      tone: x.rej ? 'rej' : ret ? 'part' : 'ok',
-      ret: ret ? ret + '주' : '-',
-      retOn: !!ret
+      gotTxt: x.rej || x.review ? '-' : got + '주',
+      minTxt: '→ 가장 작은 수량 ' + got + '주 입고' + (x.review ? ' 예정' : ''),
+      status: x.rej ? '반려' : x.review ? '심사 중' : ret ? '일부 반환' : '입고 완료',
+      tone: x.rej ? 'rej' : x.review ? 'review' : ret ? 'part' : 'ok',
+      ret: !x.review && ret ? ret + '주' : '-',
+      retOn: !x.review && !!ret
     }
   })
 }
@@ -234,6 +239,13 @@ export function domesticRows(): { rows: DomRowView[]; sum: { buy: string; sell: 
 }
 
 // 인출 ----------------------------------------------------------------------
+// added: 방금 접수한 인출 신청(심사 중) — 가장 위에 보임
+export function withdrawRequests(added: { amt: number }[]) {
+  const to = RD.LINKED.name + ' ' + RD.LINKED.no
+  const date = F.short(RD.C.BUSINESS_DATE)
+  return added.map((o) => ({ date, amt: '₩' + F.won(o.amt), to, status: '심사 중' }))
+}
+
 export function withdrawValues() {
   const biz = RD.C.BUSINESS_DATE
   return {

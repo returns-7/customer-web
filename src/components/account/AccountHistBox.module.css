@@ -42,6 +42,10 @@
   grid-template-columns: 1fr 1fr 1fr 1fr;
 }
 
+.reqCols {
+  grid-template-columns: 72px 1fr minmax(0, 1.6fr) 90px;
+}
+
 .domCols {
   grid-template-columns: 48px minmax(190px, 2fr) 40px 56px 72px 72px 96px minmax(96px, 1fr) 72px;
 }
@@ -447,4 +451,18 @@
 
 .pkg.faint {
   color: var(--color-muted);
+}
+
+.reqTo {
+  font-size: var(--font-size-13);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reqStatus {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-gray-600);
+  white-space: nowrap;
 }

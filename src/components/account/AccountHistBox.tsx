@@ -5,7 +5,8 @@ import { cx } from '../common/cx'
 import { StockIcon } from '../common/StockIcon'
 import { StockLabel } from '../common/StockLabel'
 import { Tabs } from '../common/Tabs'
-import { DEPOSIT_BASE_DOT, HIST_TABS, SHOW_DOM, SHOW_INS, SHOW_SELLS, depositRows, domesticRows, sellRows, settleRows, withdrawValues } from './accountHistData'
+import { DEPOSIT_BASE_DOT, HIST_TABS, SHOW_DOM, SHOW_INS, SHOW_SELLS, depositRows, domesticRows, sellRows, settleRows, withdrawRequests, withdrawValues } from './accountHistData'
+import type { AddedIn, AddedOut } from './accountApplyData'
 import type { DepRowView, HistTab, StockCell } from './accountHistData'
 import styles from './AccountHistBox.module.css'
 
@@ -15,6 +16,8 @@ interface AccountHistBoxProps {
   onTab: (key: HistTab) => void
   onApplyIn: () => void // 입고 반려 행의 다시 신청 ›
   onApplyOut: () => void // 인출 신청 ›
+  addedIn: AddedIn[] // 방금 접수한 입고 신청(심사 중)
+  addedOut: AddedOut[] // 방금 접수한 인출 신청(심사 중)
 }
 
 type MoreKey = 'ins' | 'sells' | 'dom'
@@ -34,7 +37,7 @@ function StockCellView({ s, plain = false }: { s: StockCell; plain?: boolean }) 
 }
 
 // 거래·신청 내역 박스(data-box="hist") — 입고 / 매도 / 정산 상태 / 국내 매매 / 인출 다섯 탭
-export function AccountHistBox({ className, tab, onTab, onApplyIn, onApplyOut }: AccountHistBoxProps) {
+export function AccountHistBox({ className, tab, onTab, onApplyIn, onApplyOut, addedIn, addedOut }: AccountHistBoxProps) {
   const [more, setMore] = useState<Record<MoreKey, boolean>>({ ins: false, sells: false, dom: false })
   const [openIn, setOpenIn] = useState<number | null>(null)
 
@@ -52,17 +55,17 @@ export function AccountHistBox({ className, tab, onTab, onApplyIn, onApplyOut }:
       head={<Tabs ariaLabel="거래·신청 내역" value={tab} onChange={pickTab} items={HIST_TABS} />}
       actions={<span className={styles.range}>최근 3개월</span>}
     >
-      {tab === 'deposits' && <Deposits more={more.ins} openIn={openIn} setOpenIn={setOpenIn} onMore={() => showMore('ins')} onApplyIn={onApplyIn} />}
+      {tab === 'deposits' && <Deposits added={addedIn} more={more.ins} openIn={openIn} setOpenIn={setOpenIn} onMore={() => showMore('ins')} onApplyIn={onApplyIn} />}
       {tab === 'sells' && <Sells more={more.sells} onMore={() => showMore('sells')} />}
       {tab === 'settle' && <Settle />}
       {tab === 'domestic' && <Domestic more={more.dom} onMore={() => showMore('dom')} />}
-      {tab === 'withdraw' && <Withdraw onApplyOut={onApplyOut} />}
+      {tab === 'withdraw' && <Withdraw added={addedOut} onApplyOut={onApplyOut} />}
     </Box>
   )
 }
 
-function Deposits({ more, openIn, setOpenIn, onMore, onApplyIn }: { more: boolean; openIn: number | null; setOpenIn: (i: number | null) => void; onMore: () => void; onApplyIn: () => void }) {
-  const all = depositRows()
+function Deposits({ added, more, openIn, setOpenIn, onMore, onApplyIn }: { added: AddedIn[]; more: boolean; openIn: number | null; setOpenIn: (i: number | null) => void; onMore: () => void; onApplyIn: () => void }) {
+  const all = depositRows(added)
   const rows = more ? all : all.slice(0, SHOW_INS)
   const moreN = all.length - SHOW_INS
 
@@ -276,20 +279,39 @@ function Domestic({ more, onMore }: { more: boolean; onMore: () => void }) {
   )
 }
 
-// TODO: 7번째 부분(인출 신청 창)에서 접수한 인출 신청이 생기면 '신청일·인출 금액·받는 계좌·상태' 목록을 이 위에 보이고, 인출 내역 없음 줄은 감추기
-function Withdraw({ onApplyOut }: { onApplyOut: () => void }) {
+function Withdraw({ added, onApplyOut }: { added: AddedOut[]; onApplyOut: () => void }) {
   const w = withdrawValues()
+  const reqs = withdrawRequests(added)
 
   return (
     <div>
-      <div className={styles.outEmpty}>
-        <span className={styles.sub}>
-          인출 내역이 없어요 · 인출 가능일 {w.wdDate}(D-{w.wdD})
-        </span>
-        <button type="button" className={cx(styles.linkBtn, styles.outApply)} onClick={onApplyOut}>
-          인출 신청 ›
-        </button>
-      </div>
+      {reqs.length === 0 ? (
+        <div className={styles.outEmpty}>
+          <span className={styles.sub}>
+            인출 내역이 없어요 · 인출 가능일 {w.wdDate}(D-{w.wdD})
+          </span>
+          <button type="button" className={cx(styles.linkBtn, styles.outApply)} onClick={onApplyOut}>
+            인출 신청 ›
+          </button>
+        </div>
+      ) : (
+        <>
+          <div className={cx(styles.row, styles.reqCols, styles.thead)}>
+            <span>신청일</span>
+            <span className={styles.right}>인출 금액</span>
+            <span>받는 계좌</span>
+            <span>상태</span>
+          </div>
+          {reqs.map((r, i) => (
+            <div key={i} className={cx(styles.row, styles.reqCols, styles.body, styles.line)}>
+              <span className={styles.date}>{r.date}</span>
+              <b className={cx(styles.right, styles.strong)}>{r.amt}</b>
+              <span className={styles.reqTo}>{r.to}</span>
+              <span className={styles.reqStatus}>{r.status}</span>
+            </div>
+          ))}
+        </>
+      )}
       <div className={styles.outTitle}>납입건별 인출 가능일</div>
       <div className={cx(styles.row, styles.outCols, styles.thead, styles.theadBoxed)}>
         <span>납입일</span>
