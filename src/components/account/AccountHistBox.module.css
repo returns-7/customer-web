@@ -1,0 +1,450 @@
+.range {
+  padding-left: var(--space-16);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.table680 {
+  min-width: 680px;
+}
+
+.table900 {
+  min-width: 900px;
+}
+
+/* ---- 공통 줄 ---- */
+.row {
+  display: grid;
+  gap: var(--space-12);
+  align-items: center;
+  padding: 0 var(--space-16);
+}
+
+.inCols {
+  grid-template-columns: 72px minmax(160px, 2fr) 0.8fr 0.8fr 0.9fr 0.8fr 16px;
+}
+
+.sellCols {
+  grid-template-columns: 72px minmax(160px, 2fr) 0.6fr 1fr 1fr 0.8fr 0.8fr;
+}
+
+.stCols {
+  grid-template-columns: minmax(160px, 1.2fr) minmax(0, 2fr) 140px;
+  gap: var(--space-16);
+}
+
+.outCols {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+.domCols {
+  grid-template-columns: 48px minmax(190px, 2fr) 40px 56px 72px 72px 96px minmax(96px, 1fr) 72px;
+}
+
+.thead {
+  height: 32px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.theadBoxed {
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.body {
+  height: 40px;
+  font-size: var(--font-size-14);
+}
+
+.line {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.item {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.noLine {
+  border-bottom: 0;
+}
+
+.right {
+  text-align: right;
+}
+
+.strong {
+  font-weight: var(--font-weight-bold);
+}
+
+.sub {
+  color: var(--color-sub);
+}
+
+.faint {
+  color: var(--color-muted);
+}
+
+.navy {
+  color: var(--color-navy);
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.date {
+  font-size: var(--font-size-13);
+  color: var(--color-sub);
+}
+
+.stockCell {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plainStock {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  white-space: nowrap;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.plainTicker {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.plainName {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.status {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.toneRej {
+  color: var(--color-red);
+}
+
+.toneReview {
+  color: var(--color-gray-600);
+}
+
+.tonePart {
+  color: var(--color-orange);
+}
+
+.toneOk {
+  color: var(--color-navy);
+}
+
+.toneDone {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+}
+
+/* ---- 입고 ---- */
+.toggle {
+  width: 100%;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.toggle:hover,
+.toggleOpen {
+  background: var(--color-surface-sub);
+}
+
+.chev {
+  justify-self: end;
+  color: var(--color-muted);
+}
+
+.chevOpen {
+  transform: rotate(180deg);
+}
+
+.rejRow {
+  padding: 0 var(--space-16) var(--space-10) 100px;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-12);
+  font-size: var(--font-size-13);
+  line-height: 1.5;
+}
+
+.rejMsg {
+  color: var(--color-red);
+  min-width: 0;
+}
+
+.linkBtn {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  flex: none;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.linkBtn:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.detail {
+  padding: var(--space-2) var(--space-16) var(--space-12) 104px;
+  display: flex;
+  gap: var(--space-24);
+  flex-wrap: wrap;
+  font-size: var(--font-size-13);
+  background: var(--color-surface-sub);
+}
+
+.minTxt {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-bold);
+}
+
+.moreBtn {
+  width: 100%;
+  height: 32px;
+  box-sizing: border-box;
+  border: 0;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: inherit;
+  font-size: var(--font-size-13);
+  color: var(--color-gray-600);
+  cursor: pointer;
+}
+
+.moreBtn:hover {
+  background: var(--color-surface-row);
+  color: var(--color-navy);
+}
+
+.moreTop {
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.moreBottom {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+/* ---- 매도 ---- */
+.sumRow {
+  height: 40px;
+  font-size: var(--font-size-14);
+  background: var(--color-surface-sub);
+}
+
+/* ---- 정산 상태 ---- */
+.stBody {
+  min-height: 64px;
+  padding-top: var(--space-10);
+  padding-bottom: var(--space-10);
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-14);
+}
+
+.stTitleCell {
+  min-width: 0;
+}
+
+.stSub {
+  display: block;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  margin-top: var(--space-2);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-width: 420px;
+}
+
+.step {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.stepLine {
+  position: absolute;
+  left: 4px;
+  right: -4px;
+  top: 3.5px;
+  height: 1px;
+  background: var(--color-line-strong);
+}
+
+.stepLineOn {
+  background: var(--color-navy);
+}
+
+.dot {
+  position: relative;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-round);
+  background: var(--color-line-strong);
+}
+
+.dotOn {
+  background: var(--color-navy);
+}
+
+.stepLabel {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.stepLabelOn {
+  color: var(--color-ink);
+}
+
+.stepLabelCur {
+  font-weight: var(--font-weight-extrabold);
+}
+
+.stepDate {
+  font-size: var(--font-size-11);
+  color: var(--color-sub);
+}
+
+.stepNote {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.settleFoot {
+  padding: var(--space-10) var(--space-16);
+  font-size: var(--font-size-13);
+  color: var(--color-gray-600);
+}
+
+/* ---- 국내 매매 ---- */
+.domGuide {
+  padding: var(--space-8) var(--space-16) 0;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.pkg {
+  font-size: var(--font-size-13);
+  color: var(--color-ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.domStatus {
+  font-size: var(--font-size-13);
+  white-space: nowrap;
+}
+
+.domStatusRej {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-red);
+}
+
+.domRejMsg {
+  padding: 0 var(--space-16) var(--space-10) 84px;
+  font-size: var(--font-size-12);
+  color: var(--color-red);
+}
+
+.domSum {
+  height: 40px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-16);
+  font-size: var(--font-size-14);
+  background: var(--color-surface-sub);
+}
+
+.sumDot {
+  color: var(--color-line-strong);
+}
+
+/* ---- 인출 ---- */
+.outEmpty {
+  height: 40px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  font-size: var(--font-size-14);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.outApply {
+  font-weight: var(--font-weight-bold);
+}
+
+.outTitle {
+  height: 36px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.nowRow {
+  height: 40px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-14);
+}
+
+.nowAmt {
+  margin-left: auto;
+  font-weight: var(--font-weight-bold);
+}
+
+.warn {
+  padding: 0 var(--space-16) var(--space-12);
+  font-size: var(--font-size-12);
+  color: var(--color-orange);
+}
+
+.pkg.faint {
+  color: var(--color-muted);
+}

@@ -44,6 +44,7 @@
 
 .hist {
   order: 5;
+  scroll-margin-top: 80px; /* 탭 이동·해시 진입 때 위 여백 */
 }
 
 .hold {
