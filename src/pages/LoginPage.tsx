@@ -1,5 +1,5 @@
-import { PagePlaceholder } from './PagePlaceholder'
+import { LoginScreen } from '../components/login/LoginScreen'
 
 export function LoginPage() {
-  return <PagePlaceholder name="로그인" />
+  return <LoginScreen />
 }

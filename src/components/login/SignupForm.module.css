@@ -1,0 +1,480 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-24);
+}
+
+.wrap[hidden] {
+  display: none;
+}
+
+/* 원본 로그인 페이지는 숫자 폭 고정(tabular-nums)을 전체에 걸지 않고, 필요한 곳(.tabular · 단계 번호 · 인증번호)에만 씀 */
+.wrap,
+.wrap input,
+.wrap button {
+  font-variant-numeric: normal;
+}
+
+.wrap .tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* 단계 표시 */
+.stepper {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 76fr) minmax(0, 76fr) minmax(0, 96fr) minmax(0, 96fr);
+  gap: var(--space-8);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.bar {
+  display: block;
+  height: 2px;
+  background: var(--color-line);
+}
+
+.barOn {
+  background: var(--color-navy);
+}
+
+.stepText {
+  display: flex;
+  gap: 5px;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.stepTextOn {
+  color: var(--color-navy);
+}
+
+.stepTextNow {
+  font-weight: var(--font-weight-extrabold);
+}
+
+.stepNum {
+  font-variant-numeric: tabular-nums;
+}
+
+.stepLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 공통 */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-22);
+  font-weight: var(--font-weight-extrabold);
+  letter-spacing: -0.03em;
+}
+
+.titleRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-12);
+}
+
+.placeholder {
+  margin: 0;
+  font-size: var(--font-size-14);
+  color: var(--color-sub);
+}
+
+.box {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-4);
+  box-sizing: border-box;
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  color: var(--color-on-navy);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.boxLg {
+  width: 20px;
+  height: 20px;
+}
+
+.boxOn {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+/* 1단계 약관 */
+.terms {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+}
+
+.allRow {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+  height: 52px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-extrabold);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.termRow {
+  height: 44px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+}
+
+.termToggle {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  flex: 1;
+  min-width: 0;
+  font-size: var(--font-size-14);
+}
+
+.tag {
+  font-weight: var(--font-weight-bold);
+  color: var(--color-sub);
+  flex: none;
+}
+
+.tagRequired {
+  color: var(--color-navy);
+}
+
+.termLabel {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.view,
+.fill {
+  all: unset;
+  cursor: pointer;
+  color: var(--color-sub);
+  flex: none;
+}
+
+.view {
+  font-size: var(--font-size-13);
+}
+
+.fill {
+  font-size: var(--font-size-12);
+  white-space: nowrap;
+}
+
+.view:hover,
+.fill:hover {
+  color: var(--color-navy);
+}
+
+/* 2단계 입력칸 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-12);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.fieldBlock {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.label {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.input {
+  width: 100%;
+  height: 48px;
+  padding: 0 var(--space-14);
+  border-radius: var(--radius-6);
+  border: 1px solid var(--color-line-strong);
+  background: var(--color-surface);
+  font-size: var(--font-size-15);
+  color: var(--color-ink);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-navy);
+  box-shadow: inset 0 0 0 0.5px var(--color-navy);
+}
+
+.input:focus-visible {
+  outline: none;
+}
+
+.grow {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.row {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.codeRow {
+  display: flex;
+  gap: var(--space-8);
+  align-items: center;
+}
+
+.codeInput {
+  letter-spacing: 0.1em;
+}
+
+.codeMsg {
+  flex: none;
+  width: 72px;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+}
+
+.hint {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.outlineBtn {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  flex: none;
+  height: 48px;
+  padding: 0 var(--space-14);
+  border: 1px solid var(--color-navy);
+  border-radius: var(--radius-6);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.outlineBtn:hover {
+  background: var(--color-surface-select);
+}
+
+.checkBtn {
+  padding: 0 var(--space-16);
+}
+
+.rules {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4) var(--space-12);
+  font-size: var(--font-size-12);
+  margin-top: -6px;
+}
+
+.rulesLabel {
+  color: var(--color-sub);
+}
+
+.rule {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+.ruleOn {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-bold);
+}
+
+/* 3단계 RIA 계좌 */
+.radios {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.radio {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-6);
+  background: var(--color-surface);
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-ink);
+}
+
+.radio:hover {
+  border-color: var(--color-navy);
+}
+
+.radioOn {
+  border-color: var(--color-navy);
+  box-shadow: inset 0 0 0 0.5px var(--color-navy);
+  background: var(--color-surface-select);
+  font-weight: var(--font-weight-bold);
+}
+
+.dot {
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-round);
+  box-sizing: border-box;
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  flex: none;
+}
+
+.dotOn {
+  border: 5px solid var(--color-navy);
+}
+
+.notice {
+  margin-top: var(--space-4);
+  padding: var(--space-12) var(--space-14);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-6);
+  background: var(--color-bg);
+  font-size: var(--font-size-14);
+  line-height: 1.5;
+}
+
+.noticeBody {
+  margin: 0;
+  line-height: var(--line-height-body);
+}
+
+.bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.error {
+  font-size: var(--font-size-12);
+  color: var(--color-red);
+}
+
+/* 이전 / 다음 */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.navRow {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: var(--space-8);
+}
+
+.prev,
+.next {
+  all: unset;
+  box-sizing: border-box;
+  height: 48px;
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+}
+
+.prev {
+  cursor: pointer;
+  border: 1px solid var(--color-line-strong);
+  color: var(--color-ink);
+}
+
+.prev:hover {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+}
+
+.next {
+  cursor: pointer;
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+
+.nextOff {
+  cursor: not-allowed;
+  background: var(--color-line-strong);
+}
+
+.reason {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  text-align: right;
+}
+
+.login {
+  font-size: var(--font-size-14);
+  color: var(--color-sub);
+}
+
+.loginLink {
+  all: unset;
+  cursor: pointer;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+}
+
+.allRow:focus-visible,
+.termToggle:focus-visible,
+.view:focus-visible,
+.fill:focus-visible,
+.outlineBtn:focus-visible,
+.radio:focus-visible,
+.prev:focus-visible,
+.next:focus-visible,
+.loginLink:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}

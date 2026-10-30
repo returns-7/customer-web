@@ -1,0 +1,310 @@
+import { useState } from 'react'
+import type { ChangeEvent, InputHTMLAttributes } from 'react'
+import '../../styles/tokens.css'
+import { RETURNS_DATA } from '../../data/returns'
+import { F } from '../../lib/calc'
+import { cx } from '../common/cx'
+import { Toast } from '../common/Toast'
+import { useToast } from '../common/useToast'
+import styles from './SignupForm.module.css'
+
+interface SignupFormProps {
+  active: boolean // 회원가입 탭이 선택돼 있는지(아니면 숨기되 입력값·단계는 유지)
+  wide: boolean // 넓은 화면이면 이름·생년월일, 비밀번호·확인을 두 칸으로 나란히
+  onLogin: () => void
+}
+
+const TERMS = [
+  ['필수', '서비스 이용약관'],
+  ['필수', '개인정보 수집·이용'],
+  ['필수', '전자금융거래 이용약관'],
+  ['선택', '마케팅 정보 수신']
+]
+const STEPS = ['약관 동의', '본인 정보', 'RIA 계좌 연결', '투자성향 진단']
+const RIA_OPTS: [Ria, string][] = [
+  ['have', '이미 Returns RIA 계좌가 있어요'],
+  ['none', '아직 없어요']
+]
+const PW_RULES = ['8자 이상', '영문+숫자', '특수문자']
+
+type Ria = 'have' | 'none'
+type InfoKey = 'name' | 'birth' | 'phone' | 'email' | 'uid' | 'pw' | 'pw2'
+type Info = Record<InfoKey, string>
+
+const EMPTY_INFO: Info = { name: '', birth: '', phone: '', email: '', uid: '', pw: '', pw2: '' }
+
+const digits = (v: string) => (v || '').replace(/\D/g, '')
+const pwChecks = (pw: string) => [pw.length >= 8, /[A-Za-z]/.test(pw) && /\d/.test(pw), /[^A-Za-z0-9]/.test(pw)]
+const phoneOk = (v: string) => /^01\d{8,9}$/.test(digits(v))
+
+const CheckIcon = ({ size }: { size: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M20 6 9 17l-5-5" />
+  </svg>
+)
+
+interface FieldProps {
+  label: string
+  span: number
+  value: string
+  onChange: (e: ChangeEvent<HTMLInputElement>) => void
+  type: string
+  placeholder: string
+  autoComplete: string
+  inputMode?: InputHTMLAttributes<HTMLInputElement>['inputMode']
+}
+
+const Field = ({ label, span, value, onChange, type, placeholder, autoComplete, inputMode = 'text' }: FieldProps) => (
+  <label className={styles.field} style={{ gridColumn: 'span ' + span }}>
+    <span className={styles.label}>{label}</span>
+    <input className={styles.input} type={type} inputMode={inputMode} value={value} onChange={onChange} placeholder={placeholder} autoComplete={autoComplete} />
+  </label>
+)
+
+// 회원가입 1~3단계(약관 동의 · 본인 정보 · RIA 계좌 연결). 4단계(투자성향 진단)는 자리만
+export function SignupForm({ active, wide, onLogin }: SignupFormProps) {
+  const { message: toast, showToast } = useToast()
+  const [step, setStep] = useState(0)
+  const [terms, setTerms] = useState([false, false, false, false])
+  const [info, setInfo] = useState<Info>(EMPTY_INFO)
+  const [codeSent, setCodeSent] = useState(false)
+  const [code, setCode] = useState('')
+  const [ria, setRia] = useState<Ria | null>(null)
+  const [riaNo, setRiaNo] = useState('')
+  const [riaOk, setRiaOk] = useState(false)
+  const [riaTried, setRiaTried] = useState(false)
+
+  const soon = () => showToast('준비 중인 화면이에요')
+  const setField = (k: InfoKey) => (e: ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value
+    setInfo((st) => ({ ...st, [k]: v }))
+  }
+
+  const allOn = terms.every(Boolean)
+  const checks = pwChecks(info.pw)
+  const codeOk = digits(code).length === 6
+  const acct = RETURNS_DATA.ACCOUNT
+
+  // 다음 버튼이 막힌 이유(비어 있으면 다음 가능)
+  const reason = (): string => {
+    if (step === 0) return terms.slice(0, 3).every(Boolean) ? '' : '필수 약관 3개에 모두 동의해 주세요'
+    if (step === 1) {
+      if (!info.name.trim()) return '이름을 입력해 주세요'
+      if (digits(info.birth).length !== 8) return '생년월일 8자리를 입력해 주세요'
+      if (!phoneOk(info.phone)) return '휴대폰 번호를 입력해 주세요'
+      if (!codeSent) return '휴대폰 인증번호를 받아 주세요'
+      if (!codeOk) return '인증번호 6자리를 입력해 주세요'
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(info.email)) return '이메일 주소를 확인해 주세요'
+      if (info.uid.trim().length < 4) return '아이디는 4자 이상이에요'
+      if (!checks.every(Boolean)) return '비밀번호 조건을 모두 채워 주세요'
+      if (info.pw2 !== info.pw) return '비밀번호가 서로 달라요'
+      return ''
+    }
+    if (step === 2) {
+      if (!ria) return '계좌 보유 여부를 골라 주세요'
+      if (ria === 'have' && !riaOk) return '계좌번호를 확인해 주세요'
+      return ''
+    }
+    return ''
+  }
+  const why = reason()
+  const nextDisabled = step === 3 || !!why // 4단계는 내용이 아직 없어 다음 불가
+
+  const goPrev = () => {
+    if (step === 0) onLogin()
+    else setStep(step - 1)
+  }
+  const goNext = () => {
+    if (nextDisabled) return
+    setStep(step + 1)
+  }
+
+  const sendCode = () => {
+    if (!phoneOk(info.phone)) {
+      showToast('휴대폰 번호를 먼저 입력해 주세요')
+      return
+    }
+    setCodeSent(true)
+    setCode('')
+    showToast('인증번호를 보냈어요')
+  }
+
+  const demoFill = () => {
+    setInfo({ name: '김리아', birth: '1994.05.17', phone: '010-1234-5678', email: 'ria@returns.co.kr', uid: 'kimria', pw: 'returns!2026', pw2: 'returns!2026' })
+    setCodeSent(true)
+    setCode('123456')
+  }
+
+  return (
+    <div className={styles.wrap} hidden={!active}>
+      <ol className={styles.stepper} aria-label="가입 단계">
+        {STEPS.map((label, i) => (
+          <li key={label} className={styles.step} aria-current={i === step ? 'step' : 'false'}>
+            <span className={cx(styles.bar, i <= step && styles.barOn)} />
+            <span className={cx(styles.stepText, i <= step && styles.stepTextOn, i === step && styles.stepTextNow)}>
+              <span className={cx(styles.stepNum, styles.tabular)}>{i + 1}</span>
+              <span className={styles.stepLabel}>{label}</span>
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      {step === 0 && (
+        <div className={styles.section}>
+          <h2 className={styles.title}>약관에 동의해 주세요</h2>
+          <div className={styles.terms}>
+            <button type="button" className={styles.allRow} onClick={() => setTerms(terms.map(() => !allOn))} aria-pressed={allOn}>
+              <span className={cx(styles.box, styles.boxLg, allOn && styles.boxOn)}>
+                <CheckIcon size={13} />
+              </span>
+              전체 동의
+            </button>
+            {TERMS.map(([tag, label], i) => (
+              <div key={label} className={styles.termRow}>
+                <button
+                  type="button"
+                  className={styles.termToggle}
+                  onClick={() => setTerms((st) => st.map((v, j) => (j === i ? !v : v)))}
+                  aria-pressed={terms[i]}
+                >
+                  <span className={cx(styles.box, terms[i] && styles.boxOn)}>
+                    <CheckIcon size={12} />
+                  </span>
+                  <span className={cx(styles.tag, tag === '필수' && styles.tagRequired)}>[{tag}]</span>
+                  <span className={styles.termLabel}>{label}</span>
+                </button>
+                <button type="button" className={styles.view} onClick={soon}>보기 ›</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === 1 && (
+        <div className={styles.section}>
+          <div className={styles.titleRow}>
+            <h2 className={styles.title}>본인 정보를 입력해 주세요</h2>
+            <button type="button" className={styles.fill} onClick={demoFill}>시연용으로 채우기</button>
+          </div>
+          <div className={styles.grid}>
+            <Field label="이름" span={wide ? 1 : 2} type="text" placeholder="김리아" autoComplete="name" value={info.name} onChange={setField('name')} />
+            <Field label="생년월일" span={wide ? 1 : 2} type="text" placeholder="1994.01.01" autoComplete="bday" inputMode="numeric" value={info.birth} onChange={setField('birth')} />
+          </div>
+          <div className={styles.fieldBlock}>
+            <span className={styles.label}>휴대폰</span>
+            <div className={styles.row}>
+              <input className={cx(styles.input, styles.grow)} type="tel" inputMode="numeric" value={info.phone} onChange={setField('phone')} placeholder="010-0000-0000" autoComplete="tel" aria-label="휴대폰 번호" />
+              <button type="button" className={styles.outlineBtn} onClick={sendCode}>{codeSent ? '다시 받기' : '인증번호 받기'}</button>
+            </div>
+            {codeSent && (
+              <>
+                <div className={styles.codeRow}>
+                  <input
+                    className={cx(styles.input, styles.grow, styles.codeInput, styles.tabular)}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={6}
+                    value={code}
+                    onChange={(e) => setCode(digits(e.target.value).slice(0, 6))}
+                    placeholder="인증번호 6자리"
+                    aria-label="인증번호 6자리"
+                  />
+                  <span className={styles.codeMsg}>{codeOk ? '인증됐어요' : ''}</span>
+                </div>
+                <span className={styles.hint}>시연에서는 아무 숫자 6자리나 입력하면 돼요</span>
+              </>
+            )}
+          </div>
+          <div className={styles.grid}>
+            <Field label="이메일" span={2} type="email" placeholder="ria@returns.co.kr" autoComplete="email" inputMode="email" value={info.email} onChange={setField('email')} />
+            <Field label="아이디" span={2} type="text" placeholder="4자 이상" autoComplete="username" value={info.uid} onChange={setField('uid')} />
+            <Field label="비밀번호" span={wide ? 1 : 2} type="password" placeholder="8자 이상" autoComplete="new-password" value={info.pw} onChange={setField('pw')} />
+            <Field label="비밀번호 확인" span={wide ? 1 : 2} type="password" placeholder="한 번 더 입력" autoComplete="new-password" value={info.pw2} onChange={setField('pw2')} />
+          </div>
+          <div className={styles.rules}>
+            <span className={styles.rulesLabel}>비밀번호 조건</span>
+            {PW_RULES.map((label, i) => (
+              <span key={label} className={cx(styles.rule, checks[i] && styles.ruleOn)}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 6 9 17l-5-5" />
+                </svg>
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {step === 2 && (
+        <div className={styles.section}>
+          <h2 className={styles.title}>RIA 계좌를 연결해 주세요</h2>
+          <div className={styles.radios} role="radiogroup" aria-label="RIA 계좌 보유 여부">
+            {RIA_OPTS.map(([k, label]) => (
+              <button key={k} type="button" role="radio" aria-checked={ria === k} className={cx(styles.radio, ria === k && styles.radioOn)} onClick={() => setRia(k)}>
+                <span className={cx(styles.dot, ria === k && styles.dotOn)} />
+                {label}
+              </button>
+            ))}
+          </div>
+          {ria === 'have' && (
+            <div className={styles.fieldBlock}>
+              <span className={styles.label}>RIA 계좌번호</span>
+              <div className={styles.row}>
+                <input
+                  className={cx(styles.input, styles.grow, styles.tabular)}
+                  type="text"
+                  inputMode="numeric"
+                  value={riaNo}
+                  onChange={(e) => {
+                    setRiaNo(e.target.value)
+                    setRiaOk(false)
+                    setRiaTried(false)
+                  }}
+                  placeholder="계좌번호 숫자만 입력"
+                  aria-label="RIA 계좌번호"
+                />
+                <button
+                  type="button"
+                  className={cx(styles.outlineBtn, styles.checkBtn)}
+                  onClick={() => {
+                    setRiaTried(true)
+                    setRiaOk(digits(riaNo).length >= 8)
+                  }}
+                >
+                  확인
+                </button>
+              </div>
+              {riaOk && (
+                <div className={styles.notice} role="status">
+                  <b className={styles.bold}>{acct.name + ' ' + acct.no}</b> · 개설 {F.dot(acct.opened)} 확인됐어요
+                </div>
+              )}
+              {riaTried && !riaOk && <span className={styles.error}>계좌번호 8자리 이상을 입력해 주세요</span>}
+            </div>
+          )}
+          {ria === 'none' && (
+            <p className={cx(styles.notice, styles.noticeBody)}>
+              가입 후 <b>내 계좌</b>에서 RIA 계좌 개설을 신청할 수 있어요. 해외주식 입고와 매도도 그다음에 이어서 할 수 있어요.
+            </p>
+          )}
+        </div>
+      )}
+
+      {step === 3 && <p className={styles.placeholder}>다음 단계에서 채움</p>}
+
+      <div className={styles.nav}>
+        <div className={styles.navRow}>
+          <button type="button" className={styles.prev} onClick={goPrev}>이전</button>
+          <button type="button" className={cx(styles.next, nextDisabled && styles.nextOff)} onClick={goNext} disabled={nextDisabled} aria-disabled={nextDisabled}>
+            다음
+          </button>
+        </div>
+        {why && <span className={styles.reason}>{why}</span>}
+      </div>
+      <div className={styles.login}>
+        이미 계정이 있나요? <button type="button" className={styles.loginLink} onClick={onLogin}>로그인 ›</button>
+      </div>
+      <Toast message={toast} />
+    </div>
+  )
+}
