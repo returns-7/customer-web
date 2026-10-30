@@ -1,0 +1,92 @@
+.scope {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.link {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.body {
+  padding: var(--space-12) var(--space-16) var(--space-4);
+}
+
+.cancelled {
+  margin-bottom: var(--space-10);
+  padding-bottom: var(--space-10);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.cancelledHead {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-red);
+  line-height: 1.5;
+}
+
+.cancelledDesc {
+  font-size: var(--font-size-13);
+  line-height: 1.55;
+  margin-top: var(--space-2);
+}
+
+.cutLabel {
+  font-size: var(--font-size-12);
+  line-height: 16px;
+  color: var(--color-sub);
+}
+
+.cut {
+  font-size: var(--font-size-22);
+  line-height: 28px;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-gold);
+  margin-bottom: var(--space-4);
+}
+
+.range {
+  font-size: var(--font-size-13);
+  line-height: 1.5;
+  color: var(--color-gray-600);
+  margin-bottom: var(--space-8);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: 32px;
+  font-size: var(--font-size-13);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.key {
+  color: var(--color-sub);
+}
+
+.val {
+  margin-left: auto;
+}
+
+.valBold {
+  margin-left: auto;
+  font-weight: var(--font-weight-bold);
+}
+
+.adj {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-orange);
+  margin: 0 0 var(--space-8);
+}

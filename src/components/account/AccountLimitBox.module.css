@@ -1,0 +1,108 @@
+.scope {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.link {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.body {
+  padding: var(--space-12) var(--space-16) var(--space-4);
+}
+
+.remainRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+  white-space: nowrap;
+}
+
+.remainLabel {
+  font-size: var(--font-size-13);
+}
+
+.remain {
+  margin-left: auto;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+}
+
+.of {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.track {
+  height: 4px;
+  background: var(--color-line-soft);
+  border-radius: var(--radius-2);
+  overflow: hidden;
+  margin-top: var(--space-8);
+}
+
+.fill {
+  height: 100%;
+  background: var(--color-navy);
+}
+
+.used {
+  font-size: var(--font-size-12);
+  line-height: 16px;
+  color: var(--color-sub);
+  margin: var(--space-6) 0 var(--space-2);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: 32px;
+  font-size: var(--font-size-13);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.key {
+  color: var(--color-sub);
+}
+
+.val {
+  margin-left: auto;
+  white-space: nowrap;
+}
+
+.dday {
+  color: var(--color-navy);
+}
+
+.guide {
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  padding: var(--space-10) 0 var(--space-8);
+  font-size: var(--font-size-14);
+  line-height: 1.5;
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.guideText {
+  min-width: 0;
+}
+
+.guideLink {
+  composes: link;
+  margin-left: auto;
+  flex: none;
+}

@@ -1,4 +1,12 @@
+import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { AccountDocsBox } from '../components/account/AccountDocsBox'
+import { AccountHoldBox } from '../components/account/AccountHoldBox'
+import { AccountLimitBox } from '../components/account/AccountLimitBox'
+import { AccountTaxBox } from '../components/account/AccountTaxBox'
+import { TaxCalcModal } from '../components/account/TaxCalcModal'
+import { initialIssued } from '../components/account/accountTaxData'
+import type { IssueRecord } from '../components/account/accountTaxData'
 import { AccountStateBox } from '../components/account/AccountStateBox'
 import { AccountSummaryBox } from '../components/account/AccountSummaryBox'
 import { APPLY_TOAST, FOOT_FLOW, FOOT_STATUS, PAGE_TABS } from '../components/account/accountData'
@@ -11,11 +19,14 @@ import { useToast } from '../components/common/useToast'
 import { RETURNS_DATA as RD } from '../data/returns'
 import { F } from '../lib/calc'
 
-// 내 계좌 — 1번째 부분: 뼈대 + 페이지 탭 + 계좌 요약 + 계좌 상태. 나머지 박스는 머리줄 제목만 있는 자리
+// 내 계좌 — 1~2번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류. 나머지 박스는 머리줄 제목만 있는 자리
 export function AccountPage() {
   const { hash, pathname } = useLocation()
   const navigate = useNavigate()
   const { message: toast, showToast } = useToast()
+
+  const [calcOpen, setCalcOpen] = useState(false)
+  const [issued, setIssued] = useState<IssueRecord[]>(initialIssued)
 
   const opened = RD.ACCOUNT_STATE === 'opened'
   const page: PageKey = opened && hash === '#flow' ? 'flow' : 'status'
@@ -36,6 +47,13 @@ export function AccountPage() {
   }
   const later = () => showToast(APPLY_TOAST)
 
+  // PDF 받기 — 발급 기록 맨 앞에 오늘 날짜로 추가
+  const issue = (name: string) => {
+    setIssued((prev) => [[F.short(RD.C.BUSINESS_DATE), name], ...prev])
+    showToast(name + ' PDF를 받았어요 · 발급 기록에 추가했어요')
+  }
+  const reissue = (name: string) => showToast(name + ' PDF를 다시 받았어요')
+
   return (
     <>
       <h1 className={styles.srOnly}>내 계좌</h1>
@@ -47,10 +65,11 @@ export function AccountPage() {
         <div className={styles.status}>
           <div className={styles.colLeft}>
             <AccountSummaryBox className={styles.summary} onCopy={copyAcct} onApply={later} />
-            <Box data-box="limit" className={styles.limit} title="매도 한도" />
-            <Box data-box="tax" className={styles.tax} title="세액" />
-            <Box data-box="hold" className={styles.hold} title="원금 유지" />
-            <Box data-box="docs" className={styles.docs} title="증빙서류" />
+            <AccountLimitBox className={styles.limit} onApply={later} />
+            {/* TODO: 8번째 부분에서 챗봇 창이 생기면, 계산 근거를 열 때 챗봇 창을 닫기(원본 openCalc) */}
+            <AccountTaxBox className={styles.tax} onOpenCalc={() => setCalcOpen(true)} />
+            <AccountHoldBox className={styles.hold} onHistory={later} />
+            <AccountDocsBox className={styles.docs} issued={issued} onIssue={issue} onReissue={reissue} />
           </div>
           <div className={styles.colRight}>
             <Box data-box="balance" className={styles.balance} title="잔고" />
@@ -74,6 +93,7 @@ export function AccountPage() {
       )}
 
       <p className={styles.foot}>{opened && page === 'flow' ? FOOT_FLOW : FOOT_STATUS}</p>
+      <TaxCalcModal open={calcOpen} onClose={() => setCalcOpen(false)} />
       <Toast message={toast} />
     </>
   )

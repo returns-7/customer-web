@@ -1,0 +1,116 @@
+.tip {
+  position: relative;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid var(--color-muted);
+  border-radius: var(--radius-round);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-10);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-sub);
+  cursor: help;
+  flex: none;
+}
+
+.tipText {
+  position: absolute;
+  left: -8px;
+  top: 24px;
+  z-index: 20;
+  width: 240px;
+  background: var(--color-ink);
+  color: var(--color-on-navy);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5;
+  padding: var(--space-8) var(--space-10);
+  border-radius: var(--radius-6);
+  white-space: normal;
+  text-align: left;
+}
+
+.link {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.body {
+  padding: var(--space-12) var(--space-16) var(--space-4);
+}
+
+.dateRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-8);
+  font-size: var(--font-size-13);
+  height: 24px;
+}
+
+.dateKey {
+  color: var(--color-sub);
+}
+
+.date {
+  margin-left: auto;
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.dday {
+  color: var(--color-navy);
+}
+
+.confirm {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  text-align: right;
+}
+
+.track {
+  height: 4px;
+  border-radius: var(--radius-2);
+  background: var(--color-line-soft);
+  overflow: hidden;
+  margin: var(--space-8) 0;
+}
+
+.fill {
+  height: 100%;
+  background: var(--color-navy);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  height: 32px;
+  font-size: var(--font-size-13);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.key {
+  color: var(--color-sub);
+}
+
+.keyClip {
+  color: var(--color-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.val {
+  margin-left: auto;
+}
