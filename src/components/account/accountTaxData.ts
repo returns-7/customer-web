@@ -11,6 +11,13 @@ const RANGE_CUT: [number, number] = [0.962, 1.035]
 // TODO: 백엔드 연결 시 매도 내역 건수로 교체
 const SOLD_COUNT = 5
 
+// 시연 설정의 '조정비율(다른 계좌 순매수)' 1.00 / 0.90 — 원본은 이 화면 안에서만 바꾸고(혜택 상태를 바꾸면 해제), 없으면 혜택 상태에서 정해진 값
+let adjOverride: number | null = null
+export const setAdjOverride = (v: number | null): void => {
+  adjOverride = v
+}
+export const currentAdj = (): number => adjOverride ?? RD.BENEFIT.adj
+
 const rng = (v: number, r: [number, number]): string => F.man(v * r[0]) + '~' + F.man(v * r[1]) + ' 원'
 
 export interface LimitValues {
@@ -59,7 +66,7 @@ export interface TaxValues {
 
 export function taxValues(): TaxValues {
   const biz = RD.C.BUSINESS_DATE
-  const adj = RD.BENEFIT.adj
+  const adj = currentAdj()
   const benX = RD.BENEFIT_STATE === 'IMPOSSIBLE'
   const t0 = F.tax(0, biz, adj)
   const tG = F.tax(F.plan({ biz }).gain, biz, adj)
@@ -90,7 +97,7 @@ export interface CalcRow {
 export function calcRows(): CalcRow[] {
   const C = RD.C
   const biz = C.BUSINESS_DATE
-  const adj = RD.BENEFIT.adj
+  const adj = currentAdj()
   const won = F.won
   const t0 = F.tax(0, biz, adj)
   const tG = F.tax(F.plan({ biz }).gain, biz, adj)

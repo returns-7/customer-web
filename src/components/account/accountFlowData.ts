@@ -1,5 +1,6 @@
 import { RETURNS_DATA as RD } from '../../data/returns'
 import { F } from '../../lib/calc'
+import { currentAdj } from './accountTaxData'
 import type { Tone } from './accountData'
 
 // 자금 흐름 탭 네 박스의 숫자 — 원본 renderVals의 fl 계산 그대로(값은 src/data·src/lib에서, 주식 패키지·계좌 현황과 같은 데이터)
@@ -146,7 +147,7 @@ export function allocValues(): AllocView {
 // ---- 감면과 국내 운용 ----
 export function cutVsInvest(): { cut: string; evalAmt: string; ratio: string } {
   const benX = RD.BENEFIT_STATE === 'IMPOSSIBLE'
-  const t0 = F.tax(0, RD.C.BUSINESS_DATE, RD.BENEFIT.adj)
+  const t0 = F.tax(0, RD.C.BUSINESS_DATE, currentAdj())
   return {
     cut: F.won(benX ? 0 : t0.cut),
     evalAmt: F.won(RD.FLOW.evalAmt),

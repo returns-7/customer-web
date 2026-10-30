@@ -1,7 +1,8 @@
-import { useEffect, useReducer, useRef, useState } from 'react'
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { ApplyModal } from '../components/account/ApplyModal'
 import { SellModal } from '../components/account/SellModal'
+import { AccountDevPanel } from '../components/account/AccountDevPanel'
 import { AccountBalanceBox } from '../components/account/AccountBalanceBox'
 import { AccountDocsBox } from '../components/account/AccountDocsBox'
 import { AccountHistBox } from '../components/account/AccountHistBox'
@@ -9,28 +10,35 @@ import { AccountHoldBox } from '../components/account/AccountHoldBox'
 import { AccountLimitBox } from '../components/account/AccountLimitBox'
 import { AccountTaxBox } from '../components/account/AccountTaxBox'
 import { TaxCalcModal } from '../components/account/TaxCalcModal'
-import { initialIssued } from '../components/account/accountTaxData'
+import { initialIssued, setAdjOverride } from '../components/account/accountTaxData'
+import { ALERT_DESC, ALERT_LINK, ALERT_TAG, BOT_CHIPS, botGreeting, botTurn } from '../components/account/accountBotData'
+import type { ApplyAlert } from '../components/account/accountBotData'
 import type { IssueRecord } from '../components/account/accountTaxData'
 import { AccountStateBox } from '../components/account/AccountStateBox'
 import { AccountSummaryBox } from '../components/account/AccountSummaryBox'
 import { FOOT_FLOW, FOOT_STATUS, PAGE_TABS } from '../components/account/accountData'
 import type { PageKey } from '../components/account/accountData'
 import type { AddedIn, AddedOut, ApplyKind } from '../components/account/accountApplyData'
+import { moreTitle } from '../components/account/accountSellData'
 import type { AddedSell, AddedSettle } from '../components/account/accountSellData'
 import { isHistTab } from '../components/account/accountHistData'
 import type { HistTab } from '../components/account/accountHistData'
 import styles from '../components/account/AccountLayout.module.css'
 import { FlowAllocBox, FlowCutBox, FlowMonthlyBox, FlowStepsBox } from '../components/account/AccountFlowBoxes'
+import type { BotMessage } from '../components/common/ChatbotFab'
 import { Tabs } from '../components/common/Tabs'
 import { Toast } from '../components/common/Toast'
 import { useToast } from '../components/common/useToast'
 import { RETURNS_DATA as RD } from '../data/returns'
+import type { DemoSettings } from '../data/returns'
+import { useAppShell } from '../layouts/appShell'
 import { F } from '../lib/calc'
 
-// 내 계좌 — 1~7번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역 + 자금 흐름 탭 박스 4개 + 입고·인출·계좌 개설 신청 창 + 매도 신청 창
+// 내 계좌 — 1~8번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역 + 자금 흐름 탭 박스 4개 + 입고·인출·계좌 개설 신청 창 + 매도 신청 창 + 상담 창·상단 종 알림·시연 설정
 export function AccountPage() {
   const { hash, pathname } = useLocation()
   const navigate = useNavigate()
+  const shell = useAppShell()
   const { message: toast, showToast } = useToast()
 
   // 시연 설정(계좌 상태 등)이 바뀌면 다시 그림(원본 returns-demo 이벤트)
@@ -41,6 +49,50 @@ export function AccountPage() {
   }, [])
 
   const [calcOpen, setCalcOpen] = useState(false)
+
+  // 끼루 AI 상담 창 — 내용은 AppLayout의 챗봇 버튼에 넘기고, 이 페이지를 떠나면 비움
+  const [bot, setBot] = useState<BotMessage[]>(() => [botGreeting()])
+  const chat = useMemo(
+    () => ({ simple: true, messages: bot, chips: BOT_CHIPS.map((label) => ({ label, onClick: () => setBot((b) => b.concat(botTurn(label))) })), onSend: () => {} }),
+    [bot]
+  )
+  useEffect(() => {
+    shell.setChat(chat)
+  }, [shell, chat])
+  useEffect(
+    () => () => {
+      shell.setChat(null)
+      shell.setBotOpen(false)
+      shell.setTopBar({})
+      setAdjOverride(null)
+    },
+    [shell]
+  )
+
+  // 상단 종 알림 — 신청이 접수될 때마다 1건 추가(누르면 해당 내역 탭으로)
+  const [alerts, setAlerts] = useState<ApplyAlert[]>([])
+  const addAlert = (title: string, tab: ApplyAlert['tab']) => setAlerts((prev) => [{ title, tab }, ...prev])
+  const goHistRef = useRef<(tab: HistTab) => void>(() => {})
+  const profLabel = RD.PROFILES[RD.CUSTOMER.profile].label
+  useEffect(() => {
+    shell.setTopBar({
+      todos: alerts.map((a) => ({
+        tag: ALERT_TAG,
+        tagColor: 'var(--color-navy)',
+        title: a.title,
+        desc: ALERT_DESC,
+        to: '#' + a.tab,
+        link: ALERT_LINK,
+        onClick: (e) => {
+          e.preventDefault()
+          goHistRef.current(a.tab)
+        }
+      })),
+      todoDate: F.short(F.today()),
+      todoAlert: alerts.length,
+      profLabel
+    })
+  }, [shell, alerts, profLabel])
 
   // 신청 창 — 입고 / 인출 / 계좌 개설. 주소 끝이 #open이고 계좌가 없거나 반려일 때도 열림(원본 onHash)
   const canOpenAcct = () => RD.ACCOUNT_STATE !== 'opened' && RD.ACCOUNT_STATE !== 'reviewing'
@@ -113,12 +165,37 @@ export function AccountPage() {
   }
 
   // 신청 창 — 접수 결과를 내역에 올리고, 계좌 개설은 시연 상태를 '심사 중'으로 바꿈
-  // TODO: 8번째 부분에서 상단 종 알림에 '입고 신청 · …' / '매도 신청 · …' / '인출 신청 · …' 1건 추가(내역 보기로 해당 탭 이동)
+  // 접수된 신청은 상단 종 알림에도 1건 추가(원본 alerts): 입고 · 매도 · 인출 신청만(계좌 개설 신청은 원본도 토스트만)
   const goHist = (tab: HistTab) => {
     setApplyKind(null)
     setSellOpen(false)
     pickHistTab(tab)
     scrollToHist()
+  }
+  useEffect(() => {
+    goHistRef.current = goHist
+  })
+  // 어떤 신청 창이든 열면 상담 창은 닫힘(원본 openM)
+  const openApply = (k: ApplyKind) => {
+    shell.setBotOpen(false)
+    setApplyKind(k)
+  }
+  const openSell = () => {
+    shell.setBotOpen(false)
+    setSellOpen(true)
+  }
+  const openCalc = () => {
+    shell.setBotOpen(false)
+    setCalcOpen(true)
+  }
+  const changeDemo = (patch: Partial<DemoSettings>) => {
+    RD.setDemo(patch)
+    if (patch.benefit !== undefined) setAdjOverride(null) // 혜택 상태를 바꾸면 조정비율은 그 상태 값으로 돌아감(원본)
+    redraw()
+  }
+  const changeAdj = (v: number) => {
+    setAdjOverride(v)
+    redraw()
   }
   const finishOpen = () => {
     setApplyKind(null)
@@ -142,21 +219,20 @@ export function AccountPage() {
       <h1 className={styles.srOnly}>내 계좌</h1>
       {opened && <Tabs variant="page" ariaLabel="내 계좌 화면" items={PAGE_TABS} value={page} onChange={setPage} />}
 
-      {!opened && <AccountStateBox onOpen={() => setApplyKind('open')} onCancel={cancelOpen} />}
+      {!opened && <AccountStateBox onOpen={() => openApply('open')} onCancel={cancelOpen} />}
 
       {opened && page === 'status' && (
         <div className={styles.status}>
           <div className={styles.colLeft}>
-            <AccountSummaryBox className={styles.summary} onCopy={copyAcct} onApply={(k) => (k === 'sell' ? setSellOpen(true) : setApplyKind(k))} />
-            <AccountLimitBox className={styles.limit} onApply={() => setSellOpen(true)} />
-            {/* TODO: 8번째 부분에서 챗봇 창이 생기면, 계산 근거를 열 때 챗봇 창을 닫기(원본 openCalc) */}
-            <AccountTaxBox className={styles.tax} onOpenCalc={() => setCalcOpen(true)} />
+            <AccountSummaryBox className={styles.summary} onCopy={copyAcct} onApply={(k) => (k === 'sell' ? openSell() : openApply(k))} />
+            <AccountLimitBox className={styles.limit} onApply={openSell} />
+            <AccountTaxBox className={styles.tax} onOpenCalc={openCalc} />
             <AccountHoldBox className={styles.hold} onHistory={goWithdraw} />
             <AccountDocsBox className={styles.docs} issued={issued} onIssue={issue} onReissue={reissue} />
           </div>
           <div className={styles.colRight}>
-            <AccountBalanceBox className={styles.balance} onSell={() => setSellOpen(true)} />
-            <AccountHistBox className={styles.hist} tab={histTab} onTab={pickHistTab} onApplyIn={() => setApplyKind('in')} onApplyOut={() => setApplyKind('out')} addedIn={addedIn} addedOut={addedOut} addedSell={addedSell} addedSettle={addedSettle} />
+            <AccountBalanceBox className={styles.balance} onSell={openSell} />
+            <AccountHistBox className={styles.hist} tab={histTab} onTab={pickHistTab} onApplyIn={() => openApply('in')} onApplyOut={() => openApply('out')} addedIn={addedIn} addedOut={addedOut} addedSell={addedSell} addedSettle={addedSettle} />
           </div>
         </div>
       )}
@@ -181,8 +257,14 @@ export function AccountPage() {
           kind={applyKind}
           onClose={() => setApplyKind(null)}
           onGoHist={goHist}
-          onSubmitIn={(rows) => setAddedIn((prev) => [...rows, ...prev])}
-          onSubmitOut={(amt) => setAddedOut((prev) => [{ amt }, ...prev])}
+          onSubmitIn={(rows) => {
+            setAddedIn((prev) => [...rows, ...prev])
+            addAlert('입고 신청 · ' + moreTitle(rows), 'deposits')
+          }}
+          onSubmitOut={(amt) => {
+            setAddedOut((prev) => [{ amt }, ...prev])
+            addAlert('인출 신청 · ₩' + F.won(amt), 'withdraw')
+          }}
           onFinishOpen={finishOpen}
         />
       )}
@@ -193,10 +275,12 @@ export function AccountPage() {
           onSubmit={(sells, settle) => {
             setAddedSell((prev) => [...sells, ...prev])
             setAddedSettle((prev) => [settle, ...prev])
+            addAlert('매도 신청 · ' + settle.title, 'sells')
           }}
         />
       )}
       <TaxCalcModal open={calcOpen} onClose={() => setCalcOpen(false)} />
+      <AccountDevPanel onChange={changeDemo} onAdj={changeAdj} />
       <Toast message={toast} />
     </>
   )

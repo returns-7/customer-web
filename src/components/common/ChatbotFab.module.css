@@ -276,3 +276,46 @@
   font-weight: var(--font-weight-bold);
   cursor: pointer;
 }
+
+/* 내 계좌용 간단한 대화 창 — 말풍선 + 빠른 질문 */
+.simpleList {
+  flex: 1;
+  overflow: auto;
+  padding: var(--space-12) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  max-height: 360px;
+}
+
+.simpleRow {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.simpleRowMe {
+  justify-content: flex-end;
+}
+
+.simpleMsg {
+  max-width: 85%;
+  background: var(--color-surface-hover);
+  color: var(--color-ink);
+  border-radius: var(--radius-8);
+  padding: var(--space-8) var(--space-12);
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-body);
+}
+
+.simpleMsgMe {
+  background: var(--color-chip-navy-strong);
+  color: var(--color-navy);
+}
+
+.simpleChips {
+  padding: var(--space-10) var(--space-16) var(--space-14);
+  display: flex;
+  gap: var(--space-6);
+  flex-wrap: wrap;
+  border-top: 1px solid var(--color-line-soft);
+}

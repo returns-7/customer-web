@@ -11,6 +11,8 @@ export interface BotChat {
   messages: BotMessage[]
   chips?: { label: string; onClick: () => void }[]
   onSend: (text: string) => void
+  // true면 내 계좌용 간단한 창: panelWidth 폭, 입력칸·근거 줄 없이 말풍선 + 빠른 질문 버튼만
+  simple?: boolean
 }
 
 interface ChatbotFabProps {
@@ -83,8 +85,9 @@ export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth 
   // 새 메시지가 오거나 창을 열면 맨 아래로
   const messageCount = chat?.messages.length ?? 0
   useEffect(() => {
-    if (open && listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
-  }, [open, messageCount])
+    // 내 계좌용 간단한 창은 원본처럼 자동으로 내리지 않음
+    if (open && !chat?.simple && listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
+  }, [open, messageCount, chat?.simple])
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -94,6 +97,7 @@ export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth 
   }
 
   const small = fabSize === 'sm'
+  const full = !!chat && !chat.simple // 홈용 대화형 창(380×560)
 
   return (
     <>
@@ -110,19 +114,38 @@ export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth 
       </button>
       {open && (
         <div
-          className={cx(styles.panel, chat ? styles.panelChat : styles.panelSimple, small && !chat && styles.panelAboveSm)}
-          style={chat ? undefined : { width: panelWidth }}
+          className={cx(styles.panel, full ? styles.panelChat : styles.panelSimple, small && !chat && styles.panelAboveSm)}
+          style={full ? undefined : { width: panelWidth }}
           role="dialog"
           aria-label="끼루 AI 상담"
         >
           <div className={styles.head}>
-            <img className={cx(styles.headFace, chat && styles.headFaceChat)} src={assetUrl('assets/kkiru-ai-face.png')} alt="" />
+            <img className={cx(styles.headFace, full && styles.headFaceChat)} src={assetUrl('assets/kkiru-ai-face.png')} alt="" />
             <b className={styles.headTitle}>끼루 AI 상담</b>
             <button type="button" className={styles.close} onClick={toggle} aria-label="닫기">
               <CloseIcon size={18} />
             </button>
           </div>
-          {chat ? (
+          {chat?.simple ? (
+            <>
+              <div className={styles.simpleList} ref={listRef}>
+                {chat.messages.map((m, i) => (
+                  <div key={i} className={cx(styles.simpleRow, 'me' in m && styles.simpleRowMe)}>
+                    <span className={cx(styles.simpleMsg, 'me' in m && styles.simpleMsgMe)}>{m.text}</span>
+                  </div>
+                ))}
+              </div>
+              {chat.chips && chat.chips.length > 0 && (
+                <div className={styles.simpleChips}>
+                  {chat.chips.map((c) => (
+                    <button key={c.label} type="button" className={styles.chip} onClick={c.onClick}>
+                      {c.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : chat ? (
             <>
               <div className={styles.messages} ref={listRef}>
                 {chat.messages.map((m, i) => (
