@@ -43,8 +43,35 @@ function weightedGrade(items: PkgItemView[]): string {
   return (Math.floor((sum / total) * 100) / 100).toFixed(2)
 }
 
-function viewOf(id: PackageId, name: string, seed: number, created: number): PkgView {
-  const items = RD.PKG_HOLDINGS[id].map((h) => {
+// 패키지 한 개의 보유 상태(원본 state.pkgs) — 주문이 체결되면 보유 주 수·평균 매입가가 바뀐다
+export interface PkgBaseItem {
+  code: string
+  qty: number
+  avg: number
+  target: number
+}
+
+export interface PkgBase {
+  id: PackageId
+  name: string
+  seed: number
+  created: number
+  items: PkgBaseItem[]
+}
+
+// TODO: 백엔드 연결 시 패키지 목록 API 응답으로 교체(지금은 RD.PKGS 순서 = 최근 만든 순)
+export function buildPkgBases(): PkgBase[] {
+  return RD.PKGS.map((p, i) => ({
+    id: p.id,
+    name: p.name,
+    seed: p.seed,
+    created: RD.PKGS.length - i,
+    items: RD.PKG_HOLDINGS[p.id].map((h) => ({ code: h.code, qty: h.qty, avg: h.avg, target: h.target }))
+  }))
+}
+
+export function viewOf(b: PkgBase): PkgView {
+  const items = b.items.map((h) => {
     const val = h.qty * RD.PX[h.code][0]
     const chg = RD.PX[h.code][1]
     return { code: h.code, qty: h.qty, val, cost: h.qty * h.avg, today: Math.round((val * chg) / (100 + chg)), target: h.target }
@@ -53,10 +80,10 @@ function viewOf(id: PackageId, name: string, seed: number, created: number): Pkg
   const cost = items.reduce((a, i) => a + i.cost, 0)
   const today = items.reduce((a, i) => a + i.today, 0)
   return {
-    id,
-    name,
-    seed,
-    created,
+    id: b.id,
+    name: b.name,
+    seed: b.seed,
+    created: b.created,
     items,
     val,
     cost,
@@ -66,11 +93,6 @@ function viewOf(id: PackageId, name: string, seed: number, created: number): Pkg
     todayPct: val - today ? (today / (val - today)) * 100 : 0,
     grade: weightedGrade(items)
   }
-}
-
-// TODO: 백엔드 연결 시 패키지 목록 API 응답으로 교체(지금은 RD.PKGS 순서 = 최근 만든 순)
-export function buildPkgViews(): PkgView[] {
-  return RD.PKGS.map((p, i) => viewOf(p.id, p.name, p.seed, RD.PKGS.length - i))
 }
 
 export function sortViews(views: PkgView[], sort: PkgSort): PkgView[] {

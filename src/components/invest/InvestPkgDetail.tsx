@@ -19,10 +19,12 @@ interface Props {
   pkg: PkgView
   onBuy?: () => void // TODO: P-7에서 패키지 한 번에 사기 창 연결
   onAdd?: () => void // TODO: P-7에서 종목 추가 창 연결
+  unsuit?: Record<string, string> // 내 성향보다 위험한 종목을 확인한 날짜(종목 코드별)
+  onTrade?: (code: string, side: 'buy' | 'sell') => void // 보유 종목 표의 매수·매도 버튼
 }
 
 // 선택한 패키지 상세 — 머리 줄·수치 줄·위험 요약·종목 비중·수익률 차트·보유 종목 표
-export function InvestPkgDetail({ className, pkg, onBuy, onAdd }: Props) {
+export function InvestPkgDetail({ className, pkg, onBuy, onAdd, unsuit, onTrade }: Props) {
   const [menu, setMenu] = useState(false)
   const [hov, setHov] = useState<string | null>(null) // 도넛·줄에서 마우스를 올린 종목(보유 종목 표 줄과 함께 강조)
   const [range, setRange] = useState<RangeKey>('1m') // 다른 패키지를 골라도 유지(원본과 같음)
@@ -140,7 +142,7 @@ export function InvestPkgDetail({ className, pkg, onBuy, onAdd }: Props) {
           <InvestPkgChart className={styles.chartRight} pkg={pkg} range={range} onRange={setRange} />
         </div>
       )}
-      <InvestHoldings pkg={pkg} hov={hov} onHov={setHov} onAdd={onAdd} />
+      <InvestHoldings pkg={pkg} hov={hov} onHov={setHov} unsuit={unsuit} onAdd={onAdd} onBuy={(c) => onTrade?.(c, 'buy')} onSell={(c) => onTrade?.(c, 'sell')} />
       <Toast message={message} />
     </section>
   )

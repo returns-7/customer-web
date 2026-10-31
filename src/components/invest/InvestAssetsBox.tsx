@@ -11,7 +11,7 @@ import styles from './InvestAssetsBox.module.css'
 const signedWon = (n: number) => sign(n) + '₩' + F.won(Math.abs(n))
 
 // 패키지 자산 박스 — 전체 패키지 합계. 합계는 홈·내 계좌와 같은 RD.PKG_HOLDINGS 기준
-export function InvestAssetsBox({ className, views }: { className?: string; views: PkgView[] }) {
+export function InvestAssetsBox({ className, views, cash }: { className?: string; views: PkgView[]; cash: number }) {
   const t = totalsOf(views)
   const tone = (n: number) => styles[toneOf(n)]
 
@@ -53,7 +53,7 @@ export function InvestAssetsBox({ className, views }: { className?: string; view
         <span className={styles.cashLabel}>주문 가능 금액</span>
         <span className={styles.cashRight}>
           {/* TODO: 백엔드 연결 시 주문 가능 금액 API 값으로 교체 */}
-          <b className={styles.cashVal}>₩{F.won(RD.ASSETS.cash)}</b>
+          <b className={styles.cashVal}>₩{F.won(cash)}</b>
           <Link to="/account" className={styles.acctLink}>
             내 계좌 ›
           </Link>

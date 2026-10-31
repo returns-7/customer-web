@@ -1,0 +1,403 @@
+/* 주문 창 — 원본 invest.dc.html의 오른쪽 패널(trade) 그대로 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-panel);
+  background: var(--color-overlay);
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100%);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-pop);
+  display: flex;
+  flex-direction: column;
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
+
+.flat {
+  color: var(--color-sub);
+}
+
+/* 머리: 종목 · 위험 / 현재가 · 등락 / 닫기 */
+.head {
+  height: 56px;
+  flex: none;
+  padding: 0 var(--space-8) 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.who {
+  min-width: 0;
+  overflow: hidden;
+  flex: 0 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.risk {
+  font-size: var(--font-size-12);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.warn {
+  color: var(--color-orange);
+}
+
+.price {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex: none;
+}
+
+.px {
+  font-size: var(--font-size-18);
+  font-weight: var(--font-weight-extrabold);
+  line-height: 22px;
+}
+
+.chg {
+  font-size: var(--font-size-13);
+}
+
+.close {
+  all: unset;
+  cursor: pointer;
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+}
+
+.close:hover {
+  background: var(--color-surface-hover);
+}
+
+.acct {
+  padding: var(--space-8) var(--space-16);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+/* 매수 · 매도 전환 */
+.sides {
+  height: 40px;
+  flex: none;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.side {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-14);
+  border-bottom: 2px solid transparent;
+}
+
+.sideOff {
+  font-weight: var(--font-weight-medium);
+  color: var(--color-sub);
+}
+
+.buyOn {
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-up);
+  border-bottom-color: var(--color-up);
+}
+
+.sellOn {
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-down);
+  border-bottom-color: var(--color-down);
+}
+
+.body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  padding: var(--space-14) var(--space-16);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-14);
+}
+
+.market {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.label {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.modes {
+  margin-left: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  overflow: hidden;
+  height: 28px;
+}
+
+.mode {
+  all: unset;
+  cursor: pointer;
+  padding: 0 var(--space-10);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+  background: var(--color-surface);
+  color: var(--color-gray-600);
+}
+
+.modeAmt {
+  border-left: 1px solid var(--color-line-strong);
+}
+
+.modeOn {
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  padding: 0 var(--space-12);
+}
+
+.fieldErr {
+  border-color: var(--color-red);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  text-align: right;
+  font-family: inherit;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-bold);
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.unit {
+  margin-left: var(--space-6);
+  font-size: var(--font-size-14);
+  color: var(--color-sub);
+}
+
+.quick {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+  margin-top: var(--space-6);
+}
+
+.quickBtn {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 30px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+}
+
+.quickBtn:hover {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+}
+
+.hint {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  margin-top: var(--space-6);
+}
+
+.err {
+  font-size: var(--font-size-12);
+  color: var(--color-red);
+  margin-top: var(--space-4);
+  font-weight: var(--font-weight-bold);
+}
+
+/* 금액 표 */
+.line {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  font-size: var(--font-size-14);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.lineGap {
+  gap: var(--space-6);
+}
+
+.lineEnd {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.k {
+  color: var(--color-sub);
+}
+
+.v {
+  margin-left: auto;
+}
+
+.rate {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+}
+
+.rateTax {
+  margin-left: var(--space-6);
+}
+
+.total {
+  margin-left: auto;
+  font-weight: var(--font-weight-bold);
+}
+
+/* 주문 후 비중 */
+.wLine {
+  font-size: var(--font-size-13);
+}
+
+.wB {
+  font-weight: var(--font-weight-bold);
+}
+
+.wA {
+  color: var(--color-navy);
+}
+
+.target {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+}
+
+.bar {
+  height: 4px;
+  background: var(--color-line-faint);
+  border-radius: var(--radius-2);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+}
+
+.fillBefore {
+  background: var(--color-line-strong);
+}
+
+.fillAfter {
+  background: var(--color-navy);
+}
+
+.note {
+  font-size: var(--font-size-12);
+  line-height: 1.55;
+  color: var(--color-sub);
+}
+
+.noteSell {
+  display: block;
+}
+
+.foot {
+  flex: none;
+  padding: var(--space-12) var(--space-16);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.submit {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  height: 48px;
+  border-radius: var(--radius-6);
+  color: var(--color-on-navy);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+}
+
+.submitBuy {
+  cursor: pointer;
+  background: var(--color-up);
+}
+
+.submitSell {
+  cursor: pointer;
+  background: var(--color-down);
+}
+
+.submitOff {
+  cursor: default;
+  background: var(--color-line-strong);
+}
+
+.close:focus-visible,
+.side:focus-visible,
+.mode:focus-visible,
+.quickBtn:focus-visible,
+.submit:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}

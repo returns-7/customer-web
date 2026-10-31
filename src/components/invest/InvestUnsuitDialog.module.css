@@ -1,0 +1,141 @@
+/* 성향 초과 확인 창 — 원본 uf 그대로 */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-unsuit);
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.panel {
+  width: min(440px, 100%);
+  background: var(--color-surface);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-17);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.table {
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: var(--space-12);
+  min-height: 40px;
+  align-items: center;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-14);
+}
+
+.rowItem {
+  padding: var(--space-4) 0;
+  box-sizing: border-box;
+}
+
+.k {
+  color: var(--color-sub);
+}
+
+.v {
+  font-weight: var(--font-weight-bold);
+}
+
+.warn {
+  color: var(--color-orange);
+}
+
+.text {
+  margin: 0;
+  font-size: var(--font-size-14);
+  line-height: var(--line-height-body);
+}
+
+.agree {
+  all: unset;
+  cursor: pointer;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+}
+
+.box {
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border-radius: var(--radius-4);
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--color-on-navy);
+}
+
+.boxOn {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.cancel {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  height: var(--size-control);
+  padding: 0 var(--space-12);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-sub);
+}
+
+.ok {
+  all: unset;
+  cursor: default;
+  box-sizing: border-box;
+  height: var(--size-control);
+  padding: 0 var(--space-24);
+  border-radius: var(--radius-6);
+  background: var(--color-line-strong);
+  color: var(--color-on-navy);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+}
+
+.okOn {
+  cursor: pointer;
+  background: var(--color-navy);
+}
+
+.agree:focus-visible,
+.cancel:focus-visible,
+.ok:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}

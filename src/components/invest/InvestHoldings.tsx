@@ -14,10 +14,10 @@ interface Props {
   pkg: PkgView
   hov: string | null // 도넛·비중 줄과 함께 강조되는 종목 코드
   onHov: (code: string | null) => void
-  unsuit?: Record<string, string> // 내 성향보다 위험한 종목을 담을 때 확인한 날짜(P-7에서 채움)
+  unsuit?: Record<string, string> // 내 성향보다 위험한 종목을 담거나 살 때 확인한 날짜
   onAdd?: () => void // TODO: P-7에서 종목 추가 창 연결
-  onBuy?: (code: string) => void // TODO: P-6에서 매수 창 연결
-  onSell?: (code: string) => void // TODO: P-6에서 매도 창 연결
+  onBuy?: (code: string) => void
+  onSell?: (code: string) => void
 }
 
 // 보유 종목 표 — 종목별 줄(누르면 종목 정보 펼침)과 합계 줄. 좁은 화면은 가로 스크롤(원본과 같음)
@@ -117,7 +117,6 @@ export function InvestHoldings({ pkg, hov, onHov, unsuit = {}, onAdd, onBuy, onS
                   <span className={styles.target}>/ {it.target}%</span>
                 </span>
                 <span className={styles.orders}>
-                  {/* 누른 뒤 동작은 P-6에서 연결 */}
                   <button
                     type="button"
                     className={styles.buy}

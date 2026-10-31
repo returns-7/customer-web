@@ -1,0 +1,154 @@
+import type { MouseEvent } from 'react'
+import { createPortal } from 'react-dom'
+import '../../styles/tokens.css'
+import { RETURNS_DATA as RD } from '../../data/returns'
+import { F } from '../../lib/calc'
+import { StockLabel } from '../common/StockLabel'
+import { cx } from '../common/cx'
+import { cleanInput, QUICK, quickInput, tradeCalc } from './investOrderLogic'
+import type { TradeCalc, TradeState } from './investOrderLogic'
+import { isSuitable } from './investHoldingData'
+import type { PkgView } from './investPkgLogic'
+import { toneOf } from './investPkgLogic'
+import styles from './InvestTradePanel.module.css'
+
+interface Props {
+  trade: TradeState
+  pkg: PkgView
+  cash: number
+  onChange: (patch: Partial<TradeState>) => void
+  onClose: () => void
+  onSubmit: (calc: TradeCalc) => void
+}
+
+const NOTE = () => 'RIA 계좌의 국내주식 매매예요. 매도 대금은 RIA 계좌에 남고, 원금 인출 가능일(' + F.dot(RD.WITHDRAW.availableDate) + ')은 바뀌지 않아요.'
+
+// 오른쪽에서 열리는 매수·매도 주문 창. 값은 모두 tradeCalc(원본 계산 그대로)에서 온다
+export function InvestTradePanel({ trade, pkg, cash, onChange, onClose, onSubmit }: Props) {
+  const c = tradeCalc(trade, pkg, cash)
+  const buy = c.buy
+  const qtyMode = trade.qtyMode === 'qty'
+  const grade = F.meta(trade.code).grade
+  const label = qtyMode ? '수량' : '금액'
+  const acct = 'RIA 계좌 · ' + (buy ? '주문 가능 ₩' + F.won(cash) : '매도 가능 ' + c.sellable + '주')
+
+  // 어두운 막을 눌렀을 때만 닫음(창 안쪽 클릭은 닫지 않음)
+  const onBackdrop = (e: MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose()
+  }
+
+  return createPortal(
+    <div className={styles.backdrop} onClick={onBackdrop}>
+      <aside role="dialog" aria-modal="true" aria-label="주문" className={styles.panel}>
+        <div className={styles.head}>
+          <span className={styles.who}>
+            <StockLabel sym={trade.code} size="md" />
+            <span className={cx(styles.risk, !isSuitable(trade.code) && styles.warn)}>{grade == null ? '' : '위험 ' + grade + '등급 · ' + F.gradeName(grade)}</span>
+          </span>
+          <span className={styles.price}>
+            <b className={styles.px}>{F.won(c.price)}</b>
+            <span className={cx(styles.chg, styles[toneOf(c.chg)])}>{F.pct(c.chg)}</span>
+          </span>
+          <button type="button" className={styles.close} onClick={onClose} aria-label="닫기">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M18 6 6 18" />
+              <path d="m6 6 12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className={styles.acct}>{acct}</div>
+        <div className={styles.sides}>
+          <button type="button" className={cx(styles.side, buy ? styles.buyOn : styles.sideOff)} onClick={() => onChange({ side: 'buy', input: '' })}>
+            매수
+          </button>
+          <button type="button" className={cx(styles.side, !buy ? styles.sellOn : styles.sideOff)} onClick={() => onChange({ side: 'sell', input: '' })}>
+            매도
+          </button>
+        </div>
+
+        <div className={styles.body}>
+          <div className={styles.market}>시장가로 바로 체결돼요</div>
+          <div>
+            <div className={styles.labelRow}>
+              <span className={styles.label}>{label}</span>
+              <span className={styles.modes}>
+                <button type="button" className={cx(styles.mode, qtyMode && styles.modeOn)} onClick={() => onChange({ qtyMode: 'qty', input: c.qty ? String(c.qty) : '' })}>
+                  수량
+                </button>
+                <button type="button" className={cx(styles.mode, styles.modeAmt, !qtyMode && styles.modeOn)} onClick={() => onChange({ qtyMode: 'amt', input: c.qty ? String(c.qty * c.price) : '' })}>
+                  금액
+                </button>
+              </span>
+            </div>
+            <label className={cx(styles.field, c.err && styles.fieldErr)}>
+              <input className={styles.input} value={c.typed ? F.won(c.typed) : ''} onChange={(e) => onChange({ input: cleanInput(e.target.value) })} inputMode="numeric" placeholder="0" aria-label={label} />
+              <span className={styles.unit}>{qtyMode ? '주' : '원'}</span>
+            </label>
+            <div className={styles.quick}>
+              {QUICK.map(([p, text]) => (
+                <button key={p} type="button" className={styles.quickBtn} onClick={() => onChange({ input: quickInput(trade, c, p) })}>
+                  {text}
+                </button>
+              ))}
+            </div>
+            <div className={styles.hint}>{(qtyMode ? '' : '= ' + c.qty + '주 · ') + (buy ? '최대 ' + c.maxBuy + '주' : '매도 가능 ' + c.sellable + '주')}</div>
+            {c.err && <div className={styles.err}>{c.err}</div>}
+          </div>
+
+          <div>
+            <div className={styles.line}>
+              <span className={styles.k}>예상 금액</span>
+              <span className={styles.v}>₩{F.won(c.amount)}</span>
+            </div>
+            <div className={cx(styles.line, styles.lineGap)}>
+              <span className={styles.k}>예상 수수료</span>
+              <span className={styles.rate}>0.015% · 예시</span>
+              <span className={styles.v}>₩{F.won(c.fee)}</span>
+            </div>
+            {!buy && (
+              <div className={styles.line}>
+                <span className={styles.k}>{RD.C.SELL_TAX_LABEL}</span>
+                <span className={cx(styles.rate, styles.rateTax)}>0.20%</span>
+                <span className={styles.v}>₩{F.won(c.tax)}</span>
+              </div>
+            )}
+            <div className={styles.line}>
+              <span>합계</span>
+              <b className={styles.total}>₩{F.won(c.total)}</b>
+            </div>
+            <div className={cx(styles.line, styles.lineEnd)}>
+              <span className={styles.k}>주문 후 예수금</span>
+              <span className={styles.v}>₩{F.won(c.cashAfter)}</span>
+            </div>
+          </div>
+
+          <div>
+            <div className={styles.wLine}>
+              주문 후 이 종목 비중 <b className={styles.wB}>{c.weightBefore.toFixed(1) + '%'}</b> → <b className={cx(styles.wB, styles.wA)}>{c.weightAfter.toFixed(1) + '%'}</b> <span className={styles.target}>목표 {c.target}%</span>
+            </div>
+            <div className={styles.bars}>
+              <div className={styles.bar}>
+                <div className={cx(styles.fill, styles.fillBefore)} style={{ width: c.weightBefore.toFixed(1) + '%' }} />
+              </div>
+              <div className={styles.bar}>
+                <div className={cx(styles.fill, styles.fillAfter)} style={{ width: c.weightAfter.toFixed(1) + '%' }} />
+              </div>
+            </div>
+          </div>
+
+          <div className={styles.note}>
+            {NOTE()}
+            {!buy && <span className={styles.noteSell}>매도 대금을 1년 안에 인출하면 세제 혜택이 취소될 수 있어요.</span>}
+          </div>
+        </div>
+
+        <div className={styles.foot}>
+          <button type="button" className={cx(styles.submit, c.ok ? (buy ? styles.submitBuy : styles.submitSell) : styles.submitOff)} disabled={!c.ok} onClick={() => onSubmit(c)}>
+            {buy ? '매수 주문' : '매도 주문'}
+          </button>
+        </div>
+      </aside>
+    </div>,
+    document.body
+  )
+}
