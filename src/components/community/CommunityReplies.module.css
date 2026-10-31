@@ -108,6 +108,7 @@
 }
 
 .input {
+  font-variant-numeric: normal; /* 원본 입력칸은 숫자 고정폭을 안 씀 */
   flex: 1;
   min-width: 0;
   box-sizing: border-box;

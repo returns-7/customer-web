@@ -185,6 +185,62 @@
   color: var(--color-navy);
 }
 
+.editBox {
+  margin-top: 6px;
+}
+
+.editArea {
+  font-variant-numeric: normal; /* 원본 입력칸은 숫자 고정폭을 안 씀 */
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  height: 80px;
+  resize: none;
+  border: 1px solid var(--color-navy);
+  border-radius: var(--radius-6);
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: var(--font-size-14);
+  line-height: 1.5;
+  color: var(--color-ink);
+  outline: 0;
+}
+
+.editBtns {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.editCancel,
+.editSave {
+  appearance: none;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--radius-6);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+}
+
+.editCancel {
+  background: none;
+  color: inherit;
+  border: 1px solid var(--color-line-strong);
+}
+
+.editSave {
+  border: 0;
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+
 .actions {
   display: flex;
   align-items: center;

@@ -1,0 +1,139 @@
+/* 글 삭제 확인 창 · 신고 사유 창 (원본: 폭 360, 안쪽 20, 제목 16px/600) */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-confirm);
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.panel {
+  width: min(360px, 100%);
+  background: var(--color-surface);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-semibold);
+}
+
+.desc {
+  margin: 0;
+  font-size: var(--font-size-14);
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+.opt {
+  appearance: none;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--color-line-soft);
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-10);
+  font-size: var(--font-size-14);
+}
+
+.ring {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: var(--radius-round);
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  flex: none;
+}
+
+.ringOn {
+  border: 5px solid var(--color-navy);
+}
+
+.etc {
+  font-variant-numeric: normal; /* 원본 입력칸은 숫자 고정폭을 안 씀 */
+  width: 100%;
+  box-sizing: border-box;
+  height: 40px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  padding: 0 10px;
+  font-size: var(--font-size-14);
+  outline: 0;
+  color: var(--color-ink);
+}
+
+.etc:focus-visible {
+  outline: 0;
+}
+
+.etcCount {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+  margin-top: var(--space-4);
+  text-align: right;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-8);
+}
+
+.cancel,
+.ok {
+  appearance: none;
+  background: none;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  flex: 1;
+  height: var(--size-control);
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-semibold);
+}
+
+.cancel {
+  border: 1px solid var(--color-line-strong);
+  color: inherit;
+}
+
+.ok {
+  border: 0;
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+
+.ok:disabled {
+  background: var(--color-line-strong);
+  cursor: default;
+}

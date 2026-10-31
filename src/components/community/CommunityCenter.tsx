@@ -5,13 +5,15 @@ import { F } from '../../lib/calc'
 import { StockIcon } from '../common/StockIcon'
 import { Tabs } from '../common/Tabs'
 import { cx } from '../common/cx'
-import { COMPOSE_H, GEN, GEN_NAME, KR_ALL } from './communityData'
+import { DEFAULT_NICK, GEN, GEN_NAME, KR_ALL, composePlaceholder, kiruAskHint } from './communityData'
 import { ddGroups, priceAt, type Seg } from './communityLogic'
-import type { Post } from './communityPosts'
+import { myProfile, type Post } from './communityPosts'
+import { CommunityCompose } from './CommunityCompose'
+import { CommunityDialogs } from './CommunityDialogs'
 import { CommunityFeed } from './CommunityFeed'
+import { CommunityNickForm } from './CommunityNickForm'
 import { useCommunityFeed, type FeedTab, type HotScope } from './useCommunityFeed'
 import styles from './CommunityCenter.module.css'
-import feedStyles from './CommunityFeed.module.css'
 
 export type { FeedTab, HotScope }
 const TABS: { key: FeedTab; label: string }[] = [{ key: 'live', label: '실시간' }, { key: 'hot', label: '인기글' }, { key: 'mine', label: '내가 쓴 댓글' }]
@@ -37,18 +39,20 @@ interface CommunityCenterProps {
   tab: FeedTab
   scope: HotScope
   onCode: (code: string) => void
-  onTab: (tab: FeedTab) => void
+  onTab: (tab: FeedTab, keepUrl?: boolean) => void // keepUrl: 주소는 그대로 두고 탭만 바꿈(인기글에서 글을 쓰면 실시간으로)
   onScope: (scope: HotScope) => void
   onStar: () => void
   fixed: boolean // 화면 고정이면 글 목록만 스크롤
-  nick: string
+  nick: string // 내 닉네임(없으면 빈 문자열 → 닉네임 정하기가 보임)
+  onNick: (nick: string) => void
   pubOn: boolean
   onToast: (text: string) => void
   thread: string | null // 주소 ?thread= 로 들어온 글 id
 }
 
-// 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 글 목록(답글 포함). 글쓰기 창은 자리만(C-5)
-export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, pubOn, onToast, thread }: CommunityCenterProps) {
+// 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 닉네임 정하기/글쓰기 창 + 글 목록(답글·수정·삭제·신고 포함)
+export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, onNick, pubOn, onToast, thread }: CommunityCenterProps) {
+  const myNick = nick || DEFAULT_NICK // 닉네임이 비어 있어도 글·답글에는 기본 이름이 쓰임(원본)
   const [ddOpen, setDdOpen] = useState(false)
   const [ddQ, setDdQ] = useState('')
   const [ddHi, setDdHi] = useState(0)
@@ -71,8 +75,8 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
     setQ('')
   }
 
-  const feed = useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef, nick, thread, onToast })
-  const { menu, closeMenu } = feed
+  const feed = useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef, nick: myNick, thread, onToast, onPosted: () => { if (tab === 'hot') onTab('live', true) } })
+  const { menu, closeMenu, report, delId, cancelReport, cancelDelete } = feed
   const toTop = useRef(feed.toListTop)
   useEffect(() => { toTop.current = feed.toListTop })
   useEffect(() => { toTop.current(false) }, [code])
@@ -152,13 +156,15 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (ddOpen) closeDd()
+      if (report) cancelReport()
+      else if (delId) cancelDelete()
+      else if (ddOpen) closeDd()
       else if (menu) closeMenu()
       else if (searchOpen) closeSearch()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [ddOpen, searchOpen, menu, closeMenu])
+  }, [ddOpen, searchOpen, menu, closeMenu, report, delId, cancelReport, cancelDelete])
   // "…" 메뉴 밖을 누르면 닫힘
   useEffect(() => {
     if (!menu) return
@@ -308,9 +314,11 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
           )}
         </div>
       )}
-      {/* TODO: C-5에서 닉네임 정하기 + 글쓰기 창. 지금은 원본과 같은 높이의 빈 자리 */}
-      <div className={feedStyles.composeSpace} style={{ height: COMPOSE_H }} />
-      <CommunityFeed feed={feed} q={q} scope={scope} fixed={fixed} nick={nick} pubOn={pubOn} listRef={listRef} onShare={share} onGoThread={goThread} onNoop={() => { /* TODO: C-5 신고·수정·삭제 */ }} />
+      {!nick && <CommunityNickForm first onSave={onNick} />}
+      {nick && <CommunityCompose feed={feed} myPf={myProfile(pubOn)} placeholder={composePlaceholder(isGen, name)} hint={kiruAskHint(isGen)} />}
+      {/* TODO: "끼루 챗봇에서 물어보기 ›"는 챗봇 창을 열어야 함. 챗봇은 공통 레이아웃(AppLayout)이 가지고 있어 열기 연결은 확인 후 */}
+      <CommunityFeed feed={feed} q={q} scope={scope} fixed={fixed} nick={myNick} pubOn={pubOn} listRef={listRef} onShare={share} onGoThread={goThread} onBot={() => { /* TODO: 챗봇 열기 */ }} />
+      <CommunityDialogs feed={feed} />
     </section>
   )
 }

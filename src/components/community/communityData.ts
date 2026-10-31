@@ -59,5 +59,19 @@ export const LIVE_MIN_MS = 10000 // 실시간 새 글: 10~15초마다 1개
 export const LIVE_SPAN_MS = 5000
 export const AT_TOP_PX = 40 // 고정 상태에서 이 값 미만이면 "맨 위"
 export const AT_TOP_PAGE_PX = 60 // 페이지 스크롤 상태에서 피드 윗부분이 이만큼 안 벗어나면 "맨 위"
-export const COMPOSE_H = 83 // 글쓰기 창 자리 높이(글쓰기 창은 C-5에서 만듦)
 export const FEED_EMPTY = { search: (q: string) => '‘' + q + '’ 내용의 글이 없어요', mine: '아직 쓴 글이 없어요. 위 입력칸에 첫 의견을 남겨 보세요.', other: '아직 글이 없어요. 첫 의견을 남겨 보세요.' }
+
+// ===== C-5: 닉네임·글쓰기·수정·삭제·신고 =====
+export const NICK_RE = /^[가-힣a-zA-Z0-9]{2,10}$/ // 닉네임: 한글·영문·숫자 2~10자
+export const NICK_MAX = 10
+export const DEFAULT_NICK = '리아' // 닉네임이 비었을 때 글·답글에 대신 쓰는 이름(원본)
+export const POST_MAX = 500 // 글·수정 최대 글자 수
+export const REPORT_MAX = 100 // 신고 사유 '기타' 최대 글자 수
+export const REPORT_REASONS = ['욕설·비방', '스팸·광고', '개인정보 노출', '기타']
+export const REPORT_ETC = '기타'
+export const KIRU_MS = 2500 // 끼루가 근거를 찾는 시간(예시)
+export const FRESH_MS = 400 // 새 글이 나타나는 효과 시간
+export const composePlaceholder = (isGen: boolean, stockName: string): string =>
+  isGen ? 'RIA 제도에 대해 궁금한 걸 남겨주세요' : stockName + '에 대한 의견을 남겨주세요'
+export const kiruAskHint = (isGen: boolean): string =>
+  isGen ? '끼루가 RIA 제도 자료를 바탕으로 답해요' : '끼루가 기업 정보·최근 기사·공시를 바탕으로 답해요'

@@ -4,6 +4,7 @@ import { CommunityCenter, type FeedTab, type HotScope } from '../components/comm
 import { CommunityTop10 } from '../components/community/CommunityTop10'
 import { BAR_H_FALLBACK, FIXED_MIN_HEIGHT, KR_ALL, MID_MIN, RECENT_KEY, TOAST_MS, WIDE_MIN, rowHeight, stockFromUrl } from '../components/community/communityData'
 import { loadRecent, pushRecent } from '../components/community/communityLogic'
+import { initNick, setNick, useNick } from '../components/community/communityNick'
 import { Toast } from '../components/common/Toast'
 import { useToast } from '../components/common/useToast'
 import { cx } from '../components/common/cx'
@@ -12,7 +13,7 @@ import { RETURNS_DATA as RD } from '../data/returns'
 
 const viewport = () => ({ w: window.innerWidth, h: window.innerHeight })
 
-// 커뮤니티 — 1~3번째 부분: 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·글 목록) + 아래 안내 문구. 글쓰기는 C-5, 오른쪽 열은 C-6
+// 커뮤니티 — 1~5번째 부분: 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·닉네임 정하기·글쓰기·글 목록·답글·수정·삭제·신고) + 아래 안내 문구. 오른쪽 열은 C-6
 export function CommunityPage() {
   const [params] = useSearchParams()
   const [code, setCode] = useState(() => stockFromUrl(params.get('stock')))
@@ -22,8 +23,10 @@ export function CommunityPage() {
   const [recent, setRecent] = useState(() => loadRecent(stockFromUrl(params.get('stock'))))
   // TODO: 관심 종목은 백엔드 연결 시 서버 값. 오른쪽 열(C-4)에서 목록을 보여 줌
   const [watch, setWatch] = useState(() => RD.WATCH.filter((c) => KR_ALL[c]))
-  // TODO: 닉네임·성향 공개 여부는 C-5·C-6에서 바꿀 수 있게 만들 때 상태로 바꿈. 지금은 홈과 같은 RD 값
-  const nick = RD.COMMUNITY.nickname || '리아'
+  // 닉네임은 communityNick 한 곳에 둠(처음 값은 RD.COMMUNITY.nickname, 주소에 ?first=1 이면 비어 있음). 오른쪽 열(C-6)·내 정보도 여기서 읽고 바꿈
+  useState(() => initNick(params.get('first') === '1'))
+  const nick = useNick()
+  // TODO: 성향 공개 여부는 C-6에서 바꿀 수 있게 만들 때 상태로 바꿈. 지금은 홈과 같은 RD 값
   const pubOn = RD.COMMUNITY.profilePublic
   const { message: toast, showToast } = useToast()
   const [view, setView] = useState(viewport)
@@ -77,9 +80,13 @@ export function CommunityPage() {
     setRecent((r) => pushRecent(r, c))
     replaceUrl(c, tab)
   }
-  const selectTab = (t: FeedTab) => {
+  const selectTab = (t: FeedTab, keepUrl = false) => {
     setTab(t)
-    replaceUrl(code, t)
+    if (!keepUrl) replaceUrl(code, t)
+  }
+  const saveNick = (v: string) => {
+    showToast(nick ? '닉네임을 바꿨어요' : '닉네임을 정했어요', TOAST_MS)
+    setNick(v)
   }
   const toggleStar = () => {
     const on = watch.includes(code)
@@ -111,6 +118,7 @@ export function CommunityPage() {
           onStar={toggleStar}
           fixed={fixed}
           nick={nick}
+          onNick={saveNick}
           pubOn={pubOn}
           onToast={(t) => showToast(t, TOAST_MS)}
           thread={thread}

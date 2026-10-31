@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { RETURNS_DATA as RD } from '../../data/returns'
-import { AT_TOP_PAGE_PX, AT_TOP_PX, FEED_LIMIT, GEN, LIVE_MIN_MS, LIVE_SPAN_MS, REPLY_MAX, REP_FIRST, REP_STEP, THREAD_LIMIT } from './communityData'
-import { buildList, myReplies, type AddedReplies, type FeedView, type Post, type Reply } from './communityPosts'
+import { AT_TOP_PAGE_PX, AT_TOP_PX, FEED_LIMIT, FRESH_MS, GEN, KIRU_MS, LIVE_MIN_MS, LIVE_SPAN_MS, POST_MAX, REPLY_MAX, REPORT_MAX, REP_FIRST, REP_STEP, THREAD_LIMIT } from './communityData'
+import { buildList, myReplies, resolveKiru, type AddedReplies, type FeedView, type KiruState, type Post, type Reply } from './communityPosts'
 
 export type FeedTab = 'live' | 'hot' | 'mine'
 export type HotScope = 'stock' | 'all'
@@ -15,7 +15,8 @@ interface FeedArgs {
   fixed: boolean // 화면 고정 상태면 피드 영역만 스크롤
   listRef: RefObject<HTMLDivElement | null>
   feedRef: RefObject<HTMLElement | null>
-  nick: string // 내 닉네임(내가 단 답글의 작성자)
+  nick: string // 내 닉네임(글·답글의 작성자). 닉네임이 비었으면 기본 이름
+  onPosted: () => void // 글을 등록했을 때(인기글 탭에서 썼으면 실시간으로 옮기는 일은 부른 쪽이 함)
   thread: string | null // 주소 ?thread= 로 들어온 글 id(처음 한 번만 쓰임)
   onToast: (text: string) => void
 }
@@ -24,7 +25,7 @@ interface FeedArgs {
 interface ReplyAt { post: string; rep: string | null; target: string | null }
 
 // 피드 글 목록의 상태: 새로 붙은 글, 아직 안 보인 새 글, 좋아요, 더보기, 메뉴, 보여 줄 개수 + 실시간 새 글 타이머
-export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef, nick, thread, onToast }: FeedArgs) {
+export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef, nick, onPosted, thread, onToast }: FeedArgs) {
   const [added, setAdded] = useState<Record<string, Post[]>>({}) // 종목별로 앞에 붙은 새 글
   const [pend, setPend] = useState<Record<string, Post[]>>({}) // 스크롤 중이라 바에만 알린 새 글
   const [fresh, setFresh] = useState<string | null>(null) // 방금 붙은 글(나타나는 효과)
@@ -41,6 +42,18 @@ export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listR
   const [replyAt, setReplyAt] = useState<ReplyAt | null>(null)
   const [replyText, setReplyText] = useState('')
   // 종목이 바뀌면 쓰던 답글 자리는 닫힘(쓰던 글자는 그대로 두는 것까지 원본과 같음)
+  // 글 수정·삭제·신고·글쓰기·끼루에게 물어보기
+  const [deleted, setDeleted] = useState<Record<string, boolean>>({})
+  const [edits, setEdits] = useState<Record<string, string>>({})
+  const [editing, setEditing] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+  const [delId, setDelId] = useState<string | null>(null) // 삭제 확인 창에 떠 있는 글
+  const [report, setReport] = useState<{ reason: string | null; text: string } | null>(null) // 신고 창
+  const [kSt, setKSt] = useState<Record<string, KiruState>>({}) // 물어본 글의 끼루 답변 상태
+  const [draft, setDraft] = useState('')
+  const [compFocus, setCompFocus] = useState(false)
+  const [kAsk, setKAsk] = useState(false)
+  const mods = useMemo(() => ({ deleted, edits }), [deleted, edits])
   const [seenCode, setSeenCode] = useState(code)
   if (seenCode !== code) { setSeenCode(code); setReplyAt(null) }
 
@@ -50,7 +63,7 @@ export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listR
   const qt = q.trim()
   const qOn = searchOpen && !!qt
   const view: FeedView = qOn ? 'search' : tab
-  const list = useMemo(() => buildList({ code, view, scope, q: qt, added, addRep }), [code, view, scope, qt, added, addRep])
+  const list = useMemo(() => buildList({ code, view, scope, q: qt, added, addRep, mods }), [code, view, scope, qt, added, addRep, mods])
   const total = list.length
   const shown = list.slice(0, limit)
 
@@ -212,8 +225,63 @@ export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listR
     else if (e.key === 'Escape') { e.stopPropagation(); setReplyAt(null); setReplyText('') }
   }
 
-  const myReps = useMemo(() => myReplies(added, addRep), [added, addRep])
-  const myPostN = useMemo(() => buildList({ code, view: 'mine', scope, q: '', added, addRep }).length, [code, scope, added, addRep])
+  const myReps = useMemo(() => myReplies(added, addRep, mods), [added, addRep, mods])
+  const myPostN = useMemo(() => buildList({ code, view: 'mine', scope, q: '', added, addRep, mods }).length, [code, scope, added, addRep, mods])
 
-  return { view, qOn, list, total, shown, limit, moreOn: total > limit, newBar, showNew, liked, like, expanded, toggleMore, kMore, toggleKMore, menu, toggleMenu, closeMenu, loadMore, resetLimit, flash, fresh, toListTop, focusPost, myReps, myPostN, addRep, repOpen, repShow, replyAt, replyText, replyOk, toggleRep, olderReps, openBox, focusBox, typeReply, clearReply, submitReply, replyKey }
+  // ===== 끼루에게 물어보기: 2.5초 뒤 결과(답변·자료 없음·범위 밖·실패) =====
+  const askKiru = (p: Post, retry = false) => {
+    setKSt((m) => ({ ...m, [p.id]: { status: 'PENDING' } }))
+    later(() => setKSt((m) => ({ ...m, [p.id]: resolveKiru(p, retry) })), KIRU_MS)
+  }
+
+  // ===== 글쓰기 =====
+  const dt = draft.trim()
+  const composing = compFocus || !!draft
+  const typeDraft = (v: string) => setDraft(v.slice(0, POST_MAX))
+  const submitPost = () => {
+    if (!dt) return
+    // TODO: 백엔드 연결 시 서버가 id·시간을 정해 줌
+    const p: Post = { id: 'my-' + Date.now(), nick, pfRaw: 'me', time: '방금', text: dt, likes: 0, rc: 0, mine: true, code, kiru: null }
+    if (kAsk) { askKiru(p); setKAsk(false) }
+    setAdded((a) => ({ ...a, [code]: [p].concat(a[code] || []) }))
+    setDraft('')
+    setCompFocus(false)
+    setFresh(p.id)
+    later(() => setFresh((f) => (f === p.id ? null : f)), FRESH_MS)
+    onPosted()
+    toListTop(true)
+    onToast('글을 남겼어요')
+  }
+
+  // ===== 수정·삭제·신고 =====
+  const startEdit = (p: Post) => { setMenuState(null); setEditing(p.id); setEditText(p.text) }
+  const typeEdit = (v: string) => setEditText(v.slice(0, POST_MAX))
+  const cancelEdit = () => setEditing(null)
+  // 빈 글이면 저장하지 않고 수정 칸을 그대로 둠(안내는 원본처럼 그대로 뜸)
+  const saveEdit = (id: string) => {
+    const v = editText.trim()
+    if (v) { setEdits((m) => ({ ...m, [id]: v })); setEditing(null) }
+    onToast('글을 수정했어요')
+  }
+  const askDelete = (id: string) => { setMenuState(null); setDelId(id) }
+  const cancelDelete = () => setDelId(null)
+  const confirmDelete = () => {
+    if (!delId) return
+    const id = delId
+    setDelId(null)
+    setDeleted((m) => ({ ...m, [id]: true }))
+    onToast('글을 삭제했어요')
+  }
+  const openReport = () => { setMenuState(null); setReport({ reason: null, text: '' }) }
+  const pickReason = (reason: string) => setReport((r) => r && { ...r, reason })
+  const typeReport = (v: string) => setReport((r) => r && { ...r, text: v.slice(0, REPORT_MAX) })
+  const cancelReport = () => setReport(null)
+  // TODO: 백엔드 연결 시 신고 사유를 서버로 보냄. 원본은 글을 숨기지 않고 안내만 띄움
+  const submitReport = () => {
+    if (!report || !report.reason) return
+    setReport(null)
+    onToast('신고를 접수했어요. 운영 정책에 따라 확인할게요')
+  }
+
+  return { view, qOn, list, total, shown, limit, moreOn: total > limit, newBar, showNew, liked, like, expanded, toggleMore, kMore, toggleKMore, menu, toggleMenu, closeMenu, loadMore, resetLimit, flash, fresh, toListTop, focusPost, myReps, myPostN, addRep, kSt, askKiru, draft, compFocus, setCompFocus, composing, canPost: !!dt, typeDraft, submitPost, kAsk, toggleKAsk: () => setKAsk((v) => !v), editing, editText, startEdit, typeEdit, cancelEdit, saveEdit, delId, askDelete, cancelDelete, confirmDelete, report, openReport, pickReason, typeReport, cancelReport, submitReport, repOpen, repShow, replyAt, replyText, replyOk, toggleRep, olderReps, openBox, focusBox, typeReply, clearReply, submitReply, replyKey }
 }

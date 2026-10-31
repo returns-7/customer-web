@@ -1,0 +1,123 @@
+/* 글쓰기 창 (가운데 열, 닉네임이 있을 때) */
+.compose {
+  flex: none;
+  min-height: 52px;
+  padding: var(--space-8) var(--space-16);
+  border-bottom: 1px solid var(--color-line-soft);
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: var(--space-10);
+  align-items: start;
+}
+
+.face {
+  padding-top: 6px;
+  line-height: 0;
+}
+
+.main {
+  min-width: 0;
+}
+
+.area {
+  font-variant-numeric: normal; /* 원본 입력칸은 숫자 고정폭을 안 씀 */
+  display: block;
+  width: 100%;
+  resize: none;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  padding: 7px 12px;
+  font-family: inherit;
+  font-size: var(--font-size-14);
+  line-height: 1.5;
+  color: var(--color-ink);
+  outline: 0;
+  transition: height 0.15s;
+}
+
+.area:focus-visible {
+  outline: 0;
+}
+
+.opts {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  margin-top: 6px;
+  min-height: 24px;
+  flex-wrap: wrap;
+}
+
+.ask {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-14);
+  white-space: nowrap;
+}
+
+.box {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: var(--radius-4);
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  display: grid;
+  place-items: center;
+  flex: none;
+  color: var(--color-on-navy);
+}
+
+.boxOn {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.hint {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.count {
+  margin-left: auto;
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+}
+
+.post {
+  appearance: none;
+  border: 0;
+  margin: 2px 0 0;
+  font: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--radius-6);
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+}
+
+.post:disabled {
+  background: var(--color-line-strong);
+  cursor: default;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .area {
+    transition: none;
+  }
+}

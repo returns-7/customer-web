@@ -3,7 +3,7 @@ import '../../styles/tokens.css'
 import { StockLabel } from '../common/StockLabel'
 import { cx } from '../common/cx'
 import { FEED_EMPTY } from './communityData'
-import { myProfile, pfOf, repCount, type Post } from './communityPosts'
+import { kiruOf, myProfile, pfOf, repCount, type Post } from './communityPosts'
 import { CommunityPost } from './CommunityPost'
 import { CommunityReplies } from './CommunityReplies'
 import type { useCommunityFeed } from './useCommunityFeed'
@@ -21,11 +21,11 @@ interface CommunityFeedProps {
   listRef: RefObject<HTMLDivElement | null>
   onShare: (p: Post) => void
   onGoThread: (code: string, id: string) => void
-  onNoop: () => void
+  onBot: () => void // 끼루 답변 줄의 "끼루 챗봇에서 물어보기 ›"
 }
 
 // 새 글 바 + 글 목록(고정 상태에서는 이 영역만 스크롤) + 이전 글 더 보기
-export function CommunityFeed({ feed, q, scope, fixed, nick, pubOn, listRef, onShare, onGoThread, onNoop }: CommunityFeedProps) {
+export function CommunityFeed({ feed, q, scope, fixed, nick, pubOn, listRef, onShare, onGoThread, onBot }: CommunityFeedProps) {
   const myPf = myProfile(pubOn)
   const multi = feed.view === 'mine' || (feed.view === 'hot' && scope === 'all')
   const empty = !feed.shown.length
@@ -68,7 +68,17 @@ export function CommunityFeed({ feed, q, scope, fixed, nick, pubOn, listRef, onS
             onMenu={feed.toggleMenu}
             onToggleRep={feed.toggleRep}
             onShare={onShare}
-            onNoop={() => { feed.closeMenu(); onNoop() }}
+            kiru={kiruOf(p, feed.kSt)}
+            editing={feed.editing === p.id}
+            editText={feed.editText}
+            onRetry={(post) => feed.askKiru(post, true)}
+            onBot={onBot}
+            onEdit={feed.startEdit}
+            onEditType={feed.typeEdit}
+            onEditCancel={feed.cancelEdit}
+            onEditSave={feed.saveEdit}
+            onDelete={feed.askDelete}
+            onReport={feed.openReport}
           >
             {feed.repOpen[p.id] && <CommunityReplies p={p} feed={feed} nick={nick} myPf={myPf} q={feed.qOn ? q.trim() : ''} />}
           </CommunityPost>
