@@ -12,11 +12,12 @@ import { RETURNS_DATA as RD } from '../data/returns'
 
 const viewport = () => ({ w: window.innerWidth, h: window.innerHeight })
 
-// 커뮤니티 — 1~3번째 부분: 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·글 목록) + 아래 안내 문구. 답글은 C-4, 글쓰기는 C-5, 오른쪽 열은 C-6
+// 커뮤니티 — 1~3번째 부분: 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·글 목록) + 아래 안내 문구. 글쓰기는 C-5, 오른쪽 열은 C-6
 export function CommunityPage() {
   const [params] = useSearchParams()
   const [code, setCode] = useState(() => stockFromUrl(params.get('stock')))
-  const [tab, setTab] = useState<FeedTab>(() => (params.get('tab') === 'mine' ? 'mine' : 'live'))
+  const [thread] = useState(() => params.get('thread')) // 주소 ?thread= 로 들어온 글(처음 한 번만 쓰임)
+  const [tab, setTab] = useState<FeedTab>(() => (!params.get('thread') && params.get('tab') === 'mine' ? 'mine' : 'live'))
   const [scope, setScope] = useState<HotScope>('stock')
   const [recent, setRecent] = useState(() => loadRecent(stockFromUrl(params.get('stock'))))
   // TODO: 관심 종목은 백엔드 연결 시 서버 값. 오른쪽 열(C-4)에서 목록을 보여 줌
@@ -112,6 +113,7 @@ export function CommunityPage() {
           nick={nick}
           pubOn={pubOn}
           onToast={(t) => showToast(t, TOAST_MS)}
+          thread={thread}
         />
         <div data-col="right" className={styles.right} />
       </div>

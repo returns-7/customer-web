@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { RETURNS_DATA as RD } from '../../data/returns'
-import { AT_TOP_PAGE_PX, AT_TOP_PX, FEED_LIMIT, GEN, LIVE_MIN_MS, LIVE_SPAN_MS, THREAD_LIMIT } from './communityData'
-import { buildList, myReplies, type FeedView, type Post } from './communityPosts'
+import { AT_TOP_PAGE_PX, AT_TOP_PX, FEED_LIMIT, GEN, LIVE_MIN_MS, LIVE_SPAN_MS, REPLY_MAX, REP_FIRST, REP_STEP, THREAD_LIMIT } from './communityData'
+import { buildList, myReplies, type AddedReplies, type FeedView, type Post, type Reply } from './communityPosts'
 
 export type FeedTab = 'live' | 'hot' | 'mine'
 export type HotScope = 'stock' | 'all'
@@ -15,10 +15,16 @@ interface FeedArgs {
   fixed: boolean // 화면 고정 상태면 피드 영역만 스크롤
   listRef: RefObject<HTMLDivElement | null>
   feedRef: RefObject<HTMLElement | null>
+  nick: string // 내 닉네임(내가 단 답글의 작성자)
+  thread: string | null // 주소 ?thread= 로 들어온 글 id(처음 한 번만 쓰임)
+  onToast: (text: string) => void
 }
 
+// 답글 쓰는 중인 곳: 어느 글에, 어느 답글에(없으면 글에 바로), 누구에게(@닉네임)
+interface ReplyAt { post: string; rep: string | null; target: string | null }
+
 // 피드 글 목록의 상태: 새로 붙은 글, 아직 안 보인 새 글, 좋아요, 더보기, 메뉴, 보여 줄 개수 + 실시간 새 글 타이머
-export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef }: FeedArgs) {
+export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef, nick, thread, onToast }: FeedArgs) {
   const [added, setAdded] = useState<Record<string, Post[]>>({}) // 종목별로 앞에 붙은 새 글
   const [pend, setPend] = useState<Record<string, Post[]>>({}) // 스크롤 중이라 바에만 알린 새 글
   const [fresh, setFresh] = useState<string | null>(null) // 방금 붙은 글(나타나는 효과)
@@ -26,9 +32,17 @@ export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listR
   const [liked, setLiked] = useState<Record<string, boolean>>({})
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
   const [kMore, setKMore] = useState<Record<string, boolean>>({})
-  const [limitState, setLimitState] = useState<{ code: string; n: number }>({ code, n: FEED_LIMIT }) // 종목이 바뀌면 자동으로 처음 개수로 돌아감
+  const [limitState, setLimitState] = useState<{ code: string; n: number }>({ code, n: thread ? THREAD_LIMIT : FEED_LIMIT }) // 종목이 바뀌면 자동으로 처음 개수로 돌아감
   const [menuState, setMenuState] = useState<{ code: string; id: string } | null>(null)
-  const [flash, setFlash] = useState<{ id: string; on: boolean } | null>(null)
+  const [flash, setFlash] = useState<{ id: string; on: boolean } | null>(thread ? { id: thread, on: true } : null)
+  const [addRep, setAddRep] = useState<AddedReplies>({}) // 내가 새로 단 답글
+  const [repOpen, setRepOpen] = useState<Record<string, boolean>>(thread ? { [thread]: true } : {}) // 답글을 펼친 글(여러 글 동시에 가능)
+  const [repShow, setRepShow] = useState<Record<string, number>>({}) // 글마다 보여 줄 답글 수(처음 REP_FIRST)
+  const [replyAt, setReplyAt] = useState<ReplyAt | null>(null)
+  const [replyText, setReplyText] = useState('')
+  // 종목이 바뀌면 쓰던 답글 자리는 닫힘(쓰던 글자는 그대로 두는 것까지 원본과 같음)
+  const [seenCode, setSeenCode] = useState(code)
+  if (seenCode !== code) { setSeenCode(code); setReplyAt(null) }
 
   const limit = limitState.code === code ? limitState.n : FEED_LIMIT
   const menu = menuState && menuState.code === code ? menuState.id : null
@@ -36,7 +50,7 @@ export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listR
   const qt = q.trim()
   const qOn = searchOpen && !!qt
   const view: FeedView = qOn ? 'search' : tab
-  const list = useMemo(() => buildList({ code, view, scope, q: qt, added }), [code, view, scope, qt, added])
+  const list = useMemo(() => buildList({ code, view, scope, q: qt, added, addRep }), [code, view, scope, qt, added, addRep])
   const total = list.length
   const shown = list.slice(0, limit)
 
@@ -123,24 +137,83 @@ export function useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listR
   const loadMore = () => setLimitState({ code, n: limit + FEED_LIMIT })
   const resetLimit = () => setLimitState({ code, n: FEED_LIMIT })
 
-  // 내가 쓴 답글 줄에서 그 글로 이동: 더 많이 보여 주고 글을 찾아 스크롤 + 잠깐 강조
-  const focusPost = (targetCode: string, id: string) => {
-    setLimitState({ code: targetCode, n: THREAD_LIMIT })
-    setFlash({ id, on: true })
+  // 글을 찾아 스크롤 + 잠깐 강조(글이 아직 안 그려졌으면 잠깐씩 기다리며 다시 찾음)
+  const scrollToPost = (id: string, smooth: boolean) => {
+    const behavior = smooth ? 'smooth' : 'auto'
     const go = (n: number) => {
       const el = document.querySelector('[data-post="' + id + '"]')
       if (!el) { if (n < 20) later(() => go(n + 1), 80); return }
       const l = listRef.current
-      if (fixed && l) l.scrollTo({ top: el.getBoundingClientRect().top - l.getBoundingClientRect().top + l.scrollTop - 8, behavior: 'smooth' })
-      else window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
+      if (fixed && l) l.scrollTo({ top: el.getBoundingClientRect().top - l.getBoundingClientRect().top + l.scrollTop - 8, behavior })
+      else window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior })
       later(() => setFlash({ id, on: false }), 150)
       later(() => setFlash(null), 1800)
     }
     later(() => go(0), 120)
   }
+  // 내가 쓴 답글 줄에서 그 글로 이동: 더 많이 보여 주고 답글을 펼치고 글을 찾아 스크롤 + 잠깐 강조
+  const focusPost = (targetCode: string, id: string) => {
+    setLimitState({ code: targetCode, n: THREAD_LIMIT })
+    setRepOpen((o) => ({ ...o, [id]: true }))
+    setReplyAt(null)
+    setFlash({ id, on: true })
+    scrollToPost(id, true)
+  }
+  // 주소 ?thread= 로 들어왔으면 그 글로 스크롤(처음 한 번)
+  useEffect(() => {
+    if (thread) later(() => scrollToPost(thread, false), 150)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  const myReps = useMemo(() => myReplies(added), [added])
-  const myPostN = useMemo(() => buildList({ code, view: 'mine', scope, q: '', added }).length, [code, scope, added])
+  // ===== 답글 =====
+  const toggleRep = (id: string) => {
+    setRepOpen((o) => ({ ...o, [id]: !o[id] }))
+    if (replyAt && replyAt.post === id) { setReplyAt(null); setReplyText('') }
+  }
+  const olderReps = (id: string) => setRepShow((m) => ({ ...m, [id]: (m[id] || REP_FIRST) + REP_STEP }))
+  // 답글 버튼: 그 답글 아래에 입력칸을 열고 "@닉네임 "을 채움
+  const openBox = (postId: string, repId: string, target: string) => {
+    setReplyAt({ post: postId, rep: repId, target })
+    setReplyText('@' + target + ' ')
+    setRepOpen((o) => ({ ...o, [postId]: true }))
+    later(() => {
+      const el = document.querySelector<HTMLInputElement>('[data-rbox="' + repId + '"] input')
+      if (el) { el.focus(); el.setSelectionRange(el.value.length, el.value.length) }
+    }, 40)
+  }
+  // 글 아래 입력칸에 커서를 두면 그 글에 바로 답글 쓰는 자리가 됨
+  const focusBox = (postId: string) => {
+    if (replyAt && replyAt.post === postId && !replyAt.rep) return
+    setReplyAt({ post: postId, rep: null, target: null })
+    setReplyText('')
+  }
+  const typeReply = (v: string) => setReplyText(v.slice(0, REPLY_MAX))
+  const clearReply = () => setReplyAt(null)
+  // 등록할 글: "@대상 "으로 시작하면 @닉네임 표시로 분리하고 나머지만 본문
+  let rBody = replyText
+  let rTarget: string | null = null
+  if (replyAt && replyAt.target && rBody.startsWith('@' + replyAt.target)) { rTarget = replyAt.target; rBody = rBody.slice(replyAt.target.length + 1) }
+  rBody = rBody.trim()
+  const replyOk = !!replyAt && !!rBody
+  const submitReply = () => {
+    if (!replyAt || !replyOk) return
+    const postId = replyAt.post
+    // TODO: 백엔드 연결 시 서버가 id·시간을 정해 줌
+    const r: Reply = { id: 'mr-' + Date.now(), nick, pfRaw: 'me', time: '방금', text: rBody, likes: 0, target: rTarget }
+    setAddRep((m) => ({ ...m, [postId]: (m[postId] || []).concat([r]) }))
+    setReplyAt(null)
+    setReplyText('')
+    setRepOpen((o) => ({ ...o, [postId]: true }))
+    setRepShow((m) => ({ ...m, [postId]: (m[postId] || REP_FIRST) + 1 }))
+    onToast('답글을 남겼어요')
+  }
+  const replyKey = (e: { key: string; preventDefault: () => void; stopPropagation: () => void }) => {
+    if (e.key === 'Enter') { e.preventDefault(); submitReply() }
+    else if (e.key === 'Escape') { e.stopPropagation(); setReplyAt(null); setReplyText('') }
+  }
 
-  return { view, qOn, list, total, shown, limit, moreOn: total > limit, newBar, showNew, liked, like, expanded, toggleMore, kMore, toggleKMore, menu, toggleMenu, closeMenu, loadMore, resetLimit, flash, fresh, toListTop, focusPost, myReps, myPostN }
+  const myReps = useMemo(() => myReplies(added, addRep), [added, addRep])
+  const myPostN = useMemo(() => buildList({ code, view: 'mine', scope, q: '', added, addRep }).length, [code, scope, added, addRep])
+
+  return { view, qOn, list, total, shown, limit, moreOn: total > limit, newBar, showNew, liked, like, expanded, toggleMore, kMore, toggleKMore, menu, toggleMenu, closeMenu, loadMore, resetLimit, flash, fresh, toListTop, focusPost, myReps, myPostN, addRep, repOpen, repShow, replyAt, replyText, replyOk, toggleRep, olderReps, openBox, focusBox, typeReply, clearReply, submitReply, replyKey }
 }

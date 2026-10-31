@@ -3,8 +3,9 @@ import '../../styles/tokens.css'
 import { StockLabel } from '../common/StockLabel'
 import { cx } from '../common/cx'
 import { FEED_EMPTY } from './communityData'
-import { myProfile, pfOf, type Post } from './communityPosts'
+import { myProfile, pfOf, repCount, type Post } from './communityPosts'
 import { CommunityPost } from './CommunityPost'
+import { CommunityReplies } from './CommunityReplies'
 import type { useCommunityFeed } from './useCommunityFeed'
 import styles from './CommunityFeed.module.css'
 
@@ -57,15 +58,20 @@ export function CommunityFeed({ feed, q, scope, fixed, nick, pubOn, listRef, onS
             kLiked={!!feed.liked['k-' + p.id]}
             kExpanded={!!feed.kMore[p.id]}
             menuOpen={feed.menu === p.id}
+            rn={repCount(p, feed.addRep)}
+            repOpen={!!feed.repOpen[p.id]}
             fresh={feed.fresh === p.id}
             flash={feed.flash && feed.flash.id === p.id ? (feed.flash.on ? 'on' : 'fade') : null}
             onLike={feed.like}
             onMore={feed.toggleMore}
             onKiruMore={feed.toggleKMore}
             onMenu={feed.toggleMenu}
+            onToggleRep={feed.toggleRep}
             onShare={onShare}
             onNoop={() => { feed.closeMenu(); onNoop() }}
-          />
+          >
+            {feed.repOpen[p.id] && <CommunityReplies p={p} feed={feed} nick={nick} myPf={myPf} q={feed.qOn ? q.trim() : ''} />}
+          </CommunityPost>
         ))}
         {feed.view === 'mine' && (
           <>

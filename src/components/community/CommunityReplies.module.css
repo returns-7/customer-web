@@ -1,0 +1,155 @@
+/* 글 아래로 펼쳐지는 답글 영역 */
+.wrap {
+  margin: var(--space-8) 0 0 var(--space-8);
+  border-left: 1px solid var(--color-line-soft);
+  padding-left: 12px;
+  display: flex;
+  flex-direction: column;
+}
+
+.older {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  text-align: left;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  padding: 2px 0 6px;
+}
+
+.rep {
+  padding: 6px 0;
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: var(--space-8);
+  align-items: start;
+}
+
+.body {
+  min-width: 0;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.nick {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.meta {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.text {
+  margin-top: 1px;
+  font-size: var(--font-size-13);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.at {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-semibold);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 2px;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.act {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  color: var(--color-sub);
+  font-weight: var(--font-weight-regular);
+}
+
+.act:hover {
+  color: var(--color-navy);
+}
+
+.actOn {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* 답글 입력칸(답글 아래 / 글 맨 아래 공통) */
+.box {
+  display: flex;
+  gap: 6px;
+}
+
+.boxRep {
+  margin-top: 6px;
+}
+
+.boxPost {
+  padding: 4px 0 2px;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  box-sizing: border-box;
+  height: 36px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  padding: 0 10px;
+  font-family: inherit;
+  font-variant-numeric: normal; /* 원본 입력칸은 글꼴 이름만 물려받아 숫자 폭이 균일하지 않음 */
+  font-size: var(--font-size-13);
+  outline: 0;
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.input:focus-visible {
+  outline: 0; /* 원본은 입력칸에 따로 포커스 테두리를 두지 않음 */
+}
+
+.input::placeholder {
+  color: var(--color-muted);
+}
+
+.submit {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  font: inherit;
+  box-sizing: border-box;
+  height: 36px;
+  padding: 0 12px;
+  border-radius: var(--radius-6);
+  background: var(--color-line-strong);
+  color: var(--color-surface);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  cursor: default;
+}
+
+.submitOn {
+  background: var(--color-navy);
+  cursor: pointer;
+}

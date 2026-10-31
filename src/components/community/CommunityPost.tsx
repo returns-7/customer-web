@@ -1,10 +1,11 @@
+import type { ReactNode } from 'react'
 import '../../styles/tokens.css'
 import { KkiruAvatar } from '../common/KkiruAvatar'
 import { StockLabel } from '../common/StockLabel'
 import { assetUrl } from '../common/assetUrl'
 import { cx } from '../common/cx'
 import { GEN, GEN_NAME, KIRU_LONG_CHARS, LONG_CHARS, LONG_LINES } from './communityData'
-import { kiruAnswers, plOf, repCount, type KiruAnswer, type KiruStatus, type Post } from './communityPosts'
+import { kiruAnswers, plOf, type KiruAnswer, type KiruStatus, type Post } from './communityPosts'
 import styles from './CommunityPost.module.css'
 
 // 끼루 답변이 없을 때 글 아래에 한 줄로 보이는 안내: [문구, 링크 글자]
@@ -16,7 +17,7 @@ const KIRU_LINES: Record<Exclude<KiruStatus, 'ANSWERED'>, [string, string]> = {
   FAILED: ['끼루 답변을 불러오지 못했어요 ·', '다시 요청']
 }
 
-const Segs = ({ text, q }: { text: string; q: string }) => {
+export const Segs = ({ text, q }: { text: string; q: string }) => {
   if (!q) return <span>{text}</span>
   const lo = text.toLowerCase()
   const ql = q.toLowerCase()
@@ -43,18 +44,22 @@ interface CommunityPostProps {
   kLiked: boolean
   kExpanded: boolean
   menuOpen: boolean
+  rn: number // 답글 수(내가 단 것 포함)
+  repOpen: boolean
   fresh: boolean
   flash: 'on' | 'fade' | null
   onLike: (id: string) => void
   onMore: (id: string) => void
   onKiruMore: (id: string) => void
   onMenu: (id: string) => void
+  onToggleRep: (id: string) => void
   onShare: (p: Post) => void
   onNoop: () => void // 신고·수정·삭제: C-5에서 연결
+  children?: ReactNode // 펼친 답글 영역(CommunityReplies)
 }
 
 // 글 한 개: 아바타·닉네임·성향·시간 + "…" 메뉴 + 본문 + 좋아요/답글/공유 줄 + 끼루 답변
-export function CommunityPost({ p, nick, pf, q, multi, liked, expanded, kLiked, kExpanded, menuOpen, fresh, flash, onLike, onMore, onKiruMore, onMenu, onShare, onNoop }: CommunityPostProps) {
+export function CommunityPost({ p, nick, pf, q, multi, liked, expanded, kLiked, kExpanded, menuOpen, rn, repOpen, fresh, flash, onLike, onMore, onKiruMore, onMenu, onToggleRep, onShare, onNoop, children }: CommunityPostProps) {
   const lines = p.text.split('\n').length
   const long = p.text.length > LONG_CHARS || lines > LONG_LINES
   const exp = expanded || !!q
@@ -102,8 +107,7 @@ export function CommunityPost({ p, nick, pf, q, multi, liked, expanded, kLiked, 
           {kAns && <div className={styles.kDone}>끼루가 답했어요</div>}
           <div className={styles.actions}>
             <button type="button" className={cx(styles.act, liked && styles.actOn)} aria-pressed={liked} onClick={() => onLike(p.id)}>좋아요 {p.likes + (liked ? 1 : 0)}</button>
-            {/* TODO: C-4에서 눌러 펼치기. 지금은 숫자만 */}
-            <button type="button" className={styles.act} aria-expanded={false}>답글 {repCount(p)} ∨</button>
+            <button type="button" className={cx(styles.act, repOpen && styles.actOn)} aria-expanded={repOpen} onClick={() => onToggleRep(p.id)}>답글 {rn} {repOpen ? '∧' : '∨'}</button>
             <button type="button" className={styles.act} onClick={() => onShare(p)}>공유</button>
           </div>
           {ka && (
@@ -140,6 +144,7 @@ export function CommunityPost({ p, nick, pf, q, multi, liked, expanded, kLiked, 
               )}
             </div>
           )}
+          {children}
         </div>
       </div>
     </article>

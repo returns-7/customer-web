@@ -44,10 +44,11 @@ interface CommunityCenterProps {
   nick: string
   pubOn: boolean
   onToast: (text: string) => void
+  thread: string | null // 주소 ?thread= 로 들어온 글 id
 }
 
-// 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 글 목록. 글쓰기 창은 자리만(C-5), 답글은 C-4
-export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, pubOn, onToast }: CommunityCenterProps) {
+// 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 글 목록(답글 포함). 글쓰기 창은 자리만(C-5)
+export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, pubOn, onToast, thread }: CommunityCenterProps) {
   const [ddOpen, setDdOpen] = useState(false)
   const [ddQ, setDdQ] = useState('')
   const [ddHi, setDdHi] = useState(0)
@@ -70,7 +71,7 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
     setQ('')
   }
 
-  const feed = useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef })
+  const feed = useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef, nick, thread, onToast })
   const { menu, closeMenu } = feed
   const toTop = useRef(feed.toListTop)
   useEffect(() => { toTop.current = feed.toListTop })
@@ -116,6 +117,7 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
   const changeTab = (key: FeedTab) => {
     onTab(key)
     closeSearch()
+    feed.clearReply()
     feed.resetLimit()
     feed.toListTop(false)
   }
@@ -129,7 +131,7 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
     try { void navigator.clipboard.writeText(url) } catch { /* 복사 못 해도 안내만 보임 */ }
     onToast('글 링크를 복사했어요')
   }
-  // 내가 쓴 답글 줄에서 글로 이동. TODO: C-4에서 그 글의 답글도 같이 펼침
+  // 내가 쓴 답글 줄에서 글로 이동(그 글의 답글도 같이 펼침)
   const goThread = (c: string, id: string) => {
     onCode(c)
     onTab('live')

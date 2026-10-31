@@ -26,8 +26,10 @@ export const FEED_CODES: string[] = Object.keys(RD.CHAT).concat(Object.keys(EX).
 export const postsOf = (code: string, added: Record<string, Post[]>): Post[] =>
   (added[code] || []).concat((EX[code] || []).map(toPost(code)), (RD.CHAT[code] || []).map((m) => toPost(code)(m as unknown as PostRow)))
 
-export const repliesOf = (id: string): Reply[] =>
-  (RD.REPLIES[id] || []).map((r) => ({ id: r[0], nick: r[1], pfRaw: r[2], time: r[3], text: r[4], likes: r[5], target: r[6] }))
+// 내가 새로 단 답글(글 id별). TODO: 백엔드 연결 시 서버 답글로 대체
+export type AddedReplies = Record<string, Reply[]>
+export const repliesOf = (id: string, addRep: AddedReplies = {}): Reply[] =>
+  (RD.REPLIES[id] || []).map((r): Reply => ({ id: r[0], nick: r[1], pfRaw: r[2], time: r[3], text: r[4], likes: r[5], target: r[6] })).concat(addRep[id] || [])
 
 // 작성자 성향: 내 글은 내가 공개한 때만 성향 표시, 다른 사람은 공개 동의한 닉네임만
 const PUB = new Set(PUBLIC_NICKS)
@@ -55,19 +57,19 @@ export const kiruAnswers = (): Record<string, KiruAnswer | { status: 'OUT_OF_SCO
 
 // ===== 목록 만들기 =====
 export type FeedView = 'live' | 'hot' | 'mine' | 'search'
-export interface BuildArgs { code: string; view: FeedView; scope: 'stock' | 'all'; q: string; added: Record<string, Post[]> }
+export interface BuildArgs { code: string; view: FeedView; scope: 'stock' | 'all'; q: string; added: Record<string, Post[]>; addRep: AddedReplies }
 
-export const repCount = (p: Post): number => p.rc // TODO: C-4에서 내가 단 답글 수를 더함
-export function buildList({ code, view, scope, q, added }: BuildArgs): Post[] {
+export const repCount = (p: Post, addRep: AddedReplies): number => p.rc + (addRep[p.id] || []).length
+export function buildList({ code, view, scope, q, added, addRep }: BuildArgs): Post[] {
   const ql = q.toLowerCase()
   const all = () => FEED_CODES.flatMap((c) => postsOf(c, added))
   if (view === 'mine') return all().filter((p) => p.mine)
-  if (view === 'hot') return (scope === 'all' ? all() : postsOf(code, added)).slice().sort((a, b) => b.likes + repCount(b) - (a.likes + repCount(a)))
-  if (view === 'search') return postsOf(code, added).filter((p) => p.text.toLowerCase().includes(ql) || repliesOf(p.id).some((r) => r.text.toLowerCase().includes(ql)))
+  if (view === 'hot') return (scope === 'all' ? all() : postsOf(code, added)).slice().sort((a, b) => b.likes + repCount(b, addRep) - (a.likes + repCount(a, addRep)))
+  if (view === 'search') return postsOf(code, added).filter((p) => p.text.toLowerCase().includes(ql) || repliesOf(p.id, addRep).some((r) => r.text.toLowerCase().includes(ql)))
   return postsOf(code, added)
 }
 
 // 내가 쓴 답글(내가 쓴 댓글 탭 아래 줄)
 export interface MyReply { code: string; postId: string; parent: string; time: string; text: string; target: string | null }
-export const myReplies = (added: Record<string, Post[]>): MyReply[] =>
-  FEED_CODES.flatMap((c) => postsOf(c, added).flatMap((p) => repliesOf(p.id).filter((r) => r.pfRaw === 'me').map((r) => ({ code: p.code, postId: p.id, parent: p.mine ? '내' : p.nick, time: r.time, text: r.text, target: r.target }))))
+export const myReplies = (added: Record<string, Post[]>, addRep: AddedReplies): MyReply[] =>
+  FEED_CODES.flatMap((c) => postsOf(c, added).flatMap((p) => repliesOf(p.id, addRep).filter((r) => r.pfRaw === 'me').map((r) => ({ code: p.code, postId: p.id, parent: p.mine ? '내' : p.nick, time: r.time, text: r.text, target: r.target }))))

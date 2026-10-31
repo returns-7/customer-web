@@ -48,6 +48,9 @@ export const EX: Record<string, [string, string, string, string, string, number,
 // 성향 공개에 동의한 작성자(예시). 나머지는 비공개: 회색 기본 아바타 + 닉네임만. TODO: 백엔드 연결 시 작성자별 공개 값으로 대체
 export const PUBLIC_NICKS = ['반도체개미', '장기보유러', '차분한투자', '새벽시장', '가치투자']
 export const FEED_LIMIT = 20 // 처음 보이는 글 수 / "이전 글 더 보기" 한 번에 늘어나는 수
+export const REP_FIRST = 5 // 답글을 펼치면 처음 보이는 답글 수(가장 나중 것부터)
+export const REP_STEP = 5 // "이전 답글 더 보기" 한 번에 늘어나는 수
+export const REPLY_MAX = 300 // 답글 최대 글자 수
 export const THREAD_LIMIT = 40 // 내 답글 줄에서 글로 이동할 때 보이는 글 수
 export const LONG_CHARS = 120 // 이 글자 수를 넘거나 3줄을 넘으면 "더보기"
 export const LONG_LINES = 3
