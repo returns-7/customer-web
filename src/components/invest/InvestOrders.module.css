@@ -1,0 +1,135 @@
+.box {
+  order: 4;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  min-width: 0;
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.head {
+  height: 48px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.headLine {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-16);
+  font-weight: var(--font-weight-extrabold);
+  white-space: nowrap;
+}
+
+.note {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.toggle {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-4);
+  display: grid;
+  place-items: center;
+  color: var(--color-sub);
+}
+
+.toggle:hover {
+  background: var(--color-surface-hover);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 1px;
+}
+
+.chevClosed {
+  transform: rotate(-90deg);
+}
+
+.wrap {
+  overflow-x: auto;
+}
+
+.inner {
+  min-width: 720px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 96px minmax(180px, 1fr) 56px 64px 96px 88px 48px;
+  gap: var(--space-12);
+  align-items: center;
+  padding: 0 var(--space-16);
+}
+
+.cols {
+  height: 32px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.r {
+  text-align: right;
+}
+
+.row {
+  height: 48px;
+  font-size: var(--font-size-14);
+}
+
+.rowLine {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.time {
+  font-size: var(--font-size-13);
+  color: var(--color-sub);
+}
+
+.stock {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.side {
+  font-weight: var(--font-weight-bold);
+}
+
+.buy {
+  color: var(--color-up);
+}
+
+.sell {
+  color: var(--color-down);
+}
+
+.status {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-sub);
+}
+
+.reject {
+  color: var(--color-red);
+}
+
+.empty {
+  height: 48px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-14);
+  color: var(--color-sub);
+}

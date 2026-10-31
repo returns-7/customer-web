@@ -1,0 +1,300 @@
+.wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.inner {
+  min-width: 980px;
+}
+
+/* 열 폭은 원본 그대로: 종목 · 주 수 · 평균 매입가 · 현재가 · 평가금액 · 평가손익 · 수익률 · 위험 · 비중/목표 · 주문 */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(190px, 1.6fr) 0.55fr 0.95fr 0.95fr 1fr 0.95fr 0.7fr minmax(116px, 0.9fr) 0.95fr 64px;
+  gap: var(--space-10);
+  align-items: center;
+  padding: 0 var(--space-16);
+}
+
+.r {
+  text-align: right;
+}
+
+.c {
+  text-align: center;
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
+
+.flat {
+  color: var(--color-sub);
+}
+
+.head {
+  height: 32px;
+  border-bottom: 1px solid var(--color-line-soft);
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.riskHead {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
+
+.tipBtn {
+  all: unset;
+  cursor: pointer;
+  width: 14px;
+  height: 14px;
+  display: grid;
+  place-items: center;
+  color: var(--color-muted);
+}
+
+.tipBtn:hover {
+  color: var(--color-navy);
+}
+
+.tipBtn:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 1px;
+}
+
+.tip {
+  position: absolute;
+  left: 0;
+  top: 22px;
+  z-index: 5;
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-8) var(--space-10);
+  font-size: var(--font-size-12);
+  color: var(--color-ink);
+  white-space: nowrap;
+}
+
+.empty {
+  height: 48px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  font-size: var(--font-size-14);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.emptyText {
+  color: var(--color-sub);
+}
+
+.emptyAdd {
+  all: unset;
+  cursor: pointer;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+}
+
+.emptyAdd:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 1px;
+}
+
+.rowBox {
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.row {
+  height: 48px;
+  font-size: var(--font-size-14);
+  cursor: pointer;
+  background: var(--color-surface);
+}
+
+.rowOn {
+  background: var(--color-surface-sub);
+}
+
+.stock {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.px {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+}
+
+.chg {
+  font-size: var(--font-size-12);
+}
+
+.val {
+  text-align: right;
+  font-weight: var(--font-weight-bold);
+}
+
+.risk {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.riskText {
+  font-size: var(--font-size-12);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}
+
+.warn {
+  color: var(--color-orange);
+}
+
+.weight {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.target {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.orders {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-4);
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-bold);
+}
+
+.buy,
+.sell {
+  all: unset;
+  cursor: pointer;
+}
+
+.buy {
+  color: var(--color-up);
+}
+
+.sell {
+  color: var(--color-down);
+}
+
+.buy:hover,
+.sell:hover {
+  text-decoration: underline;
+}
+
+.buy:focus-visible,
+.sell:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 1px;
+}
+
+.dot {
+  color: var(--color-line-strong);
+  font-weight: var(--font-weight-regular);
+}
+
+/* 펼친 종목 정보 */
+.more {
+  background: var(--color-surface-sub);
+  padding: var(--space-10) var(--space-16) var(--space-12);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.moreHead {
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.chat {
+  margin-left: auto;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  text-decoration: none;
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: repeat(4, auto minmax(0, 1fr));
+  border: 1px solid var(--color-line-soft);
+  border-radius: var(--radius-6);
+  overflow: hidden;
+  font-size: var(--font-size-13);
+  background: var(--color-surface);
+}
+
+.fk {
+  background: var(--color-surface-row);
+  color: var(--color-gray-600);
+  padding: 7px var(--space-10);
+  white-space: nowrap;
+}
+
+.fkLine {
+  border-left: 1px solid var(--color-line-soft);
+}
+
+.fv {
+  padding: 7px var(--space-10);
+  font-weight: var(--font-weight-bold);
+  text-align: right;
+}
+
+.gradeLine {
+  font-size: var(--font-size-13);
+}
+
+.gradeB {
+  font-weight: var(--font-weight-bold);
+}
+
+.asOf {
+  font-size: var(--font-size-11);
+  color: var(--color-sub);
+}
+
+.total {
+  height: 44px;
+  background: var(--color-surface-row);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+  border-radius: 0 0 var(--radius-8) var(--radius-8);
+}
+
+.todaySum {
+  text-align: right;
+  font-size: var(--font-size-12);
+  white-space: nowrap;
+}
+
+.avgGrade {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-gray-600);
+  white-space: nowrap;
+}

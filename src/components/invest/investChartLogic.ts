@@ -10,7 +10,7 @@ export const DONUT_SHADES = ['var(--color-navy)', 'var(--color-donut-2)', 'var(-
 export const shadeOf = (i: number, n: number): string => DONUT_SHADES[n <= 1 ? 0 : Math.round((i * 4) / (n - 1))]
 
 // 합이 정확히 100.0이 되도록 소수 첫째 자리로 나눔(원본 lr1: 큰 소수부부터 0.1씩 보탬)
-function splitPercent(vals: number[]): number[] {
+export function splitPercent(vals: number[]): number[] {
   const tot = vals.reduce((a, b) => a + b, 0)
   if (!tot) return vals.map(() => 0)
   const raw = vals.map((v) => (v / tot) * 1000)
