@@ -401,3 +401,136 @@
   outline: 2px solid var(--color-navy);
   outline-offset: 2px;
 }
+
+/* 패키지 한 번에 사기 · 종목 추가 — 머리줄 */
+.planHead {
+  height: 56px;
+  flex: none;
+  padding: 0 var(--space-8) 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.planTitle {
+  margin: 0;
+  font-size: var(--font-size-17);
+  font-weight: var(--font-weight-extrabold);
+  white-space: nowrap;
+}
+
+.planName {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.planHead .close {
+  margin-left: auto;
+  flex: none;
+}
+
+.amtRow {
+  display: flex;
+  gap: var(--space-8);
+}
+
+.fieldGrow {
+  flex: 1;
+  min-width: 0;
+}
+
+.allBtn {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 var(--space-12);
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.allBtn:hover {
+  border-color: var(--color-navy);
+  color: var(--color-navy);
+}
+
+.allBtn:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: 2px;
+}
+
+.r {
+  text-align: right;
+}
+
+.planGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 84px 92px;
+  gap: var(--space-8);
+  align-items: center;
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.planColHead {
+  height: 32px;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.planRow {
+  min-height: 48px;
+  font-size: var(--font-size-14);
+}
+
+.planStock {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.planC2 {
+  font-size: var(--font-size-13);
+  white-space: nowrap;
+}
+
+.planC3 {
+  white-space: nowrap;
+  font-weight: var(--font-weight-bold);
+}
+
+.sumLine {
+  display: flex;
+  align-items: center;
+  height: 32px;
+  font-size: var(--font-size-14);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.bold {
+  font-weight: var(--font-weight-bold);
+}
+
+.planErr {
+  font-size: var(--font-size-12);
+  color: var(--color-red);
+  margin-top: var(--space-6);
+  font-weight: var(--font-weight-bold);
+}
+
+.submitNavy {
+  cursor: pointer;
+  background: var(--color-navy);
+}
+
+.amtLabel {
+  margin-bottom: var(--space-6);
+}

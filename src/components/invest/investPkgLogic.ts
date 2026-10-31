@@ -133,25 +133,26 @@ export function sparkPoints(seed: number, ret: number): string {
   return v.map((y, i) => ((i / (v.length - 1)) * 62 + 1).toFixed(1) + ',' + (21 - ((y - mn) / r) * 20).toFixed(1)).join(' ')
 }
 
-// RD.KR·KR_ETF에 없는 국내 종목의 [대표색, 이니셜](원본 EXT) — 값은 StockLabel 종목표와 같음
-const EXT_ICON: Record<string, [string, string]> = {
-  '042700': ['#0B3D91', 'H'],
-  '058470': ['#1F6FB2', 'L'],
-  '240810': ['#00599C', 'W'],
-  '055550': ['#0046FF', 'S'],
-  '033780': ['#C8102E', 'K'],
-  '017670': ['#EA002C', 'SK'],
-  '012330': ['#002C5F', 'M'],
-  '204320': ['#00467F', 'HL'],
-  '018880': ['#E2231A', 'H']
+// RD.KR·KR_ETF에 없는 국내 종목의 [업종, 대표색, 이니셜](원본 EXT) — 값은 StockLabel 종목표와 같음
+export const EXT_STOCK: Record<string, [string, string, string]> = {
+  '042700': ['반도체', '#0B3D91', 'H'],
+  '058470': ['반도체', '#1F6FB2', 'L'],
+  '240810': ['반도체', '#00599C', 'W'],
+  '055550': ['금융', '#0046FF', 'S'],
+  '033780': ['음식료', '#C8102E', 'K'],
+  '017670': ['통신', '#EA002C', 'SK'],
+  '012330': ['자동차', '#002C5F', 'M'],
+  '204320': ['자동차', '#00467F', 'HL'],
+  '018880': ['자동차', '#E2231A', 'H']
 }
 
-// 목록 행의 겹친 종목 아이콘 3개 [대표색, 이니셜] — 색은 RD.KR·KR_ETF, 없으면 EXT_ICON
+// 목록 행의 겹친 종목 아이콘 3개 [대표색, 이니셜] — 색은 RD.KR·KR_ETF, 없으면 EXT_STOCK
 export function iconsOf(v: PkgView): [string, string][] {
   return v.items.slice(0, 3).map((it) => {
     const k = RD.KR[it.code] || RD.KR_ETF[it.code]
     if (k) return [k[1], k[2]]
-    return EXT_ICON[it.code] ?? ['#9AA4B2', String(RD.SN[it.code] || it.code)[0]]
+    const x = EXT_STOCK[it.code]
+    return x ? [x[1], x[2]] : ['#9AA4B2', String(RD.SN[it.code] || it.code)[0]]
   })
 }
 

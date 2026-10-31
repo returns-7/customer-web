@@ -1,5 +1,3 @@
-import type { MouseEvent } from 'react'
-import { createPortal } from 'react-dom'
 import '../../styles/tokens.css'
 import { RETURNS_DATA as RD } from '../../data/returns'
 import { F } from '../../lib/calc'
@@ -10,7 +8,8 @@ import type { TradeCalc, TradeState } from './investOrderLogic'
 import { isSuitable } from './investHoldingData'
 import type { PkgView } from './investPkgLogic'
 import { toneOf } from './investPkgLogic'
-import styles from './InvestTradePanel.module.css'
+import { InvestSidePanel } from './InvestSidePanel'
+import styles from './InvestSidePanel.module.css'
 
 interface Props {
   trade: TradeState
@@ -32,14 +31,8 @@ export function InvestTradePanel({ trade, pkg, cash, onChange, onClose, onSubmit
   const label = qtyMode ? '수량' : '금액'
   const acct = 'RIA 계좌 · ' + (buy ? '주문 가능 ₩' + F.won(cash) : '매도 가능 ' + c.sellable + '주')
 
-  // 어두운 막을 눌렀을 때만 닫음(창 안쪽 클릭은 닫지 않음)
-  const onBackdrop = (e: MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) onClose()
-  }
-
-  return createPortal(
-    <div className={styles.backdrop} onClick={onBackdrop}>
-      <aside role="dialog" aria-modal="true" aria-label="주문" className={styles.panel}>
+  return (
+    <InvestSidePanel label="주문" onClose={onClose}>
         <div className={styles.head}>
           <span className={styles.who}>
             <StockLabel sym={trade.code} size="md" />
@@ -147,8 +140,6 @@ export function InvestTradePanel({ trade, pkg, cash, onChange, onClose, onSubmit
             {buy ? '매수 주문' : '매도 주문'}
           </button>
         </div>
-      </aside>
-    </div>,
-    document.body
+    </InvestSidePanel>
   )
 }

@@ -158,3 +158,43 @@ export function makeOrders(list: NewOrder[], pkg: PackageId, nextId: () => strin
     .filter((o) => o.qty > 0)
     .map((o) => ({ id: nextId(), pkg, time: orderClock(), code: o.code, side: o.side, qty: o.qty, price: RD.PX[o.code]?.[0] ?? 0, status: rejected ? 'reject' : 'done' }))
 }
+
+// ───── 패키지 한 번에 사기 — 원본 renderVals의 pl(bulk) 부분 ─────
+
+export interface BulkRow {
+  code: string
+  target: number
+  qty: number // 살 주 수(목표 비중대로 계산, 1주 미만은 0)
+  amount: number
+}
+
+export interface BulkCalc {
+  amt: number
+  rows: BulkRow[]
+  sum: number
+  fee: number
+  total: number
+  left: number // 남는 금액
+  err: string
+  ok: boolean
+  count: number // 주문 건수(살 주 수가 1 이상인 종목)
+}
+
+// 살 금액 × 목표 비중 ÷ 현재가를 내림해 종목별 주 수를 정한다(원본 그대로)
+export function bulkCalc(pkg: PkgView, input: string, cash: number): BulkCalc {
+  const FEE = RD.C.FEE_RATE
+  const amt = pInt(input)
+  const rows = pkg.items.map((it) => {
+    const price = RD.PX[it.code]?.[0] ?? 0
+    const qty = price ? Math.floor((amt * it.target) / 100 / price) : 0
+    return { code: it.code, target: it.target, qty, amount: qty * price }
+  })
+  const sum = rows.reduce((a, r) => a + r.amount, 0)
+  const fee = rows.reduce((a, r) => a + Math.round(r.amount * FEE), 0)
+  const total = sum + fee
+  const err = total > cash ? '주문 가능 금액(₩' + F.won(cash) + ')을 넘었어요' : ''
+  return { amt, rows, sum, fee, total, left: Math.max(0, amt - sum), err, ok: total > 0 && !err, count: rows.filter((r) => r.qty > 0).length }
+}
+
+// "주문 가능 전부": 수수료까지 합쳐 주문 가능 금액을 넘지 않는 가장 큰 살 금액
+export const bulkAll = (cash: number): string => String(Math.floor(cash / (1 + RD.C.FEE_RATE)))
