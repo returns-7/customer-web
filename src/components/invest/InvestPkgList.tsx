@@ -26,7 +26,7 @@ interface Props {
 export function InvestPkgList({ className, rows, sort, onSort, selected, onSelect, onNew }: Props) {
   return (
     <Box
-      className={className}
+      className={cx(styles.box, className)}
       title="내 패키지"
       head={
         <>
