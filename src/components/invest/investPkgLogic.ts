@@ -10,6 +10,7 @@ export interface PkgItemView {
   val: number
   cost: number
   today: number
+  target: number // 목표 비중 %
 }
 
 // 패키지 한 개의 평가 결과(원본 view) — 숫자는 RD.PKG_HOLDINGS(보유 주 수 × 현재가)에서 계산
@@ -46,7 +47,7 @@ function viewOf(id: PackageId, name: string, seed: number, created: number): Pkg
   const items = RD.PKG_HOLDINGS[id].map((h) => {
     const val = h.qty * RD.PX[h.code][0]
     const chg = RD.PX[h.code][1]
-    return { code: h.code, qty: h.qty, val, cost: h.qty * h.avg, today: Math.round((val * chg) / (100 + chg)) }
+    return { code: h.code, qty: h.qty, val, cost: h.qty * h.avg, today: Math.round((val * chg) / (100 + chg)), target: h.target }
   })
   const val = items.reduce((a, i) => a + i.val, 0)
   const cost = items.reduce((a, i) => a + i.cost, 0)
@@ -92,7 +93,7 @@ export function totalsOf(views: PkgView[]) {
 }
 
 // 예시 수익률 곡선(원본 series): seed로 정해지는 90일 값
-function series(seed: number, ret: number): number[] {
+export function series(seed: number, ret: number): number[] {
   let x = (seed * 7919 + 13) % 233280
   const rnd = () => (x = (x * 9301 + 49297) % 233280) / 233280
   const N = 90

@@ -309,7 +309,26 @@
   color: var(--color-sub);
 }
 
+/* 종목 비중 : 수익률 = 40 : 60, 1024px 이하 한 줄(구분선은 왼쪽 → 위쪽) */
+.charts {
+  display: grid;
+  grid-template-columns: minmax(0, 40fr) minmax(0, 60fr);
+}
+
+.chartRight {
+  border-left: 1px solid var(--color-line-soft);
+}
+
 @media (max-width: 1024px) {
+  .charts {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chartRight {
+    border-left: 0;
+    border-top: 1px solid var(--color-line-soft);
+  }
+
   .sums {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

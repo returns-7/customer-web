@@ -4,6 +4,9 @@ import { F } from '../../lib/calc'
 import { Toast } from '../common/Toast'
 import { cx } from '../common/cx'
 import { useToast } from '../common/useToast'
+import { InvestPkgChart } from './InvestPkgChart'
+import { InvestPkgWeight } from './InvestPkgWeight'
+import type { RangeKey } from './investChartLogic'
 import { detailOf, sign, toneOf } from './investPkgLogic'
 import type { PkgView } from './investPkgLogic'
 import styles from './InvestPkgDetail.module.css'
@@ -17,9 +20,11 @@ interface Props {
   onAdd?: () => void // TODO: P-7에서 종목 추가 창 연결
 }
 
-// 선택한 패키지 상세 — 윗부분(머리 줄·수치 줄·위험 요약). 종목 비중부터는 이후 단계
+// 선택한 패키지 상세 — 머리 줄·수치 줄·위험 요약·종목 비중·수익률 차트. 보유 종목 표부터는 이후 단계
 export function InvestPkgDetail({ className, pkg, onBuy, onAdd }: Props) {
   const [menu, setMenu] = useState(false)
+  const [hov, setHov] = useState<string | null>(null) // 도넛·줄에서 마우스를 올린 종목(P-4 보유 종목 표와 함께 쓸 자리)
+  const [range, setRange] = useState<RangeKey>('1m') // 다른 패키지를 골라도 유지(원본과 같음)
   const { message, showToast } = useToast()
   const d = detailOf(pkg)
   const noItems = pkg.items.length === 0
@@ -128,7 +133,13 @@ export function InvestPkgDetail({ className, pkg, onBuy, onAdd }: Props) {
         </div>
       </div>
 
-      {/* P-3 이후: 종목 비중 */}
+      {!noItems && (
+        <div className={styles.charts}>
+          <InvestPkgWeight pkg={pkg} hov={hov} onHov={setHov} />
+          <InvestPkgChart className={styles.chartRight} pkg={pkg} range={range} onRange={setRange} />
+        </div>
+      )}
+      {/* P-4 이후: 보유 종목 표 */}
       <Toast message={message} />
     </section>
   )

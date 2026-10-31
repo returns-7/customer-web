@@ -15,7 +15,7 @@ const TABS = [
   { key: 'rec', label: '성향별 추천' }
 ]
 
-// 주식 패키지 — 1~2번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세 윗부분 (종목 비중 이후는 P-3~, 성향별 추천은 P-5)
+// 주식 패키지 — 1~3번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세 윗부분·종목 비중·수익률 차트 (보유 종목 표는 P-4~, 성향별 추천은 P-5)
 export function InvestPage() {
   const { hash, search } = useLocation()
   const navigate = useNavigate()

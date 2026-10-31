@@ -1,0 +1,114 @@
+.box {
+  min-width: 0;
+  height: 200px;
+  padding: var(--space-12) var(--space-16);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  margin-top: var(--space-4);
+}
+
+/* 160px 도넛을 90%로 줄여 왼쪽 기준으로 놓고, 줄어든 만큼 오른쪽 줄을 당김(원본과 같음) */
+.donut {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  flex: none;
+  transform: scale(0.9);
+  transform-origin: left center;
+  margin-right: -16px;
+}
+
+.svg {
+  display: block;
+}
+
+.track {
+  stroke: var(--color-line-soft);
+}
+
+.seg {
+  cursor: pointer;
+}
+
+.count {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-13);
+  color: var(--color-gray-600);
+  pointer-events: none;
+}
+
+.legend {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto auto;
+  column-gap: var(--space-6);
+  align-items: center;
+  height: 28px;
+  cursor: default;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+}
+
+.name {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-regular);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nameOn {
+  font-weight: var(--font-weight-bold);
+}
+
+.w {
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  text-align: right;
+}
+
+.target {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-sub);
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 목표와 2%p 이상 벌어진 종목: 많으면 빨강, 적으면 파랑 */
+.gap {
+  font-weight: var(--font-weight-bold);
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
