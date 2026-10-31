@@ -1,0 +1,162 @@
+.count {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}
+
+.sorts {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--font-size-12);
+  white-space: nowrap;
+}
+
+.sortWrap {
+  margin-left: var(--space-4);
+}
+
+.sort {
+  all: unset;
+  cursor: pointer;
+  color: var(--color-sub);
+  font-weight: var(--font-weight-regular);
+}
+
+.sort.on {
+  color: var(--color-ink);
+  font-weight: var(--font-weight-bold);
+}
+
+.dot {
+  color: var(--color-line-strong);
+}
+
+.newPkg {
+  all: unset;
+  cursor: pointer;
+  margin-left: auto;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-navy);
+  white-space: nowrap;
+}
+
+.item {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+  height: 64px;
+  padding: 0 var(--space-16) 0 var(--space-14);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 64px auto;
+  gap: var(--space-12);
+  align-items: center;
+  border-top: 1px solid var(--color-line-soft);
+  border-left: 2px solid transparent;
+  background: var(--color-surface);
+}
+
+.item:hover {
+  background: var(--color-surface-sub);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-navy);
+  outline-offset: -2px;
+}
+
+.item.sel {
+  background: var(--color-surface-sub);
+  border-left-color: var(--color-gold);
+}
+
+.left {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.name {
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+}
+
+.icons {
+  display: flex;
+  align-items: center;
+}
+
+.icon {
+  display: block;
+  border-radius: var(--radius-round);
+  box-shadow: 0 0 0 1.5px var(--color-surface);
+  line-height: 0;
+}
+
+.icon + .icon {
+  margin-left: -4px;
+}
+
+.muted {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+.spark {
+  display: block;
+}
+
+.lineUp {
+  stroke: var(--color-up);
+}
+
+.lineDown {
+  stroke: var(--color-down);
+}
+
+.right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--space-3);
+  white-space: nowrap;
+}
+
+.amt {
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+}
+
+.line {
+  display: flex;
+  gap: var(--space-6);
+  align-items: baseline;
+}
+
+.ret {
+  font-size: var(--font-size-13);
+}
+
+.up {
+  color: var(--color-up);
+}
+
+.down {
+  color: var(--color-down);
+}
+
+.flat {
+  color: var(--color-sub);
+}

@@ -1,0 +1,48 @@
+/* 보이지 않는 페이지 제목(원본 h1) */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+/* 나만의 주식 패키지 탭: 넓은 화면 왼쪽 4 : 오른쪽 8 */
+.mine {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+  gap: var(--space-16);
+  align-items: start;
+}
+
+.colLeft,
+.colRight {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.assets {
+  order: 1;
+}
+
+.list {
+  order: 2;
+  overflow: hidden;
+}
+
+/* 1280px 이하: 한 열. 두 열을 풀고 박스를 order 순서로 세운다(원본 narrow) */
+@media (max-width: 1280px) {
+  .mine {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .colLeft,
+  .colRight {
+    display: contents;
+  }
+}
