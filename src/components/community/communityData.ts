@@ -21,3 +21,25 @@ export const stockFromUrl = (v: string | null): string => (v && (KR_ALL[v] || v 
 // 행 높이: 고정일 때 왼쪽 칸 높이에 맞춰 44~76px(원본 rowH)
 export const rowHeight = (fixed: boolean, colH: number): number =>
   fixed && colH ? Math.max(44, Math.min(76, Math.floor((colH - 50) / RANK12.length))) : 44
+
+// ===== C-2: 가운데 열 윗부분 =====
+export const GEN = 'GEN' // 게시판 "RIA 제도·일반"의 종목 자리 값
+export const GEN_NAME = 'RIA 제도·일반'
+export const GEN_RE = /ria|제도|일반/i // 종목 고르기 검색어가 이것이면 게시판도 보임
+export const PX_TIME = ' 15:30' // 가격 기준 시각(날짜 뒤에 붙음). TODO: 백엔드 연결 시 시세 기준 시각으로 대체
+export const RECENT_KEY = 'returns-recent-stocks' // sessionStorage 키(원본 그대로)
+export const RECENT_LIMIT = 6
+export const DEFAULT_RECENT = ['000660', '005930', '373220'] // 처음 '최근 본 종목'
+export const TOAST_MS = 2200
+
+// 글 몇 개를 EX로 둔 원본 예시. [id, 닉네임, 성향, 시간, 본문, 좋아요, 답글 수, 내 글, 끼루 답변 키]
+// TODO: 백엔드 연결 시 서버 글로 대체. C-3(피드)에서 같은 값을 씀
+export const EX: Record<string, [string, string, string, string, string, number, number, number, string | null][]> = {
+  '000660': [['k660-01', '리아', 'me', '14:48', 'HBM 증설 기사 나왔던데 회사가 공시한 내용도 있나요?', 5, 0, 1, 'hbm']],
+  GEN: [
+    ['kgen-01', '해외에서복귀', 'stableSeek', '13:20', '국내 주식 판 돈도 1년 묶이나요?', 12, 0, 0, 'lock'],
+    ['kgen-02', '차분한투자', 'stable', '12:40', 'RIA 계좌 입고 신청하고 심사까지 하루 걸렸어요. 다들 비슷하셨나요?', 6, 0, 0, null],
+    ['kgen-03', '도시락', 'private', '11:15', '매도 체결일이 어느 달이냐에 따라 공제율이 달라진다는 거 이번에 처음 알았어요', 9, 0, 0, null]
+  ],
+  '005380': [['k380-01', '오후세시', 'active', '14:41', '이거 지금 사도 돼요?', 1, 0, 0, 'oos']]
+}

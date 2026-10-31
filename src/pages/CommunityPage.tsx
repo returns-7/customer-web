@@ -1,16 +1,27 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { CommunityCenter, type FeedTab, type HotScope } from '../components/community/CommunityCenter'
 import { CommunityTop10 } from '../components/community/CommunityTop10'
-import { BAR_H_FALLBACK, FIXED_MIN_HEIGHT, MID_MIN, WIDE_MIN, rowHeight, stockFromUrl } from '../components/community/communityData'
+import { BAR_H_FALLBACK, FIXED_MIN_HEIGHT, KR_ALL, MID_MIN, RECENT_KEY, TOAST_MS, WIDE_MIN, rowHeight, stockFromUrl } from '../components/community/communityData'
+import { loadRecent, pushRecent } from '../components/community/communityLogic'
+import { Toast } from '../components/common/Toast'
+import { useToast } from '../components/common/useToast'
 import { cx } from '../components/common/cx'
 import styles from '../components/community/CommunityLayout.module.css'
+import { RETURNS_DATA as RD } from '../data/returns'
 
 const viewport = () => ({ w: window.innerWidth, h: window.innerHeight })
 
-// 커뮤니티 — 1번째 부분: 열 배치(넓은 3열·중간 2열·좁은 1열·화면 고정) + 많이 이야기하는 종목. 가운데·오른쪽 열은 C-2부터
+// 커뮤니티 — 1~2번째 부분: 열 배치 + 많이 이야기하는 종목 + 가운데 열 윗부분(종목 정보·종목 고르기·탭·글 검색) + 아래 안내 문구. 글 목록은 C-3부터
 export function CommunityPage() {
   const [params] = useSearchParams()
   const [code, setCode] = useState(() => stockFromUrl(params.get('stock')))
+  const [tab, setTab] = useState<FeedTab>(() => (params.get('tab') === 'mine' ? 'mine' : 'live'))
+  const [scope, setScope] = useState<HotScope>('stock')
+  const [recent, setRecent] = useState(() => loadRecent(stockFromUrl(params.get('stock'))))
+  // TODO: 관심 종목은 백엔드 연결 시 서버 값. 오른쪽 열(C-4)에서 목록을 보여 줌
+  const [watch, setWatch] = useState(() => RD.WATCH.filter((c) => KR_ALL[c]))
+  const { message: toast, showToast } = useToast()
   const [view, setView] = useState(viewport)
   const [barH, setBarH] = useState(BAR_H_FALLBACK)
   const [colH, setColH] = useState(0)
@@ -47,10 +58,30 @@ export function CommunityPage() {
     return () => ro.disconnect()
   }, [])
 
-  const select = (c: string) => {
+  // 최근 본 종목은 탭을 닫기 전까지 기억(원본 sessionStorage)
+  useEffect(() => {
+    try { sessionStorage.setItem(RECENT_KEY, JSON.stringify(recent)) } catch { /* 저장 못 해도 화면은 그대로 */ }
+  }, [recent])
+
+  const url = (c: string, t: FeedTab) => '?stock=' + c + (t === 'mine' ? '&tab=mine' : '')
+  const replaceUrl = (c: string, t: FeedTab) => {
+    try { history.replaceState(null, '', url(c, t)) } catch { /* 주소 갱신 실패는 무시 */ }
+  }
+  // 왼쪽 목록·가운데 종목 고르기 모두 여기로: 선택 종목 + 최근 본 + 주소가 같이 바뀜
+  const selectCode = (c: string) => {
     setCode(c)
-    // TODO: C-2에서 가운데 피드를 바꾸고 최근 본 종목도 갱신
-    try { history.replaceState(null, '', '?stock=' + c) } catch { /* 주소 갱신 실패는 무시 */ }
+    setRecent((r) => pushRecent(r, c))
+    replaceUrl(c, tab)
+    // TODO: C-3에서 피드 맨 위로 스크롤
+  }
+  const selectTab = (t: FeedTab) => {
+    setTab(t)
+    replaceUrl(code, t)
+  }
+  const toggleStar = () => {
+    const on = watch.includes(code)
+    setWatch((w) => (on ? w.filter((c) => c !== code) : w.concat(code)))
+    showToast(RD.SN[code] + (on ? ' 관심 종목에서 뺐어요' : ' 관심 종목에 추가했어요'), TOAST_MS)
   }
 
   return (
@@ -63,11 +94,24 @@ export function CommunityPage() {
         style={{ '--bar-h': barH + 'px' } as CSSProperties}
       >
         <div ref={leftRef} data-col="left" className={styles.left}>
-          <CommunityTop10 code={code} fixed={fixed} rowH={rowHeight(fixed, colH)} onSelect={select} />
+          <CommunityTop10 code={code} fixed={fixed} rowH={rowHeight(fixed, colH)} onSelect={selectCode} />
         </div>
-        <div data-col="center" className={styles.center} />
+        <CommunityCenter
+          key={code}
+          code={code}
+          recent={recent}
+          starred={watch.includes(code)}
+          tab={tab}
+          scope={scope}
+          onCode={selectCode}
+          onTab={selectTab}
+          onScope={setScope}
+          onStar={toggleStar}
+        />
         <div data-col="right" className={styles.right} />
       </div>
+      <p className={styles.notice}>끼루 AI는 정보를 안내하며 투자 판단은 고객님께 있어요 · 금액은 다른 계좌의 해외주식 순매수가 없다고 가정한 예시예요</p>
+      <Toast message={toast} />
     </>
   )
 }

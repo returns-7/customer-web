@@ -1,7 +1,7 @@
 /* 원본은 위 24 · 아래 16 (AppLayout 기본은 위 16 · 아래 24) → 차이만큼 당겨서 맞춤 */
 .grid {
   flex: none;
-  margin: var(--space-8) 0 calc(-1 * var(--space-8));
+  margin: var(--space-8) 0 0;
   min-height: 0;
   display: grid;
   gap: var(--space-16);
@@ -37,13 +37,7 @@
   gap: var(--space-16);
 }
 
-/* 가운데·오른쪽 열은 C-2부터. 빈 자리만 잡아 둠 */
-.center {
-  grid-area: c;
-  min-width: 0;
-  min-height: 0;
-}
-
+/* 오른쪽 열은 C-4부터. 빈 자리만 잡아 둠 */
 .right {
   grid-area: r;
   min-width: 0;
@@ -59,4 +53,13 @@
   margin: 0;
   padding: 0;
   white-space: nowrap;
+}
+
+/* 아래 안내 문구: 원본은 위 24px · 맨 아래 16px. AppLayout 칸 사이 16px와 아래 여백 24px를 빼서 맞춤 */
+.notice {
+  flex: none;
+  margin: var(--space-8) 0 calc(-1 * var(--space-8));
+  font-size: var(--font-size-12);
+  line-height: 18px;
+  color: var(--color-sub);
 }
