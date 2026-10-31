@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import '../../styles/tokens.css'
 import { F } from '../../lib/calc'
 import { Toast } from '../common/Toast'
@@ -17,33 +17,90 @@ const signedWon = (n: number) => sign(n) + '₩' + F.won(Math.abs(n))
 interface Props {
   className?: string
   pkg: PkgView
-  onBuy?: () => void // TODO: P-7에서 패키지 한 번에 사기 창 연결
-  onAdd?: () => void // TODO: P-7에서 종목 추가 창 연결
+  onBuy?: () => void // 패키지 한 번에 사기 창 열기
+  onAdd?: () => void // 종목 추가 창 열기
   unsuit?: Record<string, string> // 내 성향보다 위험한 종목을 확인한 날짜(종목 코드별)
   onTrade?: (code: string, side: 'buy' | 'sell') => void // 보유 종목 표의 매수·매도 버튼
+  onRename?: (name: string) => void // 바꿀 이름(앞뒤 공백을 뺀 값, 비어 있지 않을 때만 호출)
+  onDelete?: () => void // 메뉴의 삭제(확인 창은 화면에서)
 }
 
 // 선택한 패키지 상세 — 머리 줄·수치 줄·위험 요약·종목 비중·수익률 차트·보유 종목 표
-export function InvestPkgDetail({ className, pkg, onBuy, onAdd, unsuit, onTrade }: Props) {
+export function InvestPkgDetail({ className, pkg, onBuy, onAdd, unsuit, onTrade, onRename, onDelete }: Props) {
   const [menu, setMenu] = useState(false)
+  // 이름 바꾸는 중인 패키지(다른 패키지를 고르면 자동으로 끝남) — 입력칸에서 엔터·바깥 클릭은 저장, Esc는 취소
+  const [editId, setEditId] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const inputRef = useRef<HTMLInputElement>(null)
+  const cancelled = useRef(false)
+  const editing = editId === pkg.id
+  // 다른 패키지가 선택되면 이름 바꾸기는 끝남(삭제로 선택이 바뀔 때도)
+  const [seenId, setSeenId] = useState(pkg.id)
+  if (seenId !== pkg.id) {
+    setSeenId(pkg.id)
+    setEditId(null)
+  }
   const [hov, setHov] = useState<string | null>(null) // 도넛·줄에서 마우스를 올린 종목(보유 종목 표 줄과 함께 강조)
   const [range, setRange] = useState<RangeKey>('1m') // 다른 패키지를 골라도 유지(원본과 같음)
   const { message, showToast } = useToast()
   const d = detailOf(pkg)
   const noItems = pkg.items.length === 0
 
+  useEffect(() => {
+    if (!editing) return
+    const t = setTimeout(() => {
+      inputRef.current?.focus()
+      inputRef.current?.select()
+    }, 30)
+    return () => clearTimeout(t)
+  }, [editing])
+
+  const startRename = () => {
+    cancelled.current = false
+    setDraft(pkg.name)
+    setEditId(pkg.id)
+  }
+  const commitRename = () => {
+    if (cancelled.current || !editing) return
+    const v = draft.trim()
+    if (v) onRename?.(v)
+    setEditId(null)
+  }
+
   return (
     <section className={cx(styles.box, className)} data-pkg-detail="1">
       <div className={styles.head}>
         <div className={styles.titleWrap}>
-          <h2 className={styles.name}>{pkg.name}</h2>
-          {/* TODO: P-9에서 이름 바꾸기 연결 */}
-          <button type="button" className={styles.pencil} aria-label="패키지 이름 바꾸기">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M12 20h9" />
-              <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
-            </svg>
-          </button>
+          {!editing && (
+            <>
+              <h2 className={styles.name}>{pkg.name}</h2>
+              <button type="button" className={styles.pencil} aria-label="패키지 이름 바꾸기" onClick={startRename}>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <path d="M12 20h9" />
+                  <path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                </svg>
+              </button>
+            </>
+          )}
+          {editing && (
+            <input
+              ref={inputRef}
+              className={styles.nameInput}
+              value={draft}
+              maxLength={20}
+              aria-label="패키지 이름"
+              onChange={(e) => setDraft(e.target.value.slice(0, 20))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') e.currentTarget.blur()
+                if (e.key === 'Escape') {
+                  e.stopPropagation()
+                  cancelled.current = true
+                  setEditId(null)
+                }
+              }}
+              onBlur={commitRename}
+            />
+          )}
           <span className={styles.meta}>
             {pkg.items.length}종목 · 만든 날 {d.made}
           </span>
@@ -63,11 +120,26 @@ export function InvestPkgDetail({ className, pkg, onBuy, onAdd, unsuit, onTrade 
               <>
                 <div className={styles.backdrop} onClick={() => setMenu(false)} />
                 <div role="menu" className={styles.menu}>
-                  {/* TODO: P-9에서 이름 바꾸기·삭제 동작 연결(지금은 메뉴만 닫음) */}
-                  <button type="button" role="menuitem" className={styles.menuItem} onClick={() => setMenu(false)}>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.menuItem}
+                    onClick={() => {
+                      setMenu(false)
+                      startRename()
+                    }}
+                  >
                     이름 바꾸기
                   </button>
-                  <button type="button" role="menuitem" className={styles.menuItem} onClick={() => setMenu(false)}>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    className={styles.menuItem}
+                    onClick={() => {
+                      setMenu(false)
+                      onDelete?.()
+                    }}
+                  >
                     삭제
                   </button>
                 </div>

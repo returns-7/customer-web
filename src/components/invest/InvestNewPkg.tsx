@@ -11,8 +11,9 @@ import { StockLabel } from '../common/StockLabel'
 import { cx } from '../common/cx'
 import { cleanPct } from './investAddLogic'
 import { NM_STEPS, buyCalc, checkOf, exKK, gShort, nameOf, phaseOf, profileCap, rowsOf, searchHits, sumOf } from './investNewPkgLogic'
-import type { NewPkgState, NmBuyRow, NmHit, NmLab } from './investNewPkgLogic'
+import type { CkPhase, NewPkgState, NmBuyRow, NmHit, NmLab } from './investNewPkgLogic'
 import type { DialogState } from './InvestDialog'
+import type { ChkDemo } from './investDevData'
 import { orderClock } from './investOrderLogic'
 import styles from './InvestNewPkg.module.css'
 
@@ -28,6 +29,8 @@ interface Props {
   onClose: () => void
   onMake: (buy: NmBuyRow[] | null) => void // null이면 목표 비중만 정해 만들기, 목록이면 만들고 바로 사기
   onDialog: (d: DialogState) => void
+  noCand?: boolean // 시연 설정 '후보 없음'
+  chkDemo?: ChkDemo | null // 시연 설정 '검사 결과'(null이면 실제 흐름)
 }
 
 // 종목 라벨 — 목록에 있는 종목은 공용 라벨, 그 밖의 국내 종목은 같은 모양으로 직접 그림
@@ -54,7 +57,7 @@ function Bubble({ children }: { children: ReactNode }) {
 }
 
 // "새 패키지" 창 — 이름 → 시작 방법(끼루) → 목표 비중 → 살 금액
-export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: Props) {
+export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog, noCand = false, chkDemo = null }: Props) {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
   useEffect(() => () => clearTimeout(timer.current), [])
 
@@ -67,9 +70,11 @@ export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: P
   const assess = demo().assess || 'ok'
   const kOff = assess === 'expired' || assess === 'none'
   const { profL, maxG } = profileCap()
-  const nextOn = st === 0 ? !!nm.name.trim() : st === 1 ? !empty && !kOff : st === 2 ? wOk && !empty : buy.ok
+  const nextOn = st === 0 ? !!nm.name.trim() : st === 1 ? !empty && !kOff && !noCand : st === 2 ? wOk && !empty : buy.ok
 
   const kk = nm.kk
+  const kkRows = noCand ? [] : (kk?.rows ?? [])
+  const kkReply = kk ? (noCand ? '성향에 맞는 상품이 없어요. 예탁금으로 둬도 RIA 혜택은 유지돼요.' : kk.reply) : ''
   const sendKk = () => {
     const q = nm.kkIn.trim()
     if (!q) return
@@ -82,7 +87,8 @@ export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: P
   }
 
   // 검사: 구성이 100%일 때만. 잠시 '검사 중'을 보인 뒤 그때의 구성으로 결과를 확정
-  const ph = phaseOf(nm.chk, nm.w)
+  const realPh = phaseOf(nm.chk, nm.w)
+  const ph: CkPhase = chkDemo ?? realPh
   const ckOn = !empty && sum === 100
   const busy = ph === 'loading'
   const can = ckOn && !busy
@@ -92,7 +98,7 @@ export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: P
     clearTimeout(timer.current)
     timer.current = setTimeout(() => onPatch((n) => ({ chk: { phase: 'done', snap: JSON.stringify(n.w) } })), CHECK_MS)
   }
-  const ck = ph === 'before' || ph === 'loading' ? null : checkOf(nm.chk, nm.w)
+  const ck = ph === 'before' || ph === 'loading' ? null : checkOf(nm.chk, nm.w, ph)
 
   // 검색한 종목 담기: 내 성향보다 위험하면 한 번 확인(확인한 시각이 기록됨)
   const hits = searchHits(nm.q2, codes)
@@ -210,8 +216,8 @@ export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: P
                           <span className={styles.mine}>{kk.q}</span>
                         </div>
                       )}
-                      <Bubble>{kk.reply}</Bubble>
-                      {kk.rows.length > 0 && (
+                      <Bubble>{kkReply}</Bubble>
+                      {kkRows.length > 0 && (
                         <>
                           <div>
                             <div className={cx(styles.kkGrid, styles.kkHead)}>
@@ -220,7 +226,7 @@ export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: P
                               <span className={styles.r}>시작 비중</span>
                               <span>고른 이유</span>
                             </div>
-                            {kk.rows.map((r) => (
+                            {kkRows.map((r) => (
                               <div key={r.code} className={cx(styles.kkGrid, styles.kkRowLine)}>
                                 <span className={styles.kkStock}>
                                   <StockLabel sym={r.code} size="sm" sector={false} />
@@ -329,7 +335,7 @@ export function InvestNewPkg({ nm, cash, onPatch, onClose, onMake, onDialog }: P
                         </div>
                       ))}
                     </div>
-                    <Bubble>{ck.expl}</Bubble>
+                    {ck.explain && <Bubble>{ck.expl}</Bubble>}
                   </div>
                 )}
                 <div className={styles.note}>

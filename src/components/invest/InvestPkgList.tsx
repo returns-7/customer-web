@@ -19,7 +19,7 @@ interface Props {
   onSort: (s: PkgSort) => void
   selected: string
   onSelect: (id: string) => void
-  onNew?: () => void
+  onNew?: () => void // 새 패키지 창 열기
 }
 
 // 내 패키지 목록 — 정렬 2종, 행 클릭 시 선택 표시

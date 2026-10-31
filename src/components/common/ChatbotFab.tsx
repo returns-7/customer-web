@@ -13,6 +13,8 @@ export interface BotChat {
   onSend: (text: string) => void
   // true면 내 계좌용 간단한 창: panelWidth 폭, 입력칸·근거 줄 없이 말풍선 + 빠른 질문 버튼만
   simple?: boolean
+  // 간단한 창에서 말풍선 목록이 늘어날 수 있는 최대 높이(px). 안 넘기면 360
+  listMaxHeight?: number
 }
 
 interface ChatbotFabProps {
@@ -128,7 +130,7 @@ export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth 
           </div>
           {chat?.simple ? (
             <>
-              <div className={styles.simpleList} ref={listRef}>
+              <div className={styles.simpleList} ref={listRef} style={chat.listMaxHeight ? { maxHeight: chat.listMaxHeight } : undefined}>
                 {chat.messages.map((m, i) => (
                   <div key={i} className={cx(styles.simpleRow, 'me' in m && styles.simpleRowMe)}>
                     <span className={cx(styles.simpleMsg, 'me' in m && styles.simpleMsgMe)}>{m.text}</span>

@@ -1,6 +1,7 @@
 import { ALLOWED_GRADE, RETURNS_DATA as RD } from '../../data/returns'
 import { F } from '../../lib/calc'
 import { pctInt } from './investAddLogic'
+import type { ChkDemo } from './investDevData'
 import { isSuitable, riskLabel } from './investHoldingData'
 import { EXT_STOCK } from './investPkgLogic'
 import type { PkgBase } from './investPkgLogic'
@@ -57,6 +58,19 @@ export function exKK(q: string): NmKk {
     w: Object.fromEntries(rows.map(([c, w]) => [c, String(w)])),
     amt: 5000000
   }
+}
+
+// 주소(?new=1&ask=…)로 열 때의 처음 상태(원본 init): 말이 있으면 바로 시작 방법 단계에서 그 말로 제안을 받아 놓음
+export const nmFromUrl = (askParam: string | null): NewPkgState => {
+  const ask = (askParam || '').trim().slice(0, 60)
+  const nm: NewPkgState = { step: ask ? 1 : 0, name: ask.slice(0, 20), w: {}, amt: '', kkIn: ask, kk: null, kkAlt: 0, q2: '', chk: null, ack: {} }
+  if (ask) {
+    const k = propose(ask, 0)
+    nm.kk = k
+    nm.w = k.w
+    if (k.amt) nm.amt = String(k.amt)
+  }
+  return nm
 }
 
 export const openNewPkg = (): NewPkgState => {
@@ -223,9 +237,10 @@ const THEMES: [string, string[]][] = [
 // TODO: 백엔드 연결 시 종목별 변동성 API 값으로 교체
 const VOL3: Record<string, number> = { '105560': 28, '900020': 15, '005380': 41, '900030': 45, '000660': 34, '373220': 42, '900010': 21, '000270': 48 }
 
-export type CkPhase = 'before' | 'loading' | 'stale' | 'full'
+export type CkPhase = 'before' | 'loading' | 'stale' | 'full' | ChkDemo
 
-export function phaseOf(chk: NmChk | null, w: Record<string, string>): CkPhase {
+// 실제 흐름에서의 검사 단계(시연 설정이 있으면 화면에서 그 값으로 덮어씀)
+export function phaseOf(chk: NmChk | null, w: Record<string, string>): 'before' | 'loading' | 'stale' | 'full' {
   if (!chk) return 'before'
   if (chk.phase === 'loading') return 'loading'
   return chk.snap !== JSON.stringify(w) ? 'stale' : 'full'
@@ -239,6 +254,7 @@ export interface CkCard {
 }
 
 export interface CkResult {
+  explain: boolean // 설명 말풍선을 보일지(시연 '결과(설명 없음)'이면 숨김)
   band: boolean
   bandText: string
   cards: CkCard[]
@@ -246,8 +262,8 @@ export interface CkResult {
 }
 
 // 검사 결과 — 구성이 바뀌어 '이전 구성 기준'이면 검사한 때의 구성(snap)으로 계산
-export function checkOf(chk: NmChk | null, w: Record<string, string>): CkResult {
-  const wSrc: Record<string, string> = phaseOf(chk, w) === 'stale' && chk?.snap ? JSON.parse(chk.snap) : w
+export function checkOf(chk: NmChk | null, w: Record<string, string>, ph: CkPhase = phaseOf(chk, w)): CkResult {
+  const wSrc: Record<string, string> = phaseOf(chk, w) === 'stale' && ph === 'stale' && chk?.snap ? JSON.parse(chk.snap) : w
   const { prof, maxG } = profileCap()
   const minG = (ALLOWED_GRADE[prof] || { min: 6 }).min
   const cS = Object.keys(wSrc)
@@ -255,20 +271,27 @@ export function checkOf(chk: NmChk | null, w: Record<string, string>): CkResult 
   const gw = W.filter(([c]) => gradeOf(c) != null)
   const sw = gw.reduce((a, x) => a + x[1], 0)
   const wg = sw ? (Math.floor((gw.reduce((a, [c, v]) => a + (gradeOf(c) as number) * v, 0) * 100) / sw) / 100).toFixed(2) : '-'
-  const outL = cS.filter((c) => gradeOf(c) != null && !okFor(c)).map(nameOf)
-  const vol = cS.length && cS.every((c) => VOL3[c] != null) ? Math.round((0.8 * W.reduce((a, [c, v]) => a + VOL3[c] * v, 0)) / 100) + '%' : null
+  let wg2 = wg
+  let outL = cS.filter((c) => gradeOf(c) != null && !okFor(c)).map(nameOf)
+  let vol = cS.length && cS.every((c) => VOL3[c] != null) ? Math.round((0.8 * W.reduce((a, [c, v]) => a + VOL3[c] * v, 0)) / 100) + '%' : null
+  if (ph === 'risky') {
+    wg2 = '1.66'
+    outL = ['반도체TOP10 ETF']
+  }
+  if (ph === 'novol') vol = null
   const th = THEMES.map(([n, cs]): [string, number] => [n, W.filter(([c]) => cs.includes(c)).reduce((a, x) => a + x[1], 0)]).sort((a, b) => b[1] - a[1])[0]
   const tp = W.slice().sort((a, b) => b[1] - a[1])[0]
-  const riskier = wg !== '-' && parseFloat(wg) < minG
+  const riskier = ph === 'risky' || (wg2 !== '-' && parseFloat(wg2) < minG)
   const thOk = !!(th && th[1])
   const tpS = tp ? nameOf(tp[0]) + ' ' + tp[1] + '%' : '-'
   return {
+    explain: ph !== 'noexp',
     band: riskier,
     bandText: '구성 종목 가중평균이 내 성향(' + maxG + ')보다 위험해요. 성향보다 위험한 종목 ' + outL.length + '개를 확인 후 담았어요.',
     expl:
-      '구성 종목 위험등급 가중평균은 ' + wg + '등급으로 내 성향 범위(' + maxG + ')' + (riskier ? '보다 위험해요.' : ' 안이에요.') + (thOk ? ' ' + th[0] + ' 테마 비중이 ' + th[1] + '%이고,' : '') + ' 가장 큰 종목은 ' + tpS + '예요.' + (vol ? ' 과거 3년 기준 패키지 연 변동성은 ' + vol + '예요.' : ''),
+      '구성 종목 위험등급 가중평균은 ' + wg2 + '등급으로 내 성향 범위(' + maxG + ')' + (riskier ? '보다 위험해요.' : ' 안이에요.') + (thOk ? ' ' + th[0] + ' 테마 비중이 ' + th[1] + '%이고,' : '') + ' 가장 큰 종목은 ' + tpS + '예요.' + (vol ? ' 과거 3년 기준 패키지 연 변동성은 ' + vol + '예요.' : ''),
     cards: [
-      { k: '구성 종목 위험등급 가중평균', v: wg + '등급', n: '(참고 지표)', muted: false },
+      { k: '구성 종목 위험등급 가중평균', v: wg2 + '등급', n: '(참고 지표)', muted: false },
       { k: '내 성향 범위를 벗어난 종목', v: outL.length + '개', n: outL.join(', '), muted: false },
       { k: '패키지 연 변동성', v: vol || '계산 불가', n: vol ? '(과거 3년 기준, 예측 아님)' : '잠시 후 다시 검사해 주세요', muted: !vol },
       { k: '가장 큰 테마', v: thOk ? th[0] + ' ' + th[1] + '%' : '-', n: '', muted: false },
