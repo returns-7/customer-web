@@ -1,0 +1,62 @@
+/* 원본은 위 24 · 아래 16 (AppLayout 기본은 위 16 · 아래 24) → 차이만큼 당겨서 맞춤 */
+.grid {
+  flex: none;
+  margin: var(--space-8) 0 calc(-1 * var(--space-8));
+  min-height: 0;
+  display: grid;
+  gap: var(--space-16);
+  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto;
+  grid-template-areas: 'c' 'r' 'l';
+}
+
+.mid {
+  grid-template-columns: minmax(0, 8fr) minmax(0, 4fr);
+  grid-template-areas: 'c r' 'l r';
+}
+
+.wide {
+  grid-template-columns: minmax(0, 3fr) minmax(0, 6fr) minmax(0, 3fr);
+  grid-template-areas: 'l c r';
+}
+
+/* 화면에 고정: 높이 = 100vh − 상단 바 − 위아래 24px, 각 열 안에서만 스크롤 */
+.fixed {
+  height: calc(100vh - var(--bar-h) - 48px);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: stretch;
+}
+
+.left {
+  grid-area: l;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+/* 가운데·오른쪽 열은 C-2부터. 빈 자리만 잡아 둠 */
+.center {
+  grid-area: c;
+  min-width: 0;
+  min-height: 0;
+}
+
+.right {
+  grid-area: r;
+  min-width: 0;
+  min-height: 0;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
