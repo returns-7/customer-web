@@ -5,6 +5,8 @@ import { InvestAssetsBox } from '../components/invest/InvestAssetsBox'
 import { InvestOrders } from '../components/invest/InvestOrders'
 import { InvestPkgDetail } from '../components/invest/InvestPkgDetail'
 import { InvestPkgList } from '../components/invest/InvestPkgList'
+import { InvestRec } from '../components/invest/InvestRec'
+import type { RecFilter } from '../components/invest/investRecData'
 import { seedOrders } from '../components/invest/investHoldingData'
 import { buildPkgViews, sortViews } from '../components/invest/investPkgLogic'
 import type { PkgSort } from '../components/invest/investPkgLogic'
@@ -17,7 +19,7 @@ const TABS = [
   { key: 'rec', label: '성향별 추천' }
 ]
 
-// 주식 패키지 — 1~4번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세(머리·수치·위험 요약·종목 비중·수익률 차트·보유 종목 표) + 주문 내역 (성향별 추천은 P-5)
+// 주식 패키지 — 1~4번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세(머리·수치·위험 요약·종목 비중·수익률 차트·보유 종목 표) + 주문 내역 + 성향별 추천 탭(추천 목록·내 추천 기준)
 export function InvestPage() {
   const { hash, search } = useLocation()
   const navigate = useNavigate()
@@ -31,6 +33,10 @@ export function InvestPage() {
   // 선택한 패키지는 주소(?pkg=)에 남김 — 없거나 모르는 값이면 첫 패키지
   const pkgParam = params.get('pkg')
   const selected = views.some((v) => v.id === pkgParam) ? (pkgParam as string) : views[0].id
+
+  // 성향별 추천: 분류·펼친 종목은 탭을 오가도 유지(원본 state)
+  const [recFilter, setRecFilter] = useState<RecFilter>('all')
+  const [recOpen, setRecOpen] = useState<string | null>(null)
 
   const cur = views.find((v) => v.id === selected) ?? views[0]
   const orders = useMemo(() => seedOrders(), []) // TODO: P-6에서 새 주문이 쌓이는 상태로 교체
@@ -56,7 +62,7 @@ export function InvestPage() {
         </div>
       )}
 
-      {tab === 'rec' && <div>{/* P-5: 성향별 추천 */}</div>}
+      {tab === 'rec' && <InvestRec filter={recFilter} onFilter={setRecFilter} open={recOpen} onOpen={setRecOpen} />}
     </>
   )
 }
