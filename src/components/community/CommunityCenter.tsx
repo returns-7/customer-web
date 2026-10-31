@@ -13,6 +13,7 @@ import { CommunityDialogs } from './CommunityDialogs'
 import { CommunityFeed } from './CommunityFeed'
 import { CommunityNickForm } from './CommunityNickForm'
 import { useCommunityFeed, type FeedTab, type HotScope } from './useCommunityFeed'
+import { useAppShell } from '../../layouts/appShell'
 import styles from './CommunityCenter.module.css'
 
 export type { FeedTab, HotScope }
@@ -52,6 +53,7 @@ interface CommunityCenterProps {
 
 // 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 닉네임 정하기/글쓰기 창 + 글 목록(답글·수정·삭제·신고 포함)
 export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, onNick, pubOn, onToast, thread }: CommunityCenterProps) {
+  const shell = useAppShell()
   const myNick = nick || DEFAULT_NICK // 닉네임이 비어 있어도 글·답글에는 기본 이름이 쓰임(원본)
   const [ddOpen, setDdOpen] = useState(false)
   const [ddQ, setDdQ] = useState('')
@@ -316,8 +318,7 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
       )}
       {!nick && <CommunityNickForm first onSave={onNick} />}
       {nick && <CommunityCompose feed={feed} myPf={myProfile(pubOn)} placeholder={composePlaceholder(isGen, name)} hint={kiruAskHint(isGen)} />}
-      {/* TODO: "끼루 챗봇에서 물어보기 ›"는 챗봇 창을 열어야 함. 챗봇은 공통 레이아웃(AppLayout)이 가지고 있어 열기 연결은 확인 후 */}
-      <CommunityFeed feed={feed} q={q} scope={scope} fixed={fixed} nick={myNick} pubOn={pubOn} listRef={listRef} onShare={share} onGoThread={goThread} onBot={() => { /* TODO: 챗봇 열기 */ }} />
+      <CommunityFeed feed={feed} q={q} scope={scope} fixed={fixed} nick={myNick} pubOn={pubOn} listRef={listRef} onShare={share} onGoThread={goThread} onBot={() => shell.setBotOpen(true)} />
       <CommunityDialogs feed={feed} />
     </section>
   )

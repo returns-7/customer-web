@@ -37,6 +37,12 @@ export function AppLayout() {
   const [topBar, setTopBar] = useState<TopBarExtra>({})
   const [chat, setChat] = useState<BotChat | null>(null)
   const [botOpen, setBotOpen] = useState(false)
+  // 화면을 옮기면 챗봇은 닫힌 채로 시작(간단한 창도 예전처럼 화면마다 새로 시작)
+  const [botActive, setBotActive] = useState(active)
+  if (botActive !== active) {
+    setBotActive(active)
+    setBotOpen(false)
+  }
   const shell = useMemo<AppShellApi>(() => ({ setTopBar, setChat, setBotOpen }), [])
 
   return (
@@ -53,8 +59,8 @@ export function AppLayout() {
         fabSize={bot.fabSize}
         tipKey={bot.tipKey}
         chat={chat ?? undefined}
-        open={chat ? botOpen : undefined}
-        onOpenChange={chat ? setBotOpen : undefined}
+        open={botOpen}
+        onOpenChange={setBotOpen}
       >
         {bot.text}
       </ChatbotFab>
