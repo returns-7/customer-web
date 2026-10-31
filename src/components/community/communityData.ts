@@ -43,3 +43,18 @@ export const EX: Record<string, [string, string, string, string, string, number,
   ],
   '005380': [['k380-01', '오후세시', 'active', '14:41', '이거 지금 사도 돼요?', 1, 0, 0, 'oos']]
 }
+
+// ===== C-3: 피드 글 목록 =====
+// 성향 공개에 동의한 작성자(예시). 나머지는 비공개: 회색 기본 아바타 + 닉네임만. TODO: 백엔드 연결 시 작성자별 공개 값으로 대체
+export const PUBLIC_NICKS = ['반도체개미', '장기보유러', '차분한투자', '새벽시장', '가치투자']
+export const FEED_LIMIT = 20 // 처음 보이는 글 수 / "이전 글 더 보기" 한 번에 늘어나는 수
+export const THREAD_LIMIT = 40 // 내 답글 줄에서 글로 이동할 때 보이는 글 수
+export const LONG_CHARS = 120 // 이 글자 수를 넘거나 3줄을 넘으면 "더보기"
+export const LONG_LINES = 3
+export const KIRU_LONG_CHARS = 180 // 끼루 답변이 이 글자 수를 넘으면 "더보기"
+export const LIVE_MIN_MS = 10000 // 실시간 새 글: 10~15초마다 1개
+export const LIVE_SPAN_MS = 5000
+export const AT_TOP_PX = 40 // 고정 상태에서 이 값 미만이면 "맨 위"
+export const AT_TOP_PAGE_PX = 60 // 페이지 스크롤 상태에서 피드 윗부분이 이만큼 안 벗어나면 "맨 위"
+export const COMPOSE_H = 83 // 글쓰기 창 자리 높이(글쓰기 창은 C-5에서 만듦)
+export const FEED_EMPTY = { search: (q: string) => '‘' + q + '’ 내용의 글이 없어요', mine: '아직 쓴 글이 없어요. 위 입력칸에 첫 의견을 남겨 보세요.', other: '아직 글이 없어요. 첫 의견을 남겨 보세요.' }

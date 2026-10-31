@@ -1,0 +1,159 @@
+/* ===== 글 쓰기 창 자리(C-5부터 실제 창) ===== */
+.composeSpace {
+  flex: none;
+  box-sizing: border-box;
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+/* ===== 새 글 바 ===== */
+.newBar {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  flex: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  opacity: 1;
+  overflow: hidden;
+  transition: height 0.2s ease, opacity 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-chip-navy-strong);
+  color: var(--color-navy);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  border-radius: 0;
+}
+
+/* 고정이 아닐 때는 상단 바 밑에 붙음 */
+.newBarPage {
+  top: var(--bar-h);
+}
+
+.newBarFading {
+  height: 0;
+  opacity: 0;
+}
+
+/* ===== 목록 ===== */
+.list {
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: var(--space-8) 0;
+  padding-bottom: 4px;
+  overflow-y: visible;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.listFixed {
+  overflow-y: auto;
+}
+
+.list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.list::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 3px;
+}
+
+.list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.empty {
+  padding: 14px var(--space-16);
+  font-size: var(--font-size-14);
+  color: var(--color-sub);
+}
+
+.more {
+  appearance: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  box-sizing: border-box;
+  width: 100%;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  font-size: var(--font-size-13);
+  color: var(--color-gray-600);
+}
+
+.more:hover {
+  color: var(--color-navy);
+  background: var(--color-surface-row);
+}
+
+/* ===== 내가 쓴 답글 줄(내가 쓴 댓글 탭) ===== */
+.myRepHead {
+  height: 36px;
+  padding: 0 var(--space-16);
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+  background: var(--color-surface-row);
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.myRepCount {
+  margin-left: 6px;
+  font-weight: var(--font-weight-regular);
+  color: var(--color-sub);
+}
+
+.myRep {
+  display: block;
+  padding: 10px var(--space-16);
+  border-bottom: 1px solid var(--color-line-soft);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.myRep:hover {
+  background: var(--color-surface-sub);
+  text-decoration: none;
+}
+
+.myRepTop {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  min-width: 0;
+}
+
+.myRepMeta {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.myRepText {
+  margin-top: 4px;
+  font-size: var(--font-size-14);
+  line-height: 1.55;
+}
+
+.at {
+  color: var(--color-navy);
+  font-weight: var(--font-weight-semibold);
+}

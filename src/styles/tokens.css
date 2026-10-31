@@ -12,6 +12,8 @@
   --color-donut-3: #63799f; /* 도넛 3번째 조각 */
   --color-donut-4: #8f9fbb; /* 도넛 4번째 조각 */
   --color-gold-pale: #fbf3e2; /* 경제 채팅방 검색 일치 글자 배경 · 가입 환영 배너 배경 */
+  --color-hl-yellow: #fff3c4; /* 커뮤니티 글 검색 일치 글자 배경 */
+  --color-flash-cream: #fbf6ea; /* 커뮤니티 내가 쓴 답글에서 글로 이동했을 때 강조 배경 */
   --color-gold-border: #ebd9b0; /* 가입 환영 배너 테두리 */
   --color-gold-brown: #5c4210; /* 가입 환영 배너 글자 */
   --color-gold-text: #b8862c; /* 매도 신청 창 '예상 절세액' 글자 */

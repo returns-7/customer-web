@@ -5,12 +5,15 @@ import { F } from '../../lib/calc'
 import { StockIcon } from '../common/StockIcon'
 import { Tabs } from '../common/Tabs'
 import { cx } from '../common/cx'
-import { GEN, GEN_NAME, KR_ALL } from './communityData'
-import { ddGroups, priceAt, searchCount, type Seg } from './communityLogic'
+import { COMPOSE_H, GEN, GEN_NAME, KR_ALL } from './communityData'
+import { ddGroups, priceAt, type Seg } from './communityLogic'
+import type { Post } from './communityPosts'
+import { CommunityFeed } from './CommunityFeed'
+import { useCommunityFeed, type FeedTab, type HotScope } from './useCommunityFeed'
 import styles from './CommunityCenter.module.css'
+import feedStyles from './CommunityFeed.module.css'
 
-export type FeedTab = 'live' | 'hot' | 'mine'
-export type HotScope = 'stock' | 'all'
+export type { FeedTab, HotScope }
 const TABS: { key: FeedTab; label: string }[] = [{ key: 'live', label: '실시간' }, { key: 'hot', label: '인기글' }, { key: 'mine', label: '내가 쓴 댓글' }]
 const SCOPES: [HotScope, string][] = [['stock', '이 종목'], ['all', '전체 종목']]
 
@@ -37,11 +40,14 @@ interface CommunityCenterProps {
   onTab: (tab: FeedTab) => void
   onScope: (scope: HotScope) => void
   onStar: () => void
+  fixed: boolean // 화면 고정이면 글 목록만 스크롤
+  nick: string
+  pubOn: boolean
+  onToast: (text: string) => void
 }
 
-// 가운데 열 윗부분: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색. 글 목록·글쓰기는 C-3부터
-// 종목이 바뀌면 부모가 key로 다시 만들기 때문에 목록·검색은 저절로 닫힘(원본 setCode와 같음)
-export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar }: CommunityCenterProps) {
+// 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 글 목록. 글쓰기 창은 자리만(C-5), 답글은 C-4
+export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, pubOn, onToast }: CommunityCenterProps) {
   const [ddOpen, setDdOpen] = useState(false)
   const [ddQ, setDdQ] = useState('')
   const [ddHi, setDdHi] = useState(0)
@@ -50,12 +56,30 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
   const headRef = useRef<HTMLDivElement>(null)
   const ddInputRef = useRef<HTMLInputElement>(null)
   const qRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const feedRef = useRef<HTMLElement>(null)
+
+  // 종목이 바뀌면 목록·글 검색은 닫힘(원본 setCode와 같음). 보여 줄 글 개수 등은 피드가 알아서 처음으로 돌아감
+  const [seenCode, setSeenCode] = useState(code)
+  if (seenCode !== code) {
+    setSeenCode(code)
+    setDdOpen(false)
+    setDdQ('')
+    setDdHi(0)
+    setSearchOpen(false)
+    setQ('')
+  }
+
+  const feed = useCommunityFeed({ code, tab, scope, searchOpen, q, fixed, listRef, feedRef })
+  const { menu, closeMenu } = feed
+  const toTop = useRef(feed.toListTop)
+  useEffect(() => { toTop.current = feed.toListTop })
+  useEffect(() => { toTop.current(false) }, [code])
 
   const isGen = code === GEN
   const name = isGen ? GEN_NAME : RD.SN[code]
-  const qt = q.trim()
-  const qOn = searchOpen && !!qt
-  const view: FeedTab | 'search' = qOn ? 'search' : tab
+  const qOn = feed.qOn
+  const view = feed.view
   const px = RD.PX[code] || [0, 0]
 
   const groups = ddOpen ? ddGroups(ddQ, recent) : []
@@ -92,6 +116,26 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
   const changeTab = (key: FeedTab) => {
     onTab(key)
     closeSearch()
+    feed.resetLimit()
+    feed.toListTop(false)
+  }
+  const changeScope = (key: HotScope) => {
+    onScope(key)
+    feed.resetLimit()
+  }
+  // 글 링크 복사(원본: 주소 + ?stock=&thread=)
+  const share = (p: Post) => {
+    const url = location.href.split('?')[0] + '?stock=' + p.code + '&thread=' + p.id
+    try { void navigator.clipboard.writeText(url) } catch { /* 복사 못 해도 안내만 보임 */ }
+    onToast('글 링크를 복사했어요')
+  }
+  // 내가 쓴 답글 줄에서 글로 이동. TODO: C-4에서 그 글의 답글도 같이 펼침
+  const goThread = (c: string, id: string) => {
+    onCode(c)
+    onTab('live')
+    closeSearch()
+    feed.focusPost(c, id)
+    try { history.replaceState(null, '', '?stock=' + c + '&thread=' + id) } catch { /* 주소 갱신 실패는 무시 */ }
   }
 
   // 목록 밖을 누르거나 Esc: 목록 → 글 검색 순서로 닫음
@@ -107,11 +151,21 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
       if (ddOpen) closeDd()
+      else if (menu) closeMenu()
       else if (searchOpen) closeSearch()
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [ddOpen, searchOpen])
+  }, [ddOpen, searchOpen, menu, closeMenu])
+  // "…" 메뉴 밖을 누르면 닫힘
+  useEffect(() => {
+    if (!menu) return
+    const onDown = (e: MouseEvent) => {
+      if (!(e.target as Element).closest?.('[data-menu]')) closeMenu()
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [menu, closeMenu])
 
   const ddKey = (e: React.KeyboardEvent) => {
     const n = flat.length
@@ -135,7 +189,7 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
   let k = 0
 
   return (
-    <section data-col="center" className={styles.center}>
+    <section ref={feedRef} data-col="center" className={styles.center}>
       <div ref={headRef} className={styles.head}>
         <button type="button" className={styles.pick} aria-expanded={ddOpen} aria-haspopup="listbox" aria-label="종목 선택" onClick={openDd}>
           <StockIcon color={isGen ? 'var(--color-navy)' : KR_ALL[code][1]} initial={isGen ? 'R' : KR_ALL[code][2]} size={24} />
@@ -224,7 +278,7 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
             {SCOPES.map(([key, label], i) => (
               <span key={key} style={{ display: 'contents' }}>
                 {i > 0 && <span className={styles.scopeSep}>·</span>}
-                <button type="button" className={cx(styles.scope, scope === key && styles.scopeOn)} aria-pressed={scope === key} onClick={() => onScope(key)}>{label}</button>
+                <button type="button" className={cx(styles.scope, scope === key && styles.scopeOn)} aria-pressed={scope === key} onClick={() => changeScope(key)}>{label}</button>
               </span>
             ))}
           </div>
@@ -247,12 +301,14 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
           </label>
           {qOn && (
             <div className={styles.qInfo}>
-              ‘{q}’ 검색 결과 {searchCount(code, qt)}개 · <button type="button" className={styles.clear} onClick={() => setQ('')}>지우기</button>
+              ‘{q}’ 검색 결과 {feed.total}개 · <button type="button" className={styles.clear} onClick={() => setQ('')}>지우기</button>
             </div>
           )}
         </div>
       )}
-      <div className={styles.feed} />
+      {/* TODO: C-5에서 닉네임 정하기 + 글쓰기 창. 지금은 원본과 같은 높이의 빈 자리 */}
+      <div className={feedStyles.composeSpace} style={{ height: COMPOSE_H }} />
+      <CommunityFeed feed={feed} q={q} scope={scope} fixed={fixed} nick={nick} pubOn={pubOn} listRef={listRef} onShare={share} onGoThread={goThread} onNoop={() => { /* TODO: C-5 신고·수정·삭제 */ }} />
     </section>
   )
 }
