@@ -86,7 +86,7 @@ export function infoOf(code: string): HoldingInfo {
 
 export interface OrderView {
   id: string
-  pkg: PackageId
+  pkg: string
   time: string // 'MM.DD HH:mm'
   code: string
   side: 'buy' | 'sell'

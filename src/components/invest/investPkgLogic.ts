@@ -1,5 +1,4 @@
 import { RETURNS_DATA as RD } from '../../data/returns'
-import type { PackageId } from '../../data/returns'
 import { F } from '../../lib/calc'
 
 export type PkgSort = 'ret' | 'new'
@@ -15,7 +14,8 @@ export interface PkgItemView {
 
 // 패키지 한 개의 평가 결과(원본 view) — 숫자는 RD.PKG_HOLDINGS(보유 주 수 × 현재가)에서 계산
 export interface PkgView {
-  id: PackageId
+  id: string
+  made?: string // 새로 만든 패키지의 만든 날 'YYYY.MM.DD'(없으면 예시 데이터의 만든 날)
   name: string
   seed: number
   created: number // 클수록 최근에 만든 패키지
@@ -52,7 +52,8 @@ export interface PkgBaseItem {
 }
 
 export interface PkgBase {
-  id: PackageId
+  id: string
+  made?: string
   name: string
   seed: number
   created: number
@@ -72,8 +73,8 @@ export function buildPkgBases(): PkgBase[] {
 
 export function viewOf(b: PkgBase): PkgView {
   const items = b.items.map((h) => {
-    const val = h.qty * RD.PX[h.code][0]
-    const chg = RD.PX[h.code][1]
+    const [px, chg] = RD.PX[h.code] ?? [0, 0]
+    const val = h.qty * px
     return { code: h.code, qty: h.qty, val, cost: h.qty * h.avg, today: Math.round((val * chg) / (100 + chg)), target: h.target }
   })
   const val = items.reduce((a, i) => a + i.val, 0)
@@ -81,6 +82,7 @@ export function viewOf(b: PkgBase): PkgView {
   const today = items.reduce((a, i) => a + i.today, 0)
   return {
     id: b.id,
+    made: b.made,
     name: b.name,
     seed: b.seed,
     created: b.created,
@@ -174,7 +176,7 @@ export function detailOf(v: PkgView): PkgDetailInfo {
   const prof = RD.CUSTOMER.profile
   const allow = F.allowedLabel(prof)
   return {
-    made: F.dot(RD.DATES.buys[MADE_IDX[v.id] || 0]),
+    made: v.made ?? F.dot(RD.DATES.buys[MADE_IDX[v.id] || 0]),
     vol: PKG_VOL[v.id] || '-',
     profRange: RD.PROFILES[prof].label + ', ' + ((allow.match(/\d+/) || ['-'])[0]) + '등급까지',
     outCount: v.items.filter((i) => !F.suitable(F.meta(i.code).grade ?? null, prof)).length

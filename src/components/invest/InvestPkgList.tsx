@@ -19,7 +19,7 @@ interface Props {
   onSort: (s: PkgSort) => void
   selected: string
   onSelect: (id: string) => void
-  onNew?: () => void // TODO: P-8에서 새 패키지 만들기 창 연결
+  onNew?: () => void
 }
 
 // 내 패키지 목록 — 정렬 2종, 행 클릭 시 선택 표시

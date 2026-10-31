@@ -1,5 +1,4 @@
 import { RETURNS_DATA as RD } from '../../data/returns'
-import type { PackageId } from '../../data/returns'
 import { F } from '../../lib/calc'
 import { splitPercent } from './investChartLogic'
 import type { OrderView } from './investHoldingData'
@@ -132,7 +131,7 @@ export function cashDelta(o: FilledOrder): number {
 }
 
 // 체결된 주문으로 보유 주 수·평균 매입가를 바꾼 새 목록(받은 값은 건드리지 않음). 매수는 평균 매입가를 반올림해 다시 계산
-export function applyOrders(bases: PkgBase[], pkgId: PackageId, list: FilledOrder[]): PkgBase[] {
+export function applyOrders(bases: PkgBase[], pkgId: string, list: FilledOrder[]): PkgBase[] {
   return bases.map((p) => {
     if (p.id !== pkgId) return p
     let items = p.items.slice()
@@ -153,7 +152,7 @@ export function applyOrders(bases: PkgBase[], pkgId: PackageId, list: FilledOrde
 }
 
 // 주문 내역에 쌓을 줄(수량 0 이하는 만들지 않음, 가격은 주문 시점 현재가)
-export function makeOrders(list: NewOrder[], pkg: PackageId, nextId: () => string, rejected: boolean): OrderView[] {
+export function makeOrders(list: NewOrder[], pkg: string, nextId: () => string, rejected: boolean): OrderView[] {
   return list
     .filter((o) => o.qty > 0)
     .map((o) => ({ id: nextId(), pkg, time: orderClock(), code: o.code, side: o.side, qty: o.qty, price: RD.PX[o.code]?.[0] ?? 0, status: rejected ? 'reject' : 'done' }))

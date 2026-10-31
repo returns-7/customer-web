@@ -4,7 +4,6 @@ import { Tabs } from '../components/common/Tabs'
 import { Toast } from '../components/common/Toast'
 import { useToast } from '../components/common/useToast'
 import { RETURNS_DATA as RD } from '../data/returns'
-import type { PackageId } from '../data/returns'
 import { F } from '../lib/calc'
 import { useAppShell } from '../layouts/appShell'
 import { InvestAssetsBox } from '../components/invest/InvestAssetsBox'
@@ -14,6 +13,7 @@ import { InvestOrders } from '../components/invest/InvestOrders'
 import { InvestAddPanel } from '../components/invest/InvestAddPanel'
 import { InvestBulkPanel } from '../components/invest/InvestBulkPanel'
 import { InvestPkgDetail } from '../components/invest/InvestPkgDetail'
+import { InvestNewPkg } from '../components/invest/InvestNewPkg'
 import { InvestPkgList } from '../components/invest/InvestPkgList'
 import { InvestRec } from '../components/invest/InvestRec'
 import { InvestTradePanel } from '../components/invest/InvestTradePanel'
@@ -26,6 +26,8 @@ import { isSuitable, seedOrders } from '../components/invest/investHoldingData'
 import type { OrderView } from '../components/invest/investHoldingData'
 import { applyOrders, cashDelta, makeOrders, openTradeState } from '../components/invest/investOrderLogic'
 import type { BulkCalc, NewOrder, TradeCalc, TradeSide, TradeState } from '../components/invest/investOrderLogic'
+import { makePkgBase, openNewPkg } from '../components/invest/investNewPkgLogic'
+import type { NewPkgState, NmBuyRow } from '../components/invest/investNewPkgLogic'
 import { buildPkgBases, sortViews, viewOf } from '../components/invest/investPkgLogic'
 import type { PkgSort } from '../components/invest/investPkgLogic'
 import styles from '../components/invest/InvestLayout.module.css'
@@ -37,7 +39,7 @@ const TABS = [
   { key: 'rec', label: '성향별 추천' }
 ]
 
-// 주식 패키지 — 1~7번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세(머리·수치·위험 요약·종목 비중·수익률 차트·보유 종목 표) + 주문 내역 + 성향별 추천 탭 + 매수·매도 주문 창·성향 초과 확인 창 + 패키지 한 번에 사기·종목 추가 창·패키지 고르기
+// 주식 패키지 — 1~8번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세(머리·수치·위험 요약·종목 비중·수익률 차트·보유 종목 표) + 주문 내역 + 성향별 추천 탭 + 매수·매도 주문 창·성향 초과 확인 창 + 패키지 한 번에 사기·종목 추가 창·패키지 고르기 + 새 패키지 만들기 창
 export function InvestPage() {
   const { hash, search } = useLocation()
   const navigate = useNavigate()
@@ -58,6 +60,7 @@ export function InvestPage() {
   const [trade, setTrade] = useState<TradeState | null>(null)
   const [bulk, setBulk] = useState<string | null>(null)
   const [add, setAdd] = useState<AddState | null>(null)
+  const [nm, setNm] = useState<NewPkgState | null>(null) // 새 패키지 창
   const [dlg, setDlg] = useState<DialogState | null>(null)
   const [uf, setUf] = useState<UnsuitState | null>(null)
   const nextId = useRef(orders.length)
@@ -100,10 +103,11 @@ export function InvestPage() {
       if (uf) setUf(null)
       else if (dlg) setDlg(null)
       else if (trade || bulk !== null || add) closePanel()
+      else if (nm) setNm(null)
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [uf, dlg, trade, bulk, add])
+  }, [uf, dlg, trade, bulk, add, nm])
 
   // 내 성향보다 위험한 종목이면 한 번 확인받고 이어감(이미 확인한 종목·성향 안 종목은 바로 이어감)
   const gate = (codes: string[], then: () => void) => {
@@ -114,7 +118,7 @@ export function InvestPage() {
 
   // 주문은 시장가로 바로 체결(체결 완료 / 거부). 거부(계좌 미개설)면 주문 내역에 '거부'로 남기고 거부 창을 띄운 뒤 false
   // TODO: 백엔드 연결 시 주문 API 호출로 교체
-  const place = (list: NewOrder[], pkgId: PackageId): boolean => {
+  const place = (list: NewOrder[], pkgId: string): boolean => {
     const rejected = RD.ACCOUNT_STATE !== 'opened'
     const made = makeOrders(list, pkgId, () => 'o' + ++nextId.current, rejected)
     if (!made.length) return true
@@ -197,6 +201,20 @@ export function InvestPage() {
     showToast((RD.SN[code] || code) + '을(를) 담았어요 · 표의 [매수]로 살 수 있어요', 2200)
   }
 
+  // 새 패키지 만들기: 목표 비중만 정해 보유 0주로 만들고(맨 앞·최신순·선택), 사기로 이어졌으면 바로 주문
+  // TODO: 백엔드 연결 시 패키지 생성 API 호출로 교체
+  const makePkg = (buy: NmBuyRow[] | null) => {
+    if (!nm) return
+    const id = 'p' + Date.now()
+    const created = Math.max(0, ...bases.map((p) => p.created)) + 1
+    setBases((b) => [makePkgBase(id, nm.name, nm.w, created, 3 + Math.floor(Math.random() * 40))].concat(b))
+    setSort('new')
+    setParams({ pkg: id }, { replace: true })
+    setNm(null)
+    if (buy) place(buy.filter((r) => r.q > 0).map((r): NewOrder => ({ code: r.code, side: 'buy', qty: r.q })), id)
+    else showToast('패키지를 만들었어요', 2200)
+  }
+
   // 추천 탭 "패키지에 담기": 성향 밖이면 확인 → 어느 패키지에 담을지 → 그 패키지의 종목 추가 창(이미 담긴 패키지면 고르기 없이 검색만)
   const pickPackage = (code: string) =>
     gate([code], () =>
@@ -231,7 +249,7 @@ export function InvestPage() {
         <div className={styles.mine}>
           <div className={styles.colLeft}>
             <InvestAssetsBox className={styles.assets} views={views} cash={cash} />
-            <InvestPkgList className={styles.list} rows={rows} sort={sort} onSort={setSort} selected={selected} onSelect={(id) => setParams({ pkg: id }, { replace: true })} />
+            <InvestPkgList className={styles.list} rows={rows} sort={sort} onSort={setSort} selected={selected} onSelect={(id) => setParams({ pkg: id }, { replace: true })} onNew={() => setNm(openNewPkg())} />
           </div>
           <div className={styles.colRight}>
             <InvestPkgDetail pkg={cur} unsuit={unsuit} onTrade={openTrade} onBuy={() => { closePanel(); setBulk('') }} onAdd={() => openAdd()} />
@@ -252,6 +270,16 @@ export function InvestPage() {
           onClose={closePanel}
           onPick={(code) => gate([code], () => setAdd((a) => (a ? { ...a, pick: code, pct: '', adj: null } : a)))}
           onAdd={addItem}
+        />
+      )}
+      {nm && (
+        <InvestNewPkg
+          nm={nm}
+          cash={cash}
+          onPatch={(p) => setNm((n) => (n ? { ...n, ...(typeof p === 'function' ? p(n) : p) } : n))}
+          onClose={() => setNm(null)}
+          onMake={makePkg}
+          onDialog={setDlg}
         />
       )}
       {dlg && <InvestDialog dialog={dlg} onClose={() => setDlg(null)} />}
