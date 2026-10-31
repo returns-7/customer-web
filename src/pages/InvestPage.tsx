@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom'
 import { Tabs } from '../components/common/Tabs'
 import { InvestAssetsBox } from '../components/invest/InvestAssetsBox'
+import { InvestPkgDetail } from '../components/invest/InvestPkgDetail'
 import { InvestPkgList } from '../components/invest/InvestPkgList'
 import { buildPkgViews, sortViews } from '../components/invest/investPkgLogic'
 import type { PkgSort } from '../components/invest/investPkgLogic'
@@ -14,7 +15,7 @@ const TABS = [
   { key: 'rec', label: '성향별 추천' }
 ]
 
-// 주식 패키지 — 1번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 (패키지 상세는 P-2, 성향별 추천은 P-5)
+// 주식 패키지 — 1~2번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세 윗부분 (종목 비중 이후는 P-3~, 성향별 추천은 P-5)
 export function InvestPage() {
   const { hash, search } = useLocation()
   const navigate = useNavigate()
@@ -43,7 +44,9 @@ export function InvestPage() {
             <InvestAssetsBox className={styles.assets} views={views} />
             <InvestPkgList className={styles.list} rows={rows} sort={sort} onSort={setSort} selected={selected} onSelect={(id) => setParams({ pkg: id }, { replace: true })} />
           </div>
-          <div className={styles.colRight}>{/* P-2: 패키지 상세 */}</div>
+          <div className={styles.colRight}>
+            <InvestPkgDetail pkg={views.find((v) => v.id === selected) ?? views[0]} />
+          </div>
         </div>
       )}
 

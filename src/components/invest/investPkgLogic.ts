@@ -117,3 +117,28 @@ export function iconsOf(v: PkgView): [string, string][] {
     return k ? [k[1], k[2]] : ['', String(RD.SN[it.code] || it.code)[0]]
   })
 }
+
+// 패키지 상세 윗부분(P-2) 표시용 값
+export interface PkgDetailInfo {
+  made: string // 만든 날 'YYYY.MM.DD'
+  vol: string // 패키지 연 변동성(없으면 '-')
+  profRange: string // 예: '적극투자형, 2등급까지'
+  outCount: number // 내 성향 범위를 벗어난 종목 수
+}
+
+// TODO: 백엔드 연결 시 패키지 응답의 생성일로 교체(지금은 원본 MADE_IDX — RD.DATES.buys 순번)
+const MADE_IDX: Record<string, number> = { 'semi-chain': 0, 'steady-div': 2, 'auto-parts': 3 }
+
+// TODO: 백엔드 연결 시 패키지 변동성 API 값으로 교체(지금은 원본 PKG_VOL 예시, 과거 3년)
+const PKG_VOL: Record<string, string> = { 'semi-chain': '38%' }
+
+export function detailOf(v: PkgView): PkgDetailInfo {
+  const prof = RD.CUSTOMER.profile
+  const allow = F.allowedLabel(prof)
+  return {
+    made: F.dot(RD.DATES.buys[MADE_IDX[v.id] || 0]),
+    vol: PKG_VOL[v.id] || '-',
+    profRange: RD.PROFILES[prof].label + ', ' + ((allow.match(/\d+/) || ['-'])[0]) + '등급까지',
+    outCount: v.items.filter((i) => !F.suitable(F.meta(i.code).grade ?? null, prof)).length
+  }
+}
