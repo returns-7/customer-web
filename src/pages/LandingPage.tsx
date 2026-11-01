@@ -20,9 +20,9 @@ export function LandingPage() {
   useLandingDocument()
   // 뒤로 가기(POP)로 돌아왔을 때만 이전 스크롤 위치를 복원한다 — 값은 마운트 때 한 번만 읽는다
   const navType = useNavigationType()
-  const { key } = useLocation()
+  const { key, hash } = useLocation()
   const rootRef = useRef<HTMLDivElement>(null)
-  useLayoutEffect(() => mountLanding(rootRef.current!, { pop: navType === 'POP', historyKey: key }),
+  useLayoutEffect(() => mountLanding(rootRef.current!, { pop: navType === 'POP', historyKey: key, hash }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [])
   return (

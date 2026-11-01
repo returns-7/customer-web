@@ -17,9 +17,13 @@ export interface LandingMountOptions {
   pop: boolean
   /** 현재 history 항목 키 — 저장해 둔 위치가 이 항목의 것일 때만 복원 */
   historyKey: string
+  /** 주소의 해시(예: '#faq') — 다른 페이지에서 /#faq 로 들어오면 FAQ 위치로 스크롤 */
+  hash: string
 }
 
 const SCROLL_KEY = 'returns-landing-scroll'
+const LOGOUT_NOTICE_KEY = 'returns-logout-notice'
+let lastNoticeAt = -1e9 // StrictMode 재마운트에서 같은 안내를 한 번 더 보여 주기 위한 표시
 
 function readSavedScroll(historyKey: string): number | null {
   try {
@@ -175,7 +179,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
   }
   const L$: Record<string, HTMLElement> = {}
   ;['late', 'lb5', 'lb6', 'lb7', 'lb8', 'lb9', 's5', 's6', 's7', 's8', 's9', 'tt5', 'd5', 'big5', 'd5b', 'seal5', 'rail5', 'rf5', 'dot5', 'cnt5', 'warn5',
-    'ph6a', 'ph6b', 'beam6', 'beam6b', 'tt6', 'p6', 'list6', 'big6', 'pct6', 'col7', 'tt7', 'big7', 'note7', 'rul7', 'rul7in', 'today7', 'rc7', 'paper', 'strike', 'save7', 'fn7',
+    'ph11', 'w11', 'sub11', 'sum11', 'sum11bg', 'sum11c', 'ph6a', 'ph6b', 'beam6', 'beam6b', 'tt6', 'p6', 'list6', 'big6', 'pct6', 'col7', 'tt7', 'big7', 'note7', 'rul7', 'rul7in', 'today7', 'rc7', 'paper', 'strike', 'save7', 'fn7',
     'tt8', 'p8', 'fl8', 'svg8', 'pm8', 'flyW', 'fly8', 'big8', 'tt9', 'list9', 'app9', 'kiroo', 'bub9', 'disc9', 'lkT', 'passD'].forEach((id) => { L$[id] = byId(id) })
   const LL = (n: string) => $$(`[data-l="${n}"]`)
   const ticks5 = $$('.tk5') // S5 rail ticks (13개, 마크업에서 그린 것)
@@ -450,8 +454,17 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
       stampN = n
     }
   }
-  function render11(_p: number) {
-    // L-8: S11 마무리 장면 갱신
+  const words11 = $$('#w11 .ml>span')
+  function render11(p: number) {
+    paintLate()
+    L$.ph11.style.clipPath = `inset(${(1 - e3o(seg(p, 0, 0.3))) * 100}% 0 0 0)`
+    words11.forEach((s_, i) => { const k = e3o(seg(p, 0.3 + i * 0.3, 0.3 + i * 0.3 + 0.22)); s_.style.transform = `translateY(${(1 - k) * 112}%)` })
+    L$.sub11.style.top = (L$.w11.offsetTop + L$.w11.offsetHeight + 20) + 'px'
+    L$.sub11.style.opacity = String(seg(p, 1.2, 1.4))
+    const k = e3o(seg(p, 1.2, 1.5)), c = L$.sum11, w = c.offsetWidth || 380, h = c.offsetHeight || 360
+    const dx = (LG.pad || 96) - 24, dy = innerHeight * 0.08 - 24
+    vis(c, p >= 1.2 ? 1 : 0, `translate(${dx * (1 - k)}px,${dy * (1 - k)}px) scale(${72 / w + (1 - 72 / w) * k},${88 / h + (1 - 88 / h) * k})`)
+    L$.sum11bg.style.opacity = String(1 - k); L$.sum11c.style.opacity = String(seg(k, 0.6, 1))
   }
 
   /* ===== passport tab ===== */
@@ -643,7 +656,42 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     passWrap.classList.toggle('gone', i === 0 || scrollY > byId('pinB').offsetTop - innerHeight * 0.4)
   }
   listen('scroll', updNav, { passive: true })
-  // 키보드(Space·방향키·PageUp/Down)·FAQ 아코디언·로그아웃 안내는 L-8
+  listen('keydown', (e) => {
+    const tg = e.target as Element | null
+    if (tg && tg.closest && tg.closest('input,textarea,select,button,a,[contenteditable],.qa')) return
+    const nxt = (e.key === ' ' && !e.shiftKey) || e.key === 'ArrowDown' || e.key === 'PageDown'
+    const prv = (e.key === ' ' && e.shiftKey) || e.key === 'ArrowUp' || e.key === 'PageUp'
+    if (!nxt && !prv) return
+    const pts = [...SCN.map((s_) => yOfT(s_.a)), faq.offsetTop, byId('pinB').offsetTop], y = scrollY
+    const tgt = nxt ? pts.find((p_) => p_ > y + 8) : [...pts].reverse().find((p_) => p_ < y - 8)
+    if (tgt == null) return
+    e.preventDefault(); lenis.scrollTo(tgt, { duration: 1 })
+  })
+
+  /* ===== FAQ accordion (one open at a time) ===== */
+  $$('.qa').forEach((qa) => on(qa.querySelector('.q') as HTMLElement, 'click', () => {
+    const open = !qa.classList.contains('open')
+    $$('.qa').forEach((x) => { x.classList.remove('open'); x.querySelector('.q')!.setAttribute('aria-expanded', 'false'); x.querySelector('.q i')!.textContent = '+' })
+    if (open) { qa.classList.add('open'); qa.querySelector('.q')!.setAttribute('aria-expanded', 'true'); qa.querySelector('.q i')!.textContent = '−' }
+    later(() => ScrollTrigger.refresh(), 380)
+  }))
+
+  /* ===== 로그아웃 안내(30분 무조작 로그아웃으로 돌아왔을 때) ===== */
+  {
+    let show = false
+    try {
+      if (sessionStorage.getItem(LOGOUT_NOTICE_KEY) === '1') { sessionStorage.removeItem(LOGOUT_NOTICE_KEY); lastNoticeAt = performance.now(); show = true }
+      else if (performance.now() - lastNoticeAt < 500) show = true // StrictMode(개발) 재마운트: 앞 마운트가 이미 키를 지웠다
+    } catch { /* sessionStorage 불가 환경이면 안내 없음 */ }
+    if (show) {
+      const d = document.createElement('div')
+      d.setAttribute('role', 'status'); d.textContent = '30분이 지나 안전하게 로그아웃됐어요'
+      d.style.cssText = 'position:fixed;top:96px;left:50%;transform:translateX(-50%);z-index:200;background:var(--color-surface);color:var(--color-ink);font:500 14px Pretendard,system-ui,sans-serif;padding:10px 16px;border-radius:6px;box-shadow:0 8px 24px rgba(16,24,40,.12)'
+      document.body.appendChild(d)
+      later(() => d.remove(), 3000)
+      cleanups.push(() => d.remove())
+    }
+  }
 
   /* ===== 고정 상단 바(#hdr2) — S0 이후 위로 스크롤하면 내려옴 ===== */
   const bar = byId('hdr2')
@@ -705,13 +753,20 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     lenis.scrollTo(savedY, { immediate: true, force: true })
     window.scrollTo(0, savedY) // lenis가 없는 RM 모드에서도 같은 위치
     ScrollTrigger.update()
+  } else if (opts.hash === '#faq') {
+    // 다른 페이지(커뮤니티 끼루 답변 근거 등)에서 /#faq 로 들어오면 FAQ 위치로 — 원본 landing-journey.html#faq 도 같은 위치(faq.offsetTop)에 선다
+    const y = faq.offsetTop
+    lenis.scrollTo(y, { immediate: true, force: true })
+    window.scrollTo(0, y)
+    ScrollTrigger.update()
   } else {
     window.scrollTo(0, 0)
   }
   // 언마운트 시점에는 새 페이지로 DOM이 바뀌며 scrollY가 줄어들 수 있어, 스크롤할 때마다 마지막 위치를 따로 기억한다
-  let lastY = window.scrollY
-  listen('scroll', () => { lastY = window.scrollY }, { passive: true })
-  const saveScroll = () => writeSavedScroll(opts.historyKey, lastY)
+  let lastY = window.scrollY, lastKey = opts.historyKey
+  // 랜딩 안에서 #faq 링크 등으로 history 항목이 바뀌면(React Router가 history.state.key를 새로 만듦) 그 항목의 키로 저장한다
+  listen('scroll', () => { lastY = window.scrollY; lastKey = (history.state && history.state.key) || opts.historyKey }, { passive: true })
+  const saveScroll = () => writeSavedScroll(lastKey, lastY)
   listen('pagehide', saveScroll)
   cleanups.push(saveScroll)
 

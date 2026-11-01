@@ -22,6 +22,8 @@ export function useLandingDocument(): void {
   useLayoutEffect(() => {
     const root = document.documentElement
     root.classList.add('landing-doc')
+    const prevTitle = document.title
+    document.title = 'Returns · RIA 국내시장 복귀계좌' // 원본 landing-journey.html의 <title>
     FONT_LINKS.forEach((f) => {
       if (document.getElementById(f.id)) return
       const el = document.createElement('link')
@@ -33,6 +35,7 @@ export function useLandingDocument(): void {
     })
     return () => {
       root.classList.remove('landing-doc')
+      document.title = prevTitle
     }
   }, [])
 }
