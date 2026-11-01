@@ -6,6 +6,10 @@ import { useToast } from '../components/common/useToast'
 import styles from '../components/myinfo/MyInfoLayout.module.css'
 import { MyInfoAccountBox } from '../components/myinfo/MyInfoAccountBox'
 import { MyInfoBasicBox } from '../components/myinfo/MyInfoBasicBox'
+import { MyInfoCommunityBox } from '../components/myinfo/MyInfoCommunityBox'
+import { MyInfoConsentBox } from '../components/myinfo/MyInfoConsentBox'
+import { MyInfoNotifyBox } from '../components/myinfo/MyInfoNotifyBox'
+import { MyInfoThemeBox } from '../components/myinfo/MyInfoThemeBox'
 import { MyInfoRiskyNotice } from '../components/myinfo/MyInfoRiskyNotice'
 import { MyInfoProfileBox } from '../components/myinfo/MyInfoProfileBox'
 import { MyInfoSlot } from '../components/myinfo/MyInfoSlot'
@@ -15,8 +19,9 @@ import { useAppShell } from '../layouts/appShell'
 import { RETURNS_DATA as RD } from '../data/returns'
 
 const HASH_BOXES = ['assess', 'notify', 'theme']
+const INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] // 사용자가 직접 움직였다는 신호
 
-// 내 정보 — M-1: 틀(박스 10개 자리) + 내 프로필 · 투자성향 + 거래로 본 성향 + 주소 해시 이동
+// 내 정보 — 틀(박스 10개 자리) + 박스들 + 주소 해시 이동
 export function MyInfoPage() {
   const shell = useAppShell()
   const { hash } = useLocation()
@@ -27,6 +32,7 @@ export function MyInfoPage() {
   const [flash, setFlash] = useState<string | null>(null)
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const firstHash = useRef(true)
+  const fontWatch = useRef<(() => void) | undefined>(undefined)
   const profLabel = RD.PROFILES[RD.CUSTOMER.profile]?.label
 
   // 시연 설정(성향 상태 등)이 바뀌면 다시 그림
@@ -51,7 +57,26 @@ export function MyInfoPage() {
     const go = () => {
       const el = document.getElementById(id)
       if (!el) return
-      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
+      const toTop = () => window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 80, behavior: 'smooth' })
+      toTop()
+      // 글꼴이 이동 중에 들어오면 박스가 밀리므로, 글꼴 로딩이 끝날 때 한 번 더 맞춤(그 사이 사용자가 직접 움직였으면 하지 않음)
+      fontWatch.current?.()
+      if (document.fonts.status === 'loading') {
+        const stop = () => {
+          document.fonts.removeEventListener('loadingdone', again)
+          INPUTS.forEach((ev) => window.removeEventListener(ev, stop, true))
+          clearTimeout(limit)
+          fontWatch.current = undefined
+        }
+        const again = () => {
+          toTop()
+          if (document.fonts.status !== 'loading') stop()
+        }
+        const limit = setTimeout(stop, 1500)
+        document.fonts.addEventListener('loadingdone', again)
+        INPUTS.forEach((ev) => window.addEventListener(ev, stop, true))
+        fontWatch.current = stop
+      }
       setFlash(id)
       clearTimeout(flashTimer.current)
       flashTimer.current = setTimeout(() => setFlash(null), 1500)
@@ -63,7 +88,10 @@ export function MyInfoPage() {
     }
     go()
   }, [hash])
-  useEffect(() => () => clearTimeout(flashTimer.current), [])
+  useEffect(() => () => {
+    clearTimeout(flashTimer.current)
+    fontWatch.current?.()
+  }, [])
 
   // 다시 진단하기 창은 M-5에서 연결 (지금은 모양만)
   const openAssess = () => {}
@@ -87,13 +115,13 @@ export function MyInfoPage() {
           {assessState() !== 'none' && <MyInfoTradeBox className={styles.trade} onOpenAssess={openAssess} />}
           <MyInfoBasicBox className={styles.basic} onToast={showToast} />
           <MyInfoAccountBox className={styles.account} onToast={showToast} />
-          <MyInfoSlot box="community" className={cx(styles.community, styles.hCommunity)} />
+          <MyInfoCommunityBox className={styles.community} onToast={showToast} />
         </div>
         <div className={styles.col}>
-          <MyInfoSlot box="notify" id="notify" flashing={flash === 'notify'} className={cx(styles.notify, styles.hNotify)} />
+          <MyInfoNotifyBox id="notify" className={cx(styles.notify, styles.flashable, flash === 'notify' && styles.flashOn)} onToast={showToast} />
           <div className={styles.pair}>
-            <MyInfoSlot box="consent" className={cx(styles.consent, styles.hConsent)} />
-            <MyInfoSlot box="theme" id="theme" flashing={flash === 'theme'} className={cx(styles.theme, styles.hTheme)} />
+            <MyInfoConsentBox className={styles.consent} onToast={showToast} />
+            <MyInfoThemeBox id="theme" className={cx(styles.theme, styles.flashable, flash === 'theme' && styles.flashOn)} onToast={showToast} />
           </div>
           <MyInfoSlot box="security" className={cx(styles.security, styles.hSecurity)} />
           <MyInfoSlot box="logins" className={cx(styles.logins, styles.hLogins)} />

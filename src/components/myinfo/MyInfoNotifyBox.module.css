@@ -1,0 +1,73 @@
+.saveNote {
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  white-space: nowrap;
+}
+
+/* 1280px 이하: 한 줄 / 1281px 이상: 받는 방법 | 알림 종류 두 칸 */
+.cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.col {
+  padding: 0 var(--space-16) var(--space-4);
+  min-width: 0;
+}
+
+.kinds {
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.colHead {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-semibold);
+}
+
+.channel {
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.channelName {
+  font-size: var(--font-size-14);
+}
+
+.kind {
+  min-height: 52px;
+  padding: var(--space-4) 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: var(--space-12);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+.warn {
+  font-size: var(--font-size-12);
+  line-height: 18px;
+  color: var(--color-orange);
+  padding: var(--space-6) 0 var(--space-4);
+  border-top: 1px solid var(--color-line-soft);
+}
+
+@media (min-width: 1281px) {
+  .cols {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .kinds {
+    border-top: 0;
+    border-left: 1px solid var(--color-line-soft);
+  }
+
+  .kind {
+    min-height: 44px;
+  }
+}

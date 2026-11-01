@@ -90,7 +90,7 @@ section.flashOn {
   border-color: var(--color-navy);
 }
 
-/* 아직 만들지 않은 박스 자리(M-2~M-4에서 채움). 원본과 같은 높이만 차지 */
+/* 아직 만들지 않은 박스 자리(보안·로그인 기록, M-4에서 채움). 원본과 같은 높이만 차지 */
 .slot {
   background: var(--color-surface);
   border: 1px solid var(--color-line);
@@ -101,31 +101,8 @@ section.flashOn {
 .hSecurity {
   height: 226px;
 }
-.hCommunity {
-  height: 146px;
-}
-.hNotify {
-  height: 471px;
-}
-.hConsent {
-  height: 174px;
-}
-.hTheme {
-  height: 182px;
-}
 .hLogins {
   height: 282px;
-}
-
-@media (min-width: 1281px) {
-  .hNotify {
-    height: 266px;
-  }
-
-  /* 짝으로 묶였을 때는 옆 박스(테마) 높이에 맞춰 늘어남 */
-  .hConsent {
-    height: auto;
-  }
 }
 
 .note {

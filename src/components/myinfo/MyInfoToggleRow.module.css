@@ -1,0 +1,16 @@
+/* 이름 + 설명 + 스위치 한 줄(알림 종류·수신 동의·성향 공개) */
+.label {
+  min-width: 0;
+}
+
+.name {
+  display: block;
+  font-size: var(--font-size-14);
+}
+
+.desc {
+  display: block;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+  margin-top: 1px;
+}

@@ -1,0 +1,114 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-confirm);
+  background: var(--color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-24);
+  font-family: var(--font-sans);
+  color: var(--color-ink);
+}
+
+.panel {
+  width: min(360px, 100%);
+  background: var(--color-surface);
+  border-radius: var(--radius-8);
+  box-shadow: var(--shadow-pop);
+  padding: var(--space-20);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.wide {
+  width: min(400px, 100%);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-17);
+  font-weight: var(--font-weight-extrabold);
+}
+
+.desc {
+  margin: 0;
+  font-size: var(--font-size-14);
+  color: var(--color-gray-600);
+  line-height: 1.6;
+}
+
+.agree {
+  all: unset;
+  cursor: pointer;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+}
+
+.cb {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: var(--radius-4);
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  color: var(--color-on-navy);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.cb svg {
+  visibility: hidden;
+}
+
+.cbOn {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.cbOn svg {
+  visibility: visible;
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-8);
+  margin-top: var(--space-4);
+}
+
+.actionsLoose {
+  margin-top: var(--space-12);
+}
+
+.cancel,
+.ok {
+  all: unset;
+  cursor: pointer;
+  box-sizing: border-box;
+  flex: 1;
+  height: 44px;
+  border-radius: var(--radius-6);
+  display: grid;
+  place-items: center;
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-bold);
+}
+
+.cancel {
+  border: 1px solid var(--color-line-strong);
+}
+
+.ok {
+  background: var(--color-navy);
+  color: var(--color-on-navy);
+}
+
+.okOff {
+  background: var(--color-line-strong);
+  cursor: default;
+}
