@@ -38,7 +38,7 @@ const hl = (t: string, dq: string): Seg[] => {
 
 const rankMap = Object.fromEntries(RANK12.map((r, i) => [r[0], [i + 1, r[1]] as const]))
 
-export function ddGroups(dqRaw: string, recent: string[]): DdGroup[] {
+export function ddGroups(dqRaw: string, recent: string[], withGen = true): DdGroup[] {
   const dq = dqRaw.trim()
   const dql = dq.toLowerCase()
   const item = (c: string, rankGroup: boolean): DdItem => {
@@ -46,7 +46,7 @@ export function ddGroups(dqRaw: string, recent: string[]): DdGroup[] {
     const r = rankMap[c]
     return { code: c, name: hl(RD.SN[c], dq), codeSegs: hl(c, dq), sector: KR_ALL[c][0], rank: rankGroup && r ? r[0] : null, posts: r ? r[1] : null, chg: RD.PX[c][1], icon: { color: KR_ALL[c][1], ini: KR_ALL[c][2] } }
   }
-  const genHit = !dq || GEN_RE.test(dq)
+  const genHit = withGen && (!dq || GEN_RE.test(dq)) // 게시판은 종목 고르기에만(관심 종목 추가에는 없음)
   const groups: DdGroup[] = []
   if (genHit) groups.push({ title: dq ? '' : '게시판', rank: false, items: [item(GEN, false)] })
   if (dq) groups.push({ title: '', rank: false, items: Object.keys(KR_ALL).filter((c) => RD.SN[c].toLowerCase().includes(dql) || c.includes(dq)).map((c) => item(c, false)) })

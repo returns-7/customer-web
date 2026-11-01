@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import '../../styles/tokens.css'
 import { cx } from '../common/cx'
@@ -50,6 +51,41 @@ export function CommunityDialogs({ feed }: { feed: Feed }) {
         </div>
       )}
     </>,
+    document.body
+  )
+}
+
+interface PubDialogProps {
+  agree: boolean
+  onToggle: () => void
+  onCancel: () => void
+  onOk: () => void
+}
+
+// 내 투자성향 공개 창: 동의 체크 전에는 "공개하기"가 눌리지 않음. 막을 눌러도 안 닫히고 취소·Esc로만 닫힘(원본 그대로)
+export function PubDialog({ agree, onToggle, onCancel, onOk }: PubDialogProps) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [onCancel])
+  return createPortal(
+    <div className={styles.backdrop}>
+      <div className={cx(styles.panel, styles.panelWide)} role="dialog" aria-modal="true" aria-label="성향 공개">
+        <h3 className={styles.title}>내 투자성향을 공개할까요?</h3>
+        <p className={styles.desc}>공개하면 내 글과 답글에 성향 끼루와 성향 이름이 보여요. 투자성향은 개인정보라서 공개에 동의한 경우에만 보여드려요. 언제든 끌 수 있어요.</p>
+        <button type="button" role="checkbox" aria-checked={agree} className={styles.agree} onClick={onToggle}>
+          <span className={cx(styles.cb, agree && styles.cbOn)}>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>
+          </span>
+          공개에 동의해요
+        </button>
+        <div className={cx(styles.actions, styles.actionsTight)}>
+          <button type="button" className={styles.cancel} onClick={onCancel}>취소</button>
+          <button type="button" className={styles.ok} disabled={!agree} onClick={onOk}>공개하기</button>
+        </div>
+      </div>
+    </div>,
     document.body
   )
 }

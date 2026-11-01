@@ -37,13 +37,6 @@
   gap: var(--space-16);
 }
 
-/* 오른쪽 열은 C-4부터. 빈 자리만 잡아 둠 */
-.right {
-  grid-area: r;
-  min-width: 0;
-  min-height: 0;
-}
-
 .srOnly {
   position: absolute;
   width: 1px;

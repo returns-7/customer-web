@@ -1,4 +1,4 @@
-/* 글 삭제 확인 창 · 신고 사유 창 (원본: 폭 360, 안쪽 20, 제목 16px/600) */
+/* 글 삭제 확인 창 · 신고 사유 창 · 성향 공개 창 (원본: 폭 360(성향 공개 400), 안쪽 20, 제목 16px/600) */
 .backdrop {
   position: fixed;
   inset: 0;
@@ -21,6 +21,10 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-8);
+}
+
+.panelWide {
+  width: min(400px, 100%);
 }
 
 .title {
@@ -136,4 +140,53 @@
 .ok:disabled {
   background: var(--color-line-strong);
   cursor: default;
+}
+
+/* 성향 공개 창: 버튼 줄 위 여백이 4px(삭제·신고 창은 8px) */
+.actionsTight {
+  margin-top: var(--space-4);
+}
+
+/* 성향 공개 창의 동의 체크 */
+.agree {
+  appearance: none;
+  background: none;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+  font-size: var(--font-size-14);
+}
+
+.cb {
+  width: 18px;
+  height: 18px;
+  box-sizing: border-box;
+  border-radius: var(--radius-4);
+  border: 1.5px solid var(--color-line-strong);
+  background: var(--color-surface);
+  color: var(--color-on-navy);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.cb svg {
+  visibility: hidden;
+}
+
+.cbOn {
+  border-color: var(--color-navy);
+  background: var(--color-navy);
+}
+
+.cbOn svg {
+  visibility: visible;
 }

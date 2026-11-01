@@ -6,12 +6,14 @@ import { StockIcon } from '../common/StockIcon'
 import { Tabs } from '../common/Tabs'
 import { cx } from '../common/cx'
 import { DEFAULT_NICK, GEN, GEN_NAME, KR_ALL, composePlaceholder, kiruAskHint } from './communityData'
-import { ddGroups, priceAt, type Seg } from './communityLogic'
+import { ddGroups, priceAt } from './communityLogic'
 import { myProfile, type Post } from './communityPosts'
 import { CommunityCompose } from './CommunityCompose'
 import { CommunityDialogs } from './CommunityDialogs'
 import { CommunityFeed } from './CommunityFeed'
 import { CommunityNickForm } from './CommunityNickForm'
+import { CommunityRight } from './CommunityRight'
+import { CommunityStockPick, SearchIcon } from './CommunityStockPick'
 import { useCommunityFeed, type FeedTab, type HotScope } from './useCommunityFeed'
 import { useAppShell } from '../../layouts/appShell'
 import styles from './CommunityCenter.module.css'
@@ -21,17 +23,6 @@ const TABS: { key: FeedTab; label: string }[] = [{ key: 'live', label: '실시�
 const SCOPES: [HotScope, string][] = [['stock', '이 종목'], ['all', '전체 종목']]
 
 const tone = (n: number) => (n > 0 ? styles.up : n < 0 ? styles.down : styles.flat)
-
-const SearchIcon = ({ size }: { size: number }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.noShrink}>
-    <circle cx="11" cy="11" r="8" />
-    <path d="m21 21-4.3-4.3" />
-  </svg>
-)
-
-function Segs({ segs, base }: { segs: Seg[]; base?: string }) {
-  return <>{segs.map((g, i) => <span key={i} className={g.hl ? styles.hl : base}>{g.t}</span>)}</>
-}
 
 interface CommunityCenterProps {
   code: string
@@ -47,12 +38,17 @@ interface CommunityCenterProps {
   nick: string // 내 닉네임(없으면 빈 문자열 → 닉네임 정하기가 보임)
   onNick: (nick: string) => void
   pubOn: boolean
+  onPub: (on: boolean) => void
+  watch: string[]
+  onWatchAdd: (code: string) => void
+  onWatchRemove: (code: string) => void
+  onRecentRemove: (code: string) => void
   onToast: (text: string) => void
   thread: string | null // 주소 ?thread= 로 들어온 글 id
 }
 
-// 가운데 열: 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 닉네임 정하기/글쓰기 창 + 글 목록(답글·수정·삭제·신고 포함)
-export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, onNick, pubOn, onToast, thread }: CommunityCenterProps) {
+// 가운데 열(+ 같은 글 상태를 쓰는 오른쪽 열): 종목 정보 줄 + 종목 고르기 목록 + 탭·정렬 줄 + 글 검색 + 닉네임 정하기/글쓰기 창 + 글 목록(답글·수정·삭제·신고 포함)
+export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onTab, onScope, onStar, fixed, nick, onNick, pubOn, onPub, watch, onWatchAdd, onWatchRemove, onRecentRemove, onToast, thread }: CommunityCenterProps) {
   const shell = useAppShell()
   const myNick = nick || DEFAULT_NICK // 닉네임이 비어 있어도 글·답글에는 기본 이름이 쓰임(원본)
   const [ddOpen, setDdOpen] = useState(false)
@@ -91,7 +87,6 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
 
   const groups = ddOpen ? ddGroups(ddQ, recent) : []
   const flat = groups.flatMap((g) => g.items)
-  const empty = !!ddQ.trim() && !flat.length
 
   const closeDd = () => {
     setDdOpen(false)
@@ -136,6 +131,13 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
     const url = location.href.split('?')[0] + '?stock=' + p.code + '&thread=' + p.id
     try { void navigator.clipboard.writeText(url) } catch { /* 복사 못 해도 안내만 보임 */ }
     onToast('글 링크를 복사했어요')
+  }
+  // 프로필 카드의 "글 N · 답글 N": 내가 쓴 댓글 탭으로
+  const goMine = () => {
+    onTab('mine')
+    closeSearch()
+    feed.resetLimit()
+    feed.toListTop(true)
   }
   // 내가 쓴 답글 줄에서 글로 이동(그 글의 답글도 같이 펼침)
   const goThread = (c: string, id: string) => {
@@ -196,9 +198,9 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
   }
 
   const qPh = name + ' 글에서 검색'
-  let k = 0
 
   return (
+    <>
     <section ref={feedRef} data-col="center" className={styles.center}>
       <div ref={headRef} className={styles.head}>
         <button type="button" className={styles.pick} aria-expanded={ddOpen} aria-haspopup="listbox" aria-label="종목 선택" onClick={openDd}>
@@ -230,53 +232,18 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
         </div>
         {ddOpen && (
           <div className={styles.dd}>
-            <label className={styles.ddSearch}>
-              <SearchIcon size={15} />
-              <input
-                ref={ddInputRef}
-                className={styles.ddInput}
-                value={ddQ}
-                onChange={(e) => { setDdQ(e.target.value); setDdHi(0) }}
-                onKeyDown={ddKey}
-                placeholder="종목명 또는 코드 검색"
-                aria-label="종목명 또는 코드 검색"
-              />
-            </label>
-            <div role="listbox" className={styles.ddList}>
-              {groups.map((g, gi) => (
-                <div key={gi}>
-                  {g.title && <div className={styles.grTitle}>{g.title}</div>}
-                  {g.items.map((o) => {
-                    const idx = k++
-                    const on = idx === ddHi
-                    return (
-                      <button
-                        key={o.code}
-                        type="button"
-                        role="option"
-                        aria-selected={on}
-                        className={cx(styles.opt, on && styles.optOn)}
-                        onClick={() => pick(o.code)}
-                        onMouseEnter={() => { if (ddHi !== idx) setDdHi(idx) }}
-                      >
-                        {g.rank && <span className={cx(styles.rank, o.rank != null && o.rank <= 3 && styles.rankTop)}>{o.rank}</span>}
-                        <StockIcon color={o.icon.color} initial={o.icon.ini} size={24} />
-                        <span className={styles.optName}>
-                          <span className={styles.optNameText}><Segs segs={o.name} /></span>
-                          <span className={styles.optCode}><Segs segs={o.codeSegs} /></span>
-                          <span className={styles.sector}>{o.sector}</span>
-                        </span>
-                        <span className={styles.optRight}>
-                          {o.posts != null && <span className={styles.optPosts}>오늘 글 {o.posts}</span>}
-                          <span className={cx(styles.optChg, o.chg == null ? styles.flat : tone(o.chg))}>{o.chg == null ? '' : F.pct(o.chg)}</span>
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              ))}
-              {empty && <div className={styles.empty}>‘{ddQ}’에 맞는 종목이 없어요</div>}
-            </div>
+            <CommunityStockPick
+              groups={groups}
+              q={ddQ}
+              hi={ddHi}
+              placeholder="종목명 또는 코드 검색"
+              ariaLabel="종목명 또는 코드 검색"
+              inputRef={ddInputRef}
+              onType={(v) => { setDdQ(v); setDdHi(0) }}
+              onKey={ddKey}
+              onPick={pick}
+              onHover={setDdHi}
+            />
           </div>
         )}
       </div>
@@ -321,5 +288,22 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
       <CommunityFeed feed={feed} q={q} scope={scope} fixed={fixed} nick={myNick} pubOn={pubOn} listRef={listRef} onShare={share} onGoThread={goThread} onBot={() => shell.setBotOpen(true)} />
       <CommunityDialogs feed={feed} />
     </section>
+    <CommunityRight
+      code={code}
+      nick={nick}
+      pubOn={pubOn}
+      myPostN={feed.myPostN}
+      myRepN={feed.myReps.length}
+      watch={watch}
+      recent={recent}
+      onSelect={onCode}
+      onNick={onNick}
+      onPub={onPub}
+      onWatchAdd={onWatchAdd}
+      onWatchRemove={onWatchRemove}
+      onRecentRemove={onRecentRemove}
+      onGoMine={goMine}
+    />
+    </>
   )
 }
