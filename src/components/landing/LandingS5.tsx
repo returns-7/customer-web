@@ -38,11 +38,11 @@ export function LandingS5({ t }: { t: LandingTexts }) {
             <g filter="url(#ink5)" fill="none" stroke="var(--color-gold)">
               <circle cx="60" cy="60" r="56" strokeWidth="3" />
               <circle cx="60" cy="60" r="35" strokeWidth="1.2" />
-              <text fill="var(--color-gold)" stroke="none" fontFamily="var(--font-sans)" fontSize="9.5" fontWeight="700" letterSpacing="2.2">
+              <text fill="var(--color-gold)" stroke="none" fontFamily="Pretendard" fontSize="9.5" fontWeight="700" letterSpacing="2.2">
                 <textPath href="#arc5">RIA · RETURNS · HOLD · 1 YEAR ·</textPath>
               </text>
-              <text x="60" y="60" textAnchor="middle" fill="var(--color-gold)" stroke="none" fontFamily="var(--font-sans)" fontWeight="800" fontSize="17">HOLD</text>
-              <text x="60" y="76" textAnchor="middle" fill="var(--color-gold)" stroke="none" fontFamily="var(--font-sans)" fontWeight="700" fontSize="11" letterSpacing="1">1 YEAR</text>
+              <text x="60" y="60" textAnchor="middle" fill="var(--color-gold)" stroke="none" fontFamily="Pretendard" fontWeight="800" fontSize="17">HOLD</text>
+              <text x="60" y="76" textAnchor="middle" fill="var(--color-gold)" stroke="none" fontFamily="Pretendard" fontWeight="700" fontSize="11" letterSpacing="1">1 YEAR</text>
             </g>
           </svg>
         </div>

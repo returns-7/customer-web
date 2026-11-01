@@ -2,6 +2,11 @@ import { useLayoutEffect } from 'react'
 
 // 원본 landing-journey.html <head>의 폰트 주소 그대로
 const FONT_LINKS = [
+  {
+    id: 'landing-font-pretendard',
+    rel: 'stylesheet',
+    href: 'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css',
+  },
   { id: 'landing-font-preconnect-api', rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   { id: 'landing-font-preconnect-static', rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: '' },
   {
