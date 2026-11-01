@@ -36,18 +36,13 @@ function buildRuler(today: string): LandingRuler {
   return { today: dpos(utc(y, mo - 1, d)), zones, months }
 }
 
-export function buildLandingTexts(): LandingTexts {
+// S5~S9 마크업의 data-l 자리 글자 — 원본 paintLate()의 값. 금액(A)·수익률(r)이 바뀔 때마다 다시 만든다(날짜는 getBusinessToday() 기준)
+export function lateTexts(A: number, r: number): Record<string, string> {
   const today = getBusinessToday()
-  const c = calc()
-  const A = MY.A
+  const c = calc(A, r)
   const rm = Math.max(0, LIMIT - A)
   const r1 = Math.round(rm * 0.375), r2 = Math.round(rm * 0.5) // 450:600:150, 합 = 남은 한도
-  const now = new Date()
-  const hh = String(now.getHours()).padStart(2, '0'), mm = String(now.getMinutes()).padStart(2, '0')
-  const l: Record<string, string> = {
-    conf: ymd(confirmDate()),
-    wd: ymd(withdrawDate()),
-    assume: ASSUME,
+  return {
     A: won(A), Aman: man(A), G: won(c.G), basic: '−' + won(BASIC_DED),
     dedLab: `RIA 공제(${Math.round(c.w * 100)}%)`, ded: '−' + won(c.G * c.w),
     base: won(Math.max(0, c.G - BASIC_DED - c.G * c.w)),
@@ -55,6 +50,19 @@ export function buildLandingTexts(): LandingTexts {
     zone: zoneLabel(today), dday: 'D-' + F.days(today, F.bandEnd(today)), remainMan: man(LIMIT - A),
     R1: won(r1), R2: won(r2), R3: won(rm - r1 - r2),
     disc: F.kday(F.bizAdd(today, -3)), // 3영업일 전 공시(예시)
+  }
+}
+
+export function buildLandingTexts(): LandingTexts {
+  const c = calc()
+  const A = MY.A
+  const now = new Date()
+  const hh = String(now.getHours()).padStart(2, '0'), mm = String(now.getMinutes()).padStart(2, '0')
+  const l: Record<string, string> = {
+    conf: ymd(confirmDate()),
+    wd: ymd(withdrawDate()),
+    assume: ASSUME,
+    ...lateTexts(A, MY.r),
     hold: '', // 원본에서는 이 값을 채우는 코드가 주석 안에 들어가 있어 비어 있다
   }
   return {
@@ -62,6 +70,6 @@ export function buildLandingTexts(): LandingTexts {
     n: { A: won(A), Aman: man(A), remain: won(c.remain), confirm: ymd(confirmDate()) },
     fly8: won(c.save),
     lkT: `${hh}:${mm}`,
-    ruler: buildRuler(today),
+    ruler: buildRuler(getBusinessToday()),
   }
 }

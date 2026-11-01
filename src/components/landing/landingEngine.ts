@@ -10,6 +10,7 @@ import { BOARD_ROWS, BOARD_STATES } from './landingBoardData'
 import { createLandingMap } from './landingMap'
 import { MH, MW, SYM1 } from './landingMapData'
 import { R, SCN, TOTAL } from './landingScenes'
+import { lateTexts } from './landingTexts'
 
 export interface LandingMountOptions {
   /** 이 진입이 뒤로 가기(POP)인가 — 그때만 이전 스크롤 위치를 복원한다 */
@@ -71,7 +72,8 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches
 
   /* ===== 상태 ===== */
-  const LG: { pad?: number } = {}
+  type Rect = { x: number; y: number; w: number; h: number }
+  const LG: { vw: number; vh: number; pad: number; r5?: Rect; l6?: Rect; k7: number; sv?: Rect } = { vw: 0, vh: 0, pad: 96, k7: 1 }
   let GEO: { SCR: { x: number; y: number; w: number; h: number }; MOFF: number; vw: number; vh: number; T1x: number; T4: number; TX: number; dR: number; dX: number } | null = null
   let tl: gsap.core.Timeline | undefined, st: ScrollTrigger | undefined
   let tl2: gsap.core.Timeline | undefined, st2: ScrollTrigger | undefined
@@ -160,9 +162,146 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     $$('#rates button').forEach((x) => x.classList.toggle('on', x === b)); my.r = +b.dataset.r!; refreshNums()
   }))
 
+  /* ===== S5–S9: every frame computed from timeline time ===== */
+  const seg = (t: number, a: number, b: number) => clamp((t - a) / (b - a))
+  const e3o = (q: number) => 1 - Math.pow(1 - q, 3)
+  const setT = (el: HTMLElement, s: string) => { if (el.textContent !== s) el.textContent = s }
+  const vis = (el: HTMLElement, o: number, tr?: string) => { o = clamp(o); el.style.opacity = String(o); el.style.visibility = o > 0.001 ? 'visible' : 'hidden'; if (tr != null) el.style.transform = tr }
+  const spCache = new WeakMap<HTMLElement, HTMLElement[]>()
+  function revL(el: HTMLElement, t0: number, t: number) {
+    let sp = spCache.get(el)
+    if (!sp) { sp = [...el.querySelectorAll<HTMLElement>('.ml>span')]; spCache.set(el, sp) }
+    sp.forEach((s_, i) => { const k = e3o(seg(t, t0 + i * 0.06, t0 + i * 0.06 + 0.22)); s_.style.transform = `translateY(${(1 - k) * 112}%)` })
+  }
+  const L$: Record<string, HTMLElement> = {}
+  ;['late', 'lb5', 'lb6', 'lb7', 'lb8', 'lb9', 's5', 's6', 's7', 's8', 's9', 'tt5', 'd5', 'big5', 'd5b', 'seal5', 'rail5', 'rf5', 'dot5', 'cnt5', 'warn5',
+    'ph6a', 'ph6b', 'beam6', 'beam6b', 'tt6', 'p6', 'list6', 'big6', 'pct6', 'col7', 'tt7', 'big7', 'note7', 'rul7', 'rul7in', 'today7', 'rc7', 'paper', 'strike', 'save7', 'fn7',
+    'tt8', 'p8', 'fl8', 'svg8', 'pm8', 'flyW', 'fly8', 'big8', 'tt9', 'list9', 'app9', 'kiroo', 'bub9', 'disc9', 'lkT'].forEach((id) => { L$[id] = byId(id) })
+  const LL = (n: string) => $$(`[data-l="${n}"]`)
+  const ticks5 = $$('.tk5') // S5 rail ticks (13개, 마크업에서 그린 것)
+  const rows6 = $$('.r6'), ems6 = rows6.map((r) => r.querySelector('em') as HTMLElement), items7 = $$('.i7')
+  // L-7: S8 흐름도(NODES, FLY, placeLab, fixOverlap), S9 항목 목록·탭
+
+  /* S6 duotone baked once into images (no live filters while scrolling) */
+  const bakeSrc = new Image()
+  bakeSrc.onload = () => {
+    if (dead) return
+    const w = Math.min(1600, bakeSrc.naturalWidth), hh = Math.round(w * bakeSrc.naturalHeight / bakeSrc.naturalWidth), c = document.createElement('canvas'); c.width = w; c.height = hh
+    const x = c.getContext('2d')!; x.filter = 'grayscale(1) blur(2px)'; x.drawImage(bakeSrc, 0, 0, w, hh); x.filter = 'none'
+    const base = x.getImageData(0, 0, w, hh), lo = [6, 18, 20], hi = [120, 170, 170] // 보안 검색대 사진 이중톤(청록) 변환 값(이미지 처리용 숫자)
+    const make = (inv: boolean) => {
+      const d = new ImageData(new Uint8ClampedArray(base.data), w, hh), p = d.data
+      for (let i = 0; i < p.length; i += 4) { let g = p[i] / 255; if (inv) g = 1 - g; p[i] = lo[0] + (hi[0] - lo[0]) * g; p[i + 1] = lo[1] + (hi[1] - lo[1]) * g; p[i + 2] = lo[2] + (hi[2] - lo[2]) * g }
+      x.putImageData(d, 0, 0); return c.toDataURL('image/jpeg', 0.86)
+    }
+    $<HTMLImageElement>('#ph6a img').src = make(false); $<HTMLImageElement>('#ph6b img').src = make(true)
+  }
+  bakeSrc.src = import.meta.env.BASE_URL + 'assets/photo-security.jpg'
+  cleanups.push(() => { bakeSrc.onload = null; bakeSrc.removeAttribute('src') })
+
+  function buildLate(vw: number, vh: number) {
+    const pad = parseFloat(getComputedStyle(root).getPropertyValue('--pad')) || 96 // --pad는 .landing에 정의(원본은 :root)
+    Object.assign(LG, { vw, vh, pad })
+    paintLate()
+    /* S5: text color follows the dawn gradient (white on dark top, ink on light bottom) */
+    ;[L$.d5.querySelector<HTMLElement>('#d5s')!, L$.big5, L$.d5b].forEach((el) => { const r = rel(el); el.style.color = (r.y + r.h / 2) / vh > 0.52 ? 'var(--ink)' : 'var(--color-on-navy)' })
+    const rr = rel(L$.rail5); LG.r5 = rr
+    ticks5.forEach((tk, k) => tk.classList.toggle('dk', (rr.y + rr.h * k / 12) / vh > 0.5))
+    /* S6 */
+    L$.list6.style.top = ''; $$('.r6').forEach((r) => { r.style.padding = '' })
+    const lr = rel(L$.list6); LG.l6 = lr
+    const b6n = L$.big6.querySelector('b') as HTMLElement; b6n.style.fontSize = ''
+    const b6 = rel(L$.big6), over6 = lr.y + lr.h + 24 - b6.y
+    if (over6 > 0) b6n.style.fontSize = Math.max(56, 120 - over6) + 'px'
+    const b6b = rel(L$.big6), over6b = lr.y + lr.h + 24 - b6b.y, t6 = rel(L$.tt6)
+    L$.list6.style.top = ''
+    if (over6b > 0) {
+      const ny = Math.max(t6.y + t6.h + 24 > lr.x ? 0 : 0, lr.y - over6b); L$.list6.style.top = Math.max(vh * 0.1, ny) + 'px'
+      LG.l6 = rel(L$.list6); const still = LG.l6.y + LG.l6.h + 24 - b6b.y
+      if (still > 0) $$('.r6').forEach((r) => { r.style.padding = Math.max(8, 16 - still / 8) + 'px 0' })
+      LG.l6 = rel(L$.list6)
+    }
+    /* S7 fit: receipt must clear the ruler, left column must clear the receipt */
+    L$.rc7.style.transform = 'none'; L$.rc7.style.transformOrigin = '100% 0'
+    const rc = rel(L$.rc7), ru = rel(L$.rul7), kr = Math.min(1, (ru.y - 28 - rc.y) / rc.h); LG.k7 = kr
+    L$.rc7.style.transform = kr < 1 ? `scale(${kr})` : 'none'
+    const room = rc.x + rc.w * (1 - kr) - 40 - pad; L$.col7.style.maxWidth = room + 'px'
+    L$.big7.style.flexWrap = L$.big7.scrollWidth > room ? 'wrap' : 'nowrap'
+    LG.sv = rel(L$.save7)
+    // L-7: S8 흐름도 배치(fl8·svg8·NODES·FLY·fixOverlap), S9 캐릭터(kiroo·bub9) 위치
+  }
+  function paintLate() {
+    const c = calc(disp.A, my.r), lt = lateTexts(disp.A, my.r)
+    for (const k in lt) LL(k).forEach((e) => setT(e, lt[k]))
+    return c
+  }
+  function renderLate(t: number) {
+    if (t < 10.5) { if (L$.late.style.visibility !== 'hidden') vis(L$.late, 0); return }
+    vis(L$.late, 1)
+    const c = paintLate(), vw = LG.vw, vh = LG.vh
+    /* backgrounds: dawn rises from below → teal → sky (swept left→right) → white → ivory */
+    const m = seg(t, 10.5, 10.85) * 140 - 40
+    L$.lb5.style.webkitMaskImage = L$.lb5.style.maskImage = `linear-gradient(to top,rgb(0,0,0) ${m}%,transparent ${m + 40}%)`
+    L$.lb6.style.opacity = String(seg(t, 12.2, 12.5))
+    const x2 = seg(t, 14.2, 14.5) * vw
+    L$.lb7.style.clipPath = `inset(0 ${vw - x2}px 0 0)`
+    L$.lb8.style.opacity = String(seg(t, 16.2, 16.5))
+    L$.lb9.style.opacity = String(seg(t, 18.2, 18.5))
+    vis(L$.beam6b, x2 > 0 && x2 < vw ? 1 : 0, `translateX(${x2}px)`)
+
+    /* S5 — big withdrawal date + 1-year rail */
+    const on5 = t < 12.5; vis(L$.s5, on5 ? 1 : 0)
+    if (on5) {
+      const out = seg(t, 12.2, 12.4)
+      revL(L$.tt5, 10.5, t); vis(L$.tt5, (t >= 10.5 ? 1 : 0) * (1 - out))
+      const di = e3o(seg(t, 10.8, 11.1)); vis(L$.d5, di * (1 - out), `translateY(${(1 - di) * 24}px)`)
+      vis(L$.rail5, seg(t, 10.85, 11.1) * (1 - out))
+      const k = seg(t, 11.1, 12.0), ex = e2io(seg(t, 12.2, 12.5)), r = LG.r5!
+      const dy = k * r.h + ex * (vh - r.y - r.h + 60)
+      L$.dot5.style.transform = `translateY(${dy}px)`; L$.dot5.style.visibility = t >= 11.0 ? 'visible' : 'hidden'; L$.dot5.style.opacity = '1'
+      L$.rf5.style.height = k * 100 + '%'
+      setT(L$.cnt5, `보유 ${Math.round(365 * k)}일`); L$.cnt5.style.color = (r.y + dy) / vh > 0.5 ? 'var(--ink)' : 'var(--color-on-navy)'
+      ticks5.forEach((tk, i) => tk.classList.toggle('on', k >= i / 12 - 0.001 && t >= 11.1))
+      const sk = seg(t, 12.0, 12.15); vis(L$.seal5, sk * (1 - out), `rotate(-12deg) scale(${2.2 - 1.2 * e3o(sk)})`)
+      const wk = seg(t, 12.0, 12.2); vis(L$.warn5, wk * (1 - out), `translateY(${(1 - e3o(wk)) * 10}px)`)
+    }
+    /* S6 — scan beam over the security photo */
+    const on6 = t >= 12.2 && t < 14.5; vis(L$.s6, on6 ? 1 : 0)
+    if (on6) {
+      L$.s6.style.clipPath = x2 > 0 ? `inset(0 0 0 ${x2}px)` : ''
+      const pi = seg(t, 12.2, 12.5); L$.ph6a.style.opacity = String(pi)
+      revL(L$.tt6, 12.5, t); vis(L$.tt6, t >= 12.5 ? 1 : 0); L$.p6.style.opacity = String(seg(t, 12.6, 12.8))
+      const bx = seg(t, 12.8, 13.7) * vw
+      vis(L$.beam6, bx > 0 && bx < vw ? 1 : 0, `translateX(${bx}px)`)
+      L$.ph6b.style.clipPath = `inset(0 ${vw - bx}px 0 0)`; L$.ph6b.style.opacity = String(pi)
+      const l = LG.l6!
+      rows6.forEach((row, i) => { row.style.visibility = bx >= l.x ? 'visible' : 'hidden'; ems6[i].style.opacity = String(clamp((bx - (l.x + (i + 1) / 5 * l.w)) / 40)) })
+      const gk = seg(t, 13.7, 14.0); vis(L$.big6, gk > 0 ? 1 : 0, `translateY(${(1 - e3o(gk)) * 16}px)`)
+      setT(L$.pct6, Math.round(100 - 18 * e3o(gk)) + '%')
+    }
+    /* S7 — big deduction rate, ruler, printed receipt */
+    const on7 = t >= 14.2 && t < 16.55; vis(L$.s7, on7 ? 1 : 0)
+    if (on7) {
+      L$.s7.style.clipPath = x2 < vw ? `inset(0 ${vw - x2}px 0 0)` : ''
+      const out = seg(t, 16.2, 16.35)
+      revL(L$.tt7, 14.5, t); vis(L$.tt7, t >= 14.5 ? 1 : 0)
+      const bi = e3o(seg(t, 14.55, 14.8)); vis(L$.big7, bi, `translateY(${(1 - bi) * 20}px)`); L$.note7.style.opacity = String(seg(t, 14.65, 14.85))
+      L$.col7.style.opacity = String(1 - out)
+      vis(L$.rul7, (t >= 14.8 ? 1 : 0) * (1 - out)); L$.rul7in.style.clipPath = `inset(-40px ${(1 - e2io(seg(t, 14.8, 15.1))) * 100}% -10px 0)`
+      const td = seg(t, 15.0, 15.15); L$.today7.style.transform = `scaleY(${td})`; L$.today7.style.opacity = String(td)
+      vis(L$.rc7, (t >= 15.05 ? 1 : 0) * (1 - out), LG.k7 < 1 ? `scale(${LG.k7})` : 'none')
+      L$.paper.style.clipPath = `inset(0 0 ${(1 - seg(t, 15.05, 15.1 + 0.066 * 9)) * 100}% 0)`
+      items7.forEach((el, i) => { const k = seg(t, 15.1 + i * 0.066, 15.1 + i * 0.066 + 0.15); el.style.opacity = String(k) })
+      L$.strike.style.transform = `scaleX(${seg(t, 15.55, 15.7)})`
+      setT(L$.save7, won(c.save * e3o(seg(t, 15.7, 16.0))))
+      L$.save7.style.visibility = t >= 16.2 ? 'hidden' : ''
+    }
+    // L-7: S8(t≥16.2 전체 폭 자금 흐름), S9(t≥18.2 서비스 목록·앱 화면)
+  }
+
   /* ===== frame render ===== */
   const e2o = (q: number) => 1 - (1 - q) * (1 - q), e2io = (q: number) => q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2
-  let lastPct = -1
+  let lastPct = -1, lastDay = -1
   function monitorFrame(t: number) {
     const g = GEO; if (!g) return
     A.sil = t < g.T4 ? 1 : 0
@@ -179,12 +318,15 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     if (!tl) return
     const t = tl.time()
     monitorFrame(t); map.drawMap()
-    // L-6: renderLate(t)
+    renderLate(t)
     updBoard(t, boardLive())
     if (K.v !== K.last) { K.last = K.v; paintBig() }
     const pct = Math.round(P.v * 100)
-    if (pct !== lastPct) {
-      lastPct = pct; byId('mPct').textContent = `진행률 ${pct}%`
+    // 원본과 다른 곳: 원본은 진행률(pct)이 바뀔 때만 #mDay·#mLab1을 갱신해서, 빠른 스크롤로 P.v가 0.995~0.999에서 pct=100이 된 뒤
+    // 정확히 1이 되면 D-1 · 예상 금액이 남았다. D-day 단계(day)가 바뀔 때도 갱신하도록 조건만 추가했다.
+    const day = P.v >= 1 ? 0 : P.v > 0.5 ? 1 : 2
+    if (pct !== lastPct || day !== lastDay) {
+      lastPct = pct; lastDay = day; byId('mPct').textContent = `진행률 ${pct}%`
       byId('mDay').textContent = P.v >= 1 ? 'D-0' : P.v > 0.5 ? 'D-1' : 'D-2'
       byId('mLab1').textContent = P.v >= 1 ? '확정 원화 금액' : '예상 원화 금액(가환전)'
     }
@@ -247,7 +389,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     Object.assign($('#c4').style, { left: mx + 'px', bottom: (vh - my0 + 32) + 'px' })
     const SCR = { x: mx + 14, y: my0 + 14, w: mw - 28, h: mh - 28 }, MOFF = vh - my0 + 80
     GEO = { SCR, MOFF, vw, vh, T1x: R(4.93), T4: R(8.7), TX: R(11.15), dR: R(9.15) - R(8.7), dX: R(11.6) - R(11.15) }
-    // L-7: buildLate(vw, vh, PS)
+    buildLate(vw, vh)
     gsap.set('#board', { transformPerspective: 1400, transformOrigin: '0% 50%' })
 
     Object.assign(V, { x: 0, y: 0, w: vw, h: vh, r: 0, bg: 0, o: 1 })
@@ -486,7 +628,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
   })
 
   /* ===== live numbers ===== */
-  const kick = () => ctx.add(() => { gsap.to({}, { duration: 0.7, onUpdate: () => { /* L-6: if (tl) renderLate(tl.time()) */ if (tl2) render11(tl2.time()) } }) })
+  const kick = () => ctx.add(() => { gsap.to({}, { duration: 0.7, onUpdate: () => { if (tl) renderLate(tl.time()); if (tl2) render11(tl2.time()) } }) })
   on(amt, 'input', kick)
   $$('#rates button').forEach((b) => on(b, 'click', () => {
     $$('#rates7 button').forEach((x) => x.classList.toggle('on', x.dataset.r === b.dataset.r)); kick()
@@ -505,7 +647,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
       get tl2() { return tl2 },
       get st2() { return st2 },
       get GEO() { return GEO },
-      Mp, V, C, A, P, map, my, disp, K,
+      Mp, V, C, A, P, map, my, disp, K, LG,
       get passFx() { return passFx },
       lenis, gsap, ScrollTrigger,
     }
