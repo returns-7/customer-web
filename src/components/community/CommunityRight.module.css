@@ -1,4 +1,4 @@
-/* 오른쪽 열: 내 프로필 카드 + 관심/최근 본 종목 (인기글·운영 정책은 C-7) */
+/* 오른쪽 열: 내 프로필 카드 + 관심/최근 본 종목 + 인기글 + 운영 정책 문구 */
 .right {
   grid-area: r;
   min-width: 0;
@@ -280,4 +280,113 @@
 .rm:hover {
   background: var(--color-surface-hover);
   color: var(--color-ink);
+}
+
+/* ===== 인기글 ===== */
+.hot {
+  overflow: hidden;
+  flex: 0 0 auto;
+  min-height: 0;
+}
+
+.hotFixed {
+  flex: 1 1 0;
+}
+
+.hotTitle {
+  margin: 0;
+  font-size: var(--font-size-15);
+  font-weight: var(--font-weight-semibold);
+}
+
+.hotScope {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+}
+
+.more {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0 0 0 auto;
+  font: inherit;
+  cursor: pointer;
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-navy);
+}
+
+.hotList {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: visible;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
+}
+
+.hotListFixed {
+  overflow: auto;
+}
+
+.hotList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.hotList::-webkit-scrollbar-thumb {
+  background: var(--color-line-strong);
+  border-radius: 3px;
+}
+
+.hotList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.hotRow {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--space-2);
+  height: 52px;
+  padding: 0 var(--space-16);
+  border-bottom: 1px solid var(--color-line-soft);
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.hotRow:last-child {
+  border-bottom: 0;
+}
+
+.hotRow:hover {
+  background: var(--color-surface-sub);
+  text-decoration: none;
+}
+
+.hotRowTitle {
+  font-size: var(--font-size-13);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hotRowMeta {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== 운영 정책 문구 ===== */
+.policy {
+  flex: none;
+  font-size: var(--font-size-12);
+  line-height: 1.6;
+  color: var(--color-sub);
+}
+
+.policy a {
+  color: var(--color-gray-600);
+  text-decoration: underline;
 }

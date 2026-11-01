@@ -65,9 +65,14 @@ interface PubDialogProps {
 // 내 투자성향 공개 창: 동의 체크 전에는 "공개하기"가 눌리지 않음. 막을 눌러도 안 닫히고 취소·Esc로만 닫힘(원본 그대로)
 export function PubDialog({ agree, onToggle, onCancel, onOk }: PubDialogProps) {
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onCancel() }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
+    // 창이 열려 있으면 Esc는 이 창만 닫음(원본: 신고·성향 공개·삭제 창이 목록·검색보다 먼저) — 가운데 열의 Esc 처리보다 먼저 받아 거기로 안 넘김
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      onCancel()
+    }
+    window.addEventListener('keydown', onKey, true)
+    return () => window.removeEventListener('keydown', onKey, true)
   }, [onCancel])
   return createPortal(
     <div className={styles.backdrop}>

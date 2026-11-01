@@ -25,6 +25,7 @@ interface ChatbotFabProps {
   children?: ReactNode
   panelWidth?: number // 간단한 창 폭(내 정보 340 · 계좌/패키지 360 · 커뮤니티 340)
   fabSize?: 'md' | 'sm' // md 60px · sm 56px(커뮤니티)
+  titleSize?: 'md' | 'sm' // 창 제목: md 16px·800(기본) · sm 15px·600(커뮤니티)
   // 대화형 창(380×560) — 홈 화면
   chat?: BotChat
   // 첫 방문 안내 말풍선: 이 키가 localStorage에 없으면 보이고, 열거나 닫으면 키를 저장
@@ -56,7 +57,7 @@ const tipUnseen = (key?: string): boolean => {
   }
 }
 
-export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth = 360, fabSize = 'md', chat, tipKey }: ChatbotFabProps) {
+export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth = 360, fabSize = 'md', titleSize = 'md', chat, tipKey }: ChatbotFabProps) {
   const [innerOpen, setInnerOpen] = useState(false)
   const [tip, setTip] = useState(() => tipUnseen(tipKey))
   const [input, setInput] = useState('')
@@ -123,7 +124,7 @@ export function ChatbotFab({ open: openProp, onOpenChange, children, panelWidth 
         >
           <div className={styles.head}>
             <img className={cx(styles.headFace, full && styles.headFaceChat)} src={assetUrl('assets/kkiru-ai-face.png')} alt="" />
-            <b className={styles.headTitle}>끼루 AI 상담</b>
+            <b className={cx(styles.headTitle, titleSize === 'sm' && styles.headTitleSm)}>끼루 AI 상담</b>
             <button type="button" className={styles.close} onClick={toggle} aria-label="닫기">
               <CloseIcon size={18} />
             </button>

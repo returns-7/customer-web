@@ -13,6 +13,7 @@ interface BotConfig {
   text: string
   panelWidth: number
   fabSize?: 'md' | 'sm'
+  titleSize?: 'md' | 'sm'
   tipKey?: string
 }
 
@@ -21,7 +22,7 @@ const BOT: Record<TopBarActive, BotConfig> = {
   home: { text: '안녕하세요, ' + RETURNS_DATA.CUSTOMER.name + ' 님. RIA 계좌·세액·인출 일정에 대해 물어보세요.', panelWidth: 360, tipKey: 'rt_home_kkiru_tip' },
   account: { text: '내 계좌에 대해 물어보세요. 인출 일정, 남은 한도, 세액을 알려드려요.', panelWidth: 360 },
   invest: { text: '패키지에 대해 물어보세요. 수익률, 비중, 주문 가능 금액을 알려드려요.', panelWidth: 360 },
-  community: { text: '경제 채팅방은 고객님들끼리 나누는 대화예요. 종목이나 계좌가 궁금하면 여기서 물어보세요.', panelWidth: 340, fabSize: 'sm' },
+  community: { text: '경제 채팅방은 고객님들끼리 나누는 대화예요. 종목이나 계좌가 궁금하면 여기서 물어보세요.', panelWidth: 340, fabSize: 'sm', titleSize: 'sm' },
   myinfo: { text: '회원정보 변경이나 알림 설정이 궁금하면 물어보세요.', panelWidth: 340 }
 }
 
@@ -57,6 +58,7 @@ export function AppLayout() {
         key={active}
         panelWidth={bot.panelWidth}
         fabSize={bot.fabSize}
+        titleSize={bot.titleSize}
         tipKey={bot.tipKey}
         chat={chat ?? undefined}
         open={botOpen}

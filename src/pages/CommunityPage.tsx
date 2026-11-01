@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { CommunityCenter, type FeedTab, type HotScope } from '../components/community/CommunityCenter'
 import { CommunityTop10 } from '../components/community/CommunityTop10'
 import { BAR_H_FALLBACK, FIXED_MIN_HEIGHT, KR_ALL, MID_MIN, RECENT_KEY, TOAST_MS, WIDE_MIN, rowHeight, stockFromUrl } from '../components/community/communityData'
@@ -10,11 +10,21 @@ import { useToast } from '../components/common/useToast'
 import { cx } from '../components/common/cx'
 import styles from '../components/community/CommunityLayout.module.css'
 import { RETURNS_DATA as RD } from '../data/returns'
+import { useAppShell } from '../layouts/appShell'
 
 const viewport = () => ({ w: window.innerWidth, h: window.innerHeight })
 
-// 커뮤니티 — 1~5번째 부분: 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·닉네임 정하기·글쓰기·글 목록·답글·수정·삭제·신고) + 아래 안내 문구. 오른쪽 열은 인기글·운영 정책 빼고 C-6
+// 커뮤니티 — 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·닉네임 정하기·글쓰기·글 목록·답글·수정·삭제·신고) + 오른쪽 열(프로필·관심/최근 본·인기글·운영 정책) + 아래 안내 문구.
+// 상단 바 "커뮤니티"를 다시 누르면 원본은 페이지를 새로 불러와 처음 상태가 됨 → 주소가 새로 들어올 때마다(location.key) 처음부터 다시 그림
 export function CommunityPage() {
+  const { key } = useLocation()
+  return <CommunityBody key={key} />
+}
+
+function CommunityBody() {
+  const shell = useAppShell()
+  // 화면을 새로 그릴 때(상단 바에서 같은 메뉴를 다시 눌러도) 챗봇은 닫힌 채로 시작(원본은 페이지를 새로 불러옴)
+  useEffect(() => () => shell.setBotOpen(false), [shell])
   const [params] = useSearchParams()
   const [code, setCode] = useState(() => stockFromUrl(params.get('stock')))
   const [thread] = useState(() => params.get('thread')) // 주소 ?thread= 로 들어온 글(처음 한 번만 쓰임)

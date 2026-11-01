@@ -67,3 +67,15 @@ export function searchCount(code: string, qRaw: string): number {
 }
 
 export const priceAt = (): string => F.short(F.today()) + PX_TIME
+
+// ===== 오른쪽 열 인기글 박스 =====
+export interface HotRowView { title: string; meta: string; code: string; id: string }
+// 원본 순서: 홈과 같은 RD.HOT 6개 먼저, 그다음 좋아요+답글이 8 이상인 글을 많은 순으로 14개까지
+export function hotRows(): HotRowView[] {
+  const base = RD.HOT.slice()
+  const seen = new Set(base.map((h) => h[2]))
+  const more: [string, string, string, number, number][] = []
+  Object.keys(RD.CHAT).forEach((c) => RD.CHAT[c].forEach((m) => { if (!seen.has(m[0]) && m[5] + m[6] >= 8) more.push([m[4].split(String.fromCharCode(10))[0], c, m[0], m[5], m[6]]) }))
+  more.sort((a, b) => b[3] + b[4] - (a[3] + a[4]))
+  return base.concat(more.slice(0, 14)).map(([title, c, id, likes, reps]) => ({ title, meta: RD.SN[c] + ' · 좋아요 ' + likes + ' · 답글 ' + reps, code: c, id }))
+}

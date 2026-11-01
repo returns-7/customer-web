@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import '../../styles/tokens.css'
 import { RETURNS_DATA as RD } from '../../data/returns'
@@ -9,7 +9,7 @@ import { StockIcon } from '../common/StockIcon'
 import { Tabs } from '../common/Tabs'
 import { cx } from '../common/cx'
 import { KR_ALL, RECENT_LIMIT } from './communityData'
-import { ddGroups } from './communityLogic'
+import { ddGroups, hotRows } from './communityLogic'
 import { myProfile } from './communityPosts'
 import { PubDialog } from './CommunityDialogs'
 import { CommunityNickForm } from './CommunityNickForm'
@@ -36,10 +36,14 @@ interface CommunityRightProps {
   onWatchRemove: (code: string) => void
   onRecentRemove: (code: string) => void
   onGoMine: () => void // "글 N · 답글 N" → 내가 쓴 댓글 탭
+  fixed: boolean // 화면 고정이면 인기글 박스가 남은 높이를 채우고 목록만 스크롤
+  onHotThread: (code: string, id: string) => void // 인기글 줄 → 그 글로 이동
+  onHotMore: () => void // "더보기 ›" → 가운데 인기글 탭(전체 종목)
+  onToast: (text: string) => void
 }
 
-// 오른쪽 열: 내 프로필 카드(닉네임·성향·글/답글 수·성향 공개) + 관심 / 최근 본 종목. 인기글·운영 정책은 C-7
-export function CommunityRight({ code, nick, pubOn, myPostN, myRepN, watch, recent, onSelect, onNick, onPub, onWatchAdd, onWatchRemove, onRecentRemove, onGoMine }: CommunityRightProps) {
+// 오른쪽 열: 내 프로필 카드(닉네임·성향·글/답글 수·성향 공개) + 관심 / 최근 본 종목 + 인기글 + 운영 정책 문구
+export function CommunityRight({ code, nick, pubOn, myPostN, myRepN, watch, recent, onSelect, onNick, onPub, onWatchAdd, onWatchRemove, onRecentRemove, onGoMine, fixed, onHotThread, onHotMore, onToast }: CommunityRightProps) {
   const [nkEdit, setNkEdit] = useState(false)
   const [pd, setPd] = useState<{ agree: boolean } | null>(null)
   const [wTab, setWTab] = useState<WatchTab>('watch')
@@ -51,6 +55,7 @@ export function CommunityRight({ code, nick, pubOn, myPostN, myRepN, watch, rece
 
   const myPf = myProfile(pubOn)
   const myPl = myPf === 'private' ? '비공개' : (RD.PROFILES[myPf]?.label ?? '')
+  const hot = useMemo(() => hotRows(), [])
   const recentRows = recent.filter((c) => KR_ALL[c]).slice(0, RECENT_LIMIT)
 
   const closeDd = () => {
@@ -110,12 +115,17 @@ export function CommunityRight({ code, nick, pubOn, myPostN, myRepN, watch, rece
     const onDown = (e: MouseEvent) => {
       if (watchRef.current && !watchRef.current.contains(e.target as Node)) closeDd()
     }
-    const onKey = (e: globalThis.KeyboardEvent) => { if (e.key === 'Escape') closeDd() }
+    // Esc: 이 목록만 닫고 글 검색 등으로는 안 넘김(원본 순서: 목록이 먼저)
+    const onKey = (e: globalThis.KeyboardEvent) => {
+      if (e.key !== 'Escape') return
+      e.stopPropagation()
+      closeDd()
+    }
     document.addEventListener('mousedown', onDown)
-    document.addEventListener('keydown', onKey)
+    window.addEventListener('keydown', onKey, true)
     return () => {
       document.removeEventListener('mousedown', onDown)
-      document.removeEventListener('keydown', onKey)
+      window.removeEventListener('keydown', onKey, true)
     }
   }, [ddOpen])
 
@@ -199,6 +209,32 @@ export function CommunityRight({ code, nick, pubOn, myPostN, myRepN, watch, rece
             />
           </div>
         )}
+      </div>
+
+      <Box
+        className={cx(styles.hot, fixed && styles.hotFixed)}
+        head={
+          <>
+            <h2 className={styles.hotTitle}>인기글</h2>
+            <span className={styles.hotScope}>전체 종목</span>
+          </>
+        }
+        actions={<button type="button" className={styles.more} onClick={onHotMore}>더보기 ›</button>}
+      >
+        <div className={cx(styles.hotList, fixed && styles.hotListFixed)}>
+          {hot.map((t) => (
+            <a key={t.id} href={'?stock=' + t.code + '&thread=' + t.id} className={styles.hotRow} onClick={(e) => { e.preventDefault(); onHotThread(t.code, t.id) }}>
+              <span className={styles.hotRowTitle}>{t.title}</span>
+              <span className={styles.hotRowMeta}>{t.meta}</span>
+            </a>
+          ))}
+        </div>
+      </Box>
+
+      <div className={styles.policy}>
+        특정 종목 매수·매도를 권유하는 글, 수익 보장 표현은 삭제될 수 있어요.{' '}
+        <a href="#" onClick={(e) => { e.preventDefault(); onToast('준비 중인 화면이에요') }}>운영 정책</a> ·{' '}
+        <a href="#" onClick={(e) => { e.preventDefault(); onToast('글 오른쪽 위 … 메뉴에서 신고할 수 있어요') }}>신고하기</a>
       </div>
 
       {pd && <PubDialog agree={pd.agree} onToggle={() => setPd({ agree: !pd.agree })} onCancel={() => setPd(null)} onOk={() => { if (pd.agree) { setPd(null); onPub(true) } }} />}

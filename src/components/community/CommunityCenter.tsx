@@ -139,6 +139,14 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
     feed.resetLimit()
     feed.toListTop(true)
   }
+  // 인기글 박스 "더보기 ›": 인기글 탭 + 전체 종목(주소는 그대로)
+  const hotMore = () => {
+    onTab('hot', true)
+    onScope('all')
+    closeSearch()
+    feed.resetLimit()
+    feed.toListTop(false)
+  }
   // 내가 쓴 답글 줄에서 글로 이동(그 글의 답글도 같이 펼침)
   const goThread = (c: string, id: string) => {
     onCode(c)
@@ -303,6 +311,10 @@ export function CommunityCenter({ code, recent, starred, tab, scope, onCode, onT
       onWatchRemove={onWatchRemove}
       onRecentRemove={onRecentRemove}
       onGoMine={goMine}
+      fixed={fixed}
+      onHotThread={goThread}
+      onHotMore={hotMore}
+      onToast={onToast}
     />
     </>
   )
