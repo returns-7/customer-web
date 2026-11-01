@@ -1,4 +1,5 @@
 import { useLayoutEffect } from 'react'
+import { useDocumentTitle } from '../common/useDocumentTitle'
 
 // 원본 landing-journey.html <head>의 폰트 주소 그대로
 const FONT_LINKS = [
@@ -19,11 +20,10 @@ const FONT_LINKS = [
 // 랜딩이 떠 있는 동안에만 html에 클래스를 붙인다(배경색은 landing.css의 html.landing-doc).
 // 폰트 <link>는 다른 페이지 글꼴에 영향이 없고 다시 들어올 때 재사용되므로 언마운트 때 지우지 않는다.
 export function useLandingDocument(): void {
+  useDocumentTitle('Returns · RIA 국내시장 복귀계좌') // 원본 landing-journey.html의 <title>
   useLayoutEffect(() => {
     const root = document.documentElement
     root.classList.add('landing-doc')
-    const prevTitle = document.title
-    document.title = 'Returns · RIA 국내시장 복귀계좌' // 원본 landing-journey.html의 <title>
     FONT_LINKS.forEach((f) => {
       if (document.getElementById(f.id)) return
       const el = document.createElement('link')
@@ -35,7 +35,6 @@ export function useLandingDocument(): void {
     })
     return () => {
       root.classList.remove('landing-doc')
-      document.title = prevTitle
     }
   }, [])
 }

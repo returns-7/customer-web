@@ -4,6 +4,7 @@ import { RETURNS_DATA as RD } from '../../data/returns'
 import { F } from '../../lib/calc'
 import { Box } from '../common/Box'
 import { cx } from '../common/cx'
+import { clearLoginSession } from '../login/loginSession'
 import { MyInfoConfirm } from './MyInfoDialogs'
 import styles from './MyInfoSecurityBox.module.css'
 
@@ -13,9 +14,6 @@ interface Props {
   onOpenPw: () => void
 }
 
-// 로그인 세션 키(상단 바의 로그아웃이 지우는 목록과 같음)
-const SESSION_KEYS = ['returns-login', 'returns-session-exp', 'returns-session-warned']
-
 // 보안 — 비밀번호 변경 창 열기, 2단계 인증(준비 중), 자동 로그아웃 안내, 로그아웃(확인 창 → 세션 지우고 랜딩으로)
 export function MyInfoSecurityBox({ className, onToast, onOpenPw }: Props) {
   const navigate = useNavigate()
@@ -23,13 +21,7 @@ export function MyInfoSecurityBox({ className, onToast, onOpenPw }: Props) {
   const lastChanged = RD.ACCOUNT.opened ? F.dot(RD.ACCOUNT.opened) : ''
 
   const logout = () => {
-    SESSION_KEYS.forEach((k) => {
-      try {
-        sessionStorage.removeItem(k)
-      } catch {
-        // 저장소를 못 써도 이동은 계속
-      }
-    })
+    clearLoginSession()
     navigate('/')
   }
 

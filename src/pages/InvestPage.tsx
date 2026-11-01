@@ -36,6 +36,7 @@ import type { NewPkgState, NmBuyRow } from '../components/invest/investNewPkgLog
 import { buildPkgBases, sortViews, viewOf } from '../components/invest/investPkgLogic'
 import type { PkgSort } from '../components/invest/investPkgLogic'
 import styles from '../components/invest/InvestLayout.module.css'
+import { useDocumentTitle } from '../components/common/useDocumentTitle'
 
 type InvestTab = 'mine' | 'rec'
 
@@ -52,6 +53,7 @@ const TABS = [
 
 // 주식 패키지 — 1~9번째 부분: 페이지 틀·탭 + 패키지 자산 + 내 패키지 목록 + 패키지 상세(머리·수치·위험 요약·종목 비중·수익률 차트·보유 종목 표) + 주문 내역 + 성향별 추천 탭 + 매수·매도 주문 창·성향 초과 확인 창 + 패키지 한 번에 사기·종목 추가 창·패키지 고르기 + 새 패키지 만들기 창 + 이름 바꾸기·삭제·상담 창·시연 설정·주문 거부 사유·주소로 열기
 export function InvestPage() {
+  useDocumentTitle('Returns 주식 패키지')
   const { hash, search } = useLocation()
   const navigate = useNavigate()
   const [params, setParams] = useSearchParams()

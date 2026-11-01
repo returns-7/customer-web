@@ -62,6 +62,11 @@
   overflow: hidden;
 }
 
+/* 원본 마스터 밖 종목: 아이콘과 같은 줄 높이를 쓰게 늘려, 글자가 아이콘 줄 가운데에서 계산되게 한다(원본은 아이콘·이름·코드·업종이 한 flex 줄) */
+.inlineFlat {
+  align-self: stretch;
+}
+
 /* 국내: 두 줄(이름 위, 코드·업종 아래) */
 .stack {
   display: flex;

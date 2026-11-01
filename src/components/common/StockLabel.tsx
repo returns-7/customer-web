@@ -10,6 +10,8 @@ interface StockInfo {
   sector?: string
   color: string
   initial: string
+  /** 원본 종목 마스터에 없던 종목 — 원본 각 화면이 아이콘·이름·코드·업종을 한 줄(flex)로 직접 그리던 모양과 같게 그린다 */
+  flat?: boolean
 }
 
 // 종목 마스터 (해외: 티커 / 국내: 6자리 코드). 아이콘은 대표색 원 + 흰 이니셜 — 로고 교체는 logo prop
@@ -28,15 +30,15 @@ const MASTER: Record<string, StockInfo> = {
   '035420': { code: '035420', name: 'NAVER', sector: '인터넷', color: 'var(--stock-035420)', initial: 'N' },
   '105560': { code: '105560', name: 'KB금융', sector: '금융', color: 'var(--stock-105560)', initial: 'KB' },
   '005490': { code: '005490', name: 'POSCO홀딩스', sector: '철강', color: 'var(--stock-005490)', initial: 'P' },
-  '042700': { code: '042700', name: '한미반도체', sector: '반도체', color: 'var(--stock-042700)', initial: 'H' },
-  '058470': { code: '058470', name: '리노공업', sector: '반도체', color: 'var(--stock-058470)', initial: 'L' },
-  '240810': { code: '240810', name: '원익IPS', sector: '반도체', color: 'var(--stock-240810)', initial: 'W' },
-  '055550': { code: '055550', name: '신한지주', sector: '금융', color: 'var(--stock-055550)', initial: 'S' },
-  '033780': { code: '033780', name: 'KT&G', sector: '음식료', color: 'var(--stock-033780)', initial: 'K' },
-  '017670': { code: '017670', name: 'SK텔레콤', sector: '통신', color: 'var(--stock-017670)', initial: 'SK' },
-  '012330': { code: '012330', name: '현대모비스', sector: '자동차', color: 'var(--stock-012330)', initial: 'M' },
-  '204320': { code: '204320', name: 'HL만도', sector: '자동차', color: 'var(--stock-204320)', initial: 'HL' },
-  '018880': { code: '018880', name: '한온시스템', sector: '자동차', color: 'var(--stock-018880)', initial: 'H' },
+  '042700': { code: '042700', name: '한미반도체', sector: '반도체', color: 'var(--stock-042700)', initial: 'H', flat: true },
+  '058470': { code: '058470', name: '리노공업', sector: '반도체', color: 'var(--stock-058470)', initial: 'L', flat: true },
+  '240810': { code: '240810', name: '원익IPS', sector: '반도체', color: 'var(--stock-240810)', initial: 'W', flat: true },
+  '055550': { code: '055550', name: '신한지주', sector: '금융', color: 'var(--stock-055550)', initial: 'S', flat: true },
+  '033780': { code: '033780', name: 'KT&G', sector: '음식료', color: 'var(--stock-033780)', initial: 'K', flat: true },
+  '017670': { code: '017670', name: 'SK텔레콤', sector: '통신', color: 'var(--stock-017670)', initial: 'SK', flat: true },
+  '012330': { code: '012330', name: '현대모비스', sector: '자동차', color: 'var(--stock-012330)', initial: 'M', flat: true },
+  '204320': { code: '204320', name: 'HL만도', sector: '자동차', color: 'var(--stock-204320)', initial: 'HL', flat: true },
+  '018880': { code: '018880', name: '한온시스템', sector: '자동차', color: 'var(--stock-018880)', initial: 'H', flat: true },
   // 국내 ETF(가명, 예시) — 업종 배지 자리에 'ETF'. 실제 운용사 로고·이름 쓰지 않음
   '900010': { code: '900010', name: '국내대형주200 ETF', sector: 'ETF', color: 'var(--stock-900010)', initial: 'K2' },
   '900020': { code: '900020', name: '국내고배당 ETF', sector: 'ETF', color: 'var(--stock-900020)', initial: 'HD' },
@@ -73,7 +75,7 @@ export function StockLabel({ sym, size = 'md', stack = false, sector = true, log
         </span>
       )}
       {isKr && !stack && (
-        <span className={styles.inline}>
+        <span className={cx(styles.inline, s.flat && styles.inlineFlat)}>
           <b className={cx(styles.name, styles.nameEllipsis)}>{s.name}</b>
           <span className={cx(styles.code, styles.codeInline)}>{s.code}</span>
           {sector && <span className={cx(styles.badge, styles.badgeInline)}>{s.sector}</span>}

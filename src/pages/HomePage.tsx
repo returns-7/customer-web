@@ -19,10 +19,12 @@ import { RETURNS_DATA as RD, demo } from '../data/returns'
 import type { DemoSettings } from '../data/returns'
 import { useAppShell } from '../layouts/appShell'
 import { F } from '../lib/calc'
+import { useDocumentTitle } from '../components/common/useDocumentTitle'
 
 
 // 홈 — 1~6번째 부분: 배치 + 박스 6개 + 아래 고지 + 상담 창·알림·성향 알림 창·환영 배너·시연 설정
 export function HomePage() {
+  useDocumentTitle('Returns 홈')
   const shell = useAppShell()
   const { hash } = useLocation()
   const { message: toast, showToast } = useToast()

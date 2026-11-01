@@ -23,12 +23,14 @@ import { useAppShell } from '../layouts/appShell'
 import { RETURNS_DATA as RD } from '../data/returns'
 import type { ProfileKey } from '../data/returns'
 import { F } from '../lib/calc'
+import { useDocumentTitle } from '../components/common/useDocumentTitle'
 
 const HASH_BOXES = ['assess', 'notify', 'theme']
 const INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] // 사용자가 직접 움직였다는 신호
 
 // 내 정보 — 틀(박스 10개 자리) + 박스들 + 주소 해시 이동
 export function MyInfoPage() {
+  useDocumentTitle('Returns 내 정보')
   const shell = useAppShell()
   const { hash } = useLocation()
   const { message: toast, showToast } = useToast()

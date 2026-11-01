@@ -10,3 +10,14 @@ export const setLoginSession = () => {
     // 저장소를 못 쓰면 세션 표시 없이 이동
   }
 }
+
+// 로그아웃: 세션 표시 세 키를 지운다(상단 바 로그아웃·30분 만료·내 정보 로그아웃이 같이 씀). setLoginSession이 쓴 키와 같은 목록
+export const clearLoginSession = () => {
+  ;['returns-login', 'returns-session-exp', 'returns-session-warned'].forEach((k) => {
+    try {
+      sessionStorage.removeItem(k)
+    } catch {
+      // 저장소를 못 써도 이동은 계속
+    }
+  })
+}

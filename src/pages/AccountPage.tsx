@@ -33,9 +33,11 @@ import { RETURNS_DATA as RD } from '../data/returns'
 import type { DemoSettings } from '../data/returns'
 import { useAppShell } from '../layouts/appShell'
 import { F } from '../lib/calc'
+import { useDocumentTitle } from '../components/common/useDocumentTitle'
 
 // 내 계좌 — 1~8번째 부분: 뼈대·페이지 탭·계좌 요약·계좌 상태 + 매도 한도·세액·원금 유지·증빙서류 + 잔고 + 거래·신청 내역 + 자금 흐름 탭 박스 4개 + 입고·인출·계좌 개설 신청 창 + 매도 신청 창 + 상담 창·상단 종 알림·시연 설정
 export function AccountPage() {
+  useDocumentTitle('Returns 내 계좌')
   const { hash, pathname } = useLocation()
   const navigate = useNavigate()
   const shell = useAppShell()

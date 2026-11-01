@@ -11,12 +11,14 @@ import { cx } from '../components/common/cx'
 import styles from '../components/community/CommunityLayout.module.css'
 import { RETURNS_DATA as RD } from '../data/returns'
 import { useAppShell } from '../layouts/appShell'
+import { useDocumentTitle } from '../components/common/useDocumentTitle'
 
 const viewport = () => ({ w: window.innerWidth, h: window.innerHeight })
 
 // 커뮤니티 — 열 배치 + 많이 이야기하는 종목 + 가운데 열(종목 정보·종목 고르기·탭·글 검색·닉네임 정하기·글쓰기·글 목록·답글·수정·삭제·신고) + 오른쪽 열(프로필·관심/최근 본·인기글·운영 정책) + 아래 안내 문구.
 // 상단 바 "커뮤니티"를 다시 누르면 원본은 페이지를 새로 불러와 처음 상태가 됨 → 주소가 새로 들어올 때마다(location.key) 처음부터 다시 그림
 export function CommunityPage() {
+  useDocumentTitle('Returns 커뮤니티')
   const { key } = useLocation()
   return <CommunityBody key={key} />
 }

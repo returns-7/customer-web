@@ -6,6 +6,7 @@ import { RETURNS_DATA } from '../../data/returns'
 import { F } from '../../lib/calc'
 import { assetUrl } from './assetUrl'
 import { cx } from './cx'
+import { clearLoginSession } from '../login/loginSession'
 import { Modal } from './Modal'
 import { Toast } from './Toast'
 import { useToast } from './useToast'
@@ -38,7 +39,6 @@ interface TopBarProps {
 // 세션은 실제 경과 시간이므로 업무일이 아니라 Date.now()를 쓴다.
 const SESSION_MS = 30 * 60 * 1000
 const WARN_S = 300
-const KEY_LOGIN = 'returns-login'
 const KEY_EXP = 'returns-session-exp'
 const KEY_WARNED = 'returns-session-warned'
 const KEY_LOGOUT_NOTICE = 'returns-logout-notice'
@@ -152,7 +152,7 @@ export function TopBar({ active = 'home', bizDot, profLabel, noSearch = false, s
   const endSession = useCallback(
     (timeout: boolean) => {
       ended.current = true
-      ;[KEY_LOGIN, KEY_EXP, KEY_WARNED].forEach(ssDel)
+      clearLoginSession()
       if (timeout) ssSet(KEY_LOGOUT_NOTICE, '1')
       navigate('/')
     },
@@ -290,7 +290,7 @@ export function TopBar({ active = 'home', bizDot, profLabel, noSearch = false, s
 
   const logout = () => {
     ended.current = true
-    ;[KEY_LOGIN, KEY_EXP, KEY_WARNED].forEach(ssDel)
+    clearLoginSession()
   }
 
   const userActive = active === 'myinfo'
