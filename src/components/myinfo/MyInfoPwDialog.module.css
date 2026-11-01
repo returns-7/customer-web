@@ -1,0 +1,44 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  font-size: var(--font-size-13);
+  font-weight: var(--font-weight-bold);
+}
+
+.input {
+  height: 44px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-6);
+  padding: 0 var(--space-12);
+  font-size: var(--font-size-14);
+  font-weight: var(--font-weight-regular);
+  font-family: inherit;
+  outline: 0;
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.bad {
+  border-color: var(--color-red);
+}
+
+.rule {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-sub);
+}
+
+.ruleOk {
+  color: var(--color-green);
+}
+
+.ruleBad {
+  color: var(--color-red);
+}
+
+.mis {
+  font-size: var(--font-size-12);
+  font-weight: var(--font-weight-regular);
+  color: var(--color-red);
+}

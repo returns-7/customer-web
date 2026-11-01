@@ -12,7 +12,9 @@ import { MyInfoNotifyBox } from '../components/myinfo/MyInfoNotifyBox'
 import { MyInfoThemeBox } from '../components/myinfo/MyInfoThemeBox'
 import { MyInfoRiskyNotice } from '../components/myinfo/MyInfoRiskyNotice'
 import { MyInfoProfileBox } from '../components/myinfo/MyInfoProfileBox'
-import { MyInfoSlot } from '../components/myinfo/MyInfoSlot'
+import { MyInfoLoginsBox } from '../components/myinfo/MyInfoLoginsBox'
+import { MyInfoPwDialog } from '../components/myinfo/MyInfoPwDialog'
+import { MyInfoSecurityBox } from '../components/myinfo/MyInfoSecurityBox'
 import { MyInfoTradeBox } from '../components/myinfo/MyInfoTradeBox'
 import { assessState, readHist } from '../components/myinfo/myinfoProfile'
 import { useAppShell } from '../layouts/appShell'
@@ -29,6 +31,7 @@ export function MyInfoPage() {
   const [, refresh] = useReducer((n: number) => n + 1, 0)
   const [riskyHide, setRiskyHide] = useState(false)
   const [hist] = useState(readHist)
+  const [pwOpen, setPwOpen] = useState(false)
   const [flash, setFlash] = useState<string | null>(null)
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const firstHash = useRef(true)
@@ -123,11 +126,20 @@ export function MyInfoPage() {
             <MyInfoConsentBox className={styles.consent} onToast={showToast} />
             <MyInfoThemeBox id="theme" className={cx(styles.theme, styles.flashable, flash === 'theme' && styles.flashOn)} onToast={showToast} />
           </div>
-          <MyInfoSlot box="security" className={cx(styles.security, styles.hSecurity)} />
-          <MyInfoSlot box="logins" className={cx(styles.logins, styles.hLogins)} />
+          <MyInfoSecurityBox className={styles.security} onToast={showToast} onOpenPw={() => setPwOpen(true)} />
+          <MyInfoLoginsBox className={styles.logins} />
         </div>
       </div>
       <p className={styles.note}>개인정보는 화면에 일부만 보여드려요 · 리턴증권은 교육용 프로젝트의 가상 증권사입니다</p>
+      {pwOpen && (
+        <MyInfoPwDialog
+          onClose={() => setPwOpen(false)}
+          onDone={() => {
+            setPwOpen(false)
+            showToast('비밀번호를 변경했어요')
+          }}
+        />
+      )}
       <Toast message={toast} />
     </>
   )

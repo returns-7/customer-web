@@ -90,20 +90,6 @@ section.flashOn {
   border-color: var(--color-navy);
 }
 
-/* 아직 만들지 않은 박스 자리(보안·로그인 기록, M-4에서 채움). 원본과 같은 높이만 차지 */
-.slot {
-  background: var(--color-surface);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-8);
-  min-width: 0;
-}
-
-.hSecurity {
-  height: 226px;
-}
-.hLogins {
-  height: 282px;
-}
 
 .note {
   margin: 0;
