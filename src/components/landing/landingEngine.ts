@@ -5,7 +5,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
-import { clamp } from './landingCalc'
+import { calc as calcAt, clamp, LIMIT, man, MY, won } from './landingCalc'
 import { createLandingMap } from './landingMap'
 import { MH, MW, SYM1 } from './landingMapData'
 import { R, SCN, TOTAL } from './landingScenes'
@@ -97,6 +97,48 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     lenis.destroy?.()
   })
 
+  /* ===== numbers ===== */
+  const on = <K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (e: HTMLElementEventMap[K]) => void) => {
+    el.addEventListener(type, fn)
+    cleanups.push(() => el.removeEventListener(type, fn))
+  }
+  const later = (fn: () => void, ms: number) => {
+    const id: ReturnType<typeof setTimeout> = setTimeout(() => { timers.delete(id); fn() }, ms)
+    timers.add(id)
+    return id
+  }
+  const my = { A: MY.A, r: MY.r }
+  const calc = (A = my.A, r = my.r) => calcAt(A, r)
+  const disp = { A: my.A, save: calc().save, remain: calc().remain }
+  const K = { v: 1, last: -1 }   // S1 limit count-up
+  const limBig = byId('limBig'), amt = byId('amt') as HTMLInputElement, amtMsg = byId('amtMsg')
+  const setP = () => amt.style.setProperty('--p', (+amt.value / +amt.max * 100) + '%')
+  function paintBig() { const v = disp.A * K.v; limBig.textContent = won(v); amt.value = String(v); setP() }
+  function paintNums() {
+    $$('[data-n=A]').forEach((e) => { e.textContent = won(disp.A) })
+    $$('[data-n=Aman]').forEach((e) => { e.textContent = man(disp.A) })
+    $$('[data-n=remain]').forEach((e) => { e.textContent = won(disp.remain) })
+    paintBig()
+    // L-5: updBoard(tl ? tl.time() : 0, false, true)
+  }
+  function refreshNums() {
+    const c = calc()
+    ctx.add(() => { gsap.to(disp, { A: my.A, save: c.save, remain: c.remain, duration: 0.6, ease: 'power2.out', onUpdate: paintNums, overwrite: true }) })
+  }
+  let msgT: ReturnType<typeof setTimeout> | undefined
+  on(amt, 'input', () => {
+    let v = +amt.value
+    if (v > LIMIT) {
+      v = LIMIT; amt.value = String(LIMIT); amtMsg.textContent = '매도 한도는 전 증권사 합산 5,000만 원이에요'; amtMsg.classList.add('warn')
+      if (msgT) { clearTimeout(msgT); timers.delete(msgT) }
+      msgT = later(() => { amtMsg.classList.remove('warn'); amtMsg.textContent = '입력하지 않아도 3,000만 원 기준으로 보여드려요' }, 2600)
+    }
+    my.A = v; K.v = 1; disp.A = v; limBig.textContent = won(v); setP(); refreshNums()
+  })
+  $$('#rates button').forEach((b) => on(b, 'click', () => {
+    $$('#rates button').forEach((x) => x.classList.toggle('on', x === b)); my.r = +b.dataset.r!; refreshNums()
+  }))
+
   /* ===== frame render ===== */
   const e2o = (q: number) => 1 - (1 - q) * (1 - q), e2io = (q: number) => q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2
   function monitorFrame(t: number) {
@@ -115,11 +157,37 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     if (!tl) return
     const t = tl.time()
     monitorFrame(t); map.drawMap()
-    // L-5 이후: renderLate, updBoard, 숫자·도장 갱신
+    // L-5 이후: renderLate(t), updBoard(t, boardLive()), 진행률 #mPct
+    if (K.v !== K.last) { K.last = K.v; paintBig() }
+    const n = STAMPS.filter((x) => t >= x).length
+    if (stampN < 0) { setStamps(n); stampN = n; return }
+    if (n !== stampN) {
+      if (n === stampN + 1) stampFx(n)
+      else { if (passFx) passFx.kill(); gsap.set(pass, { width: 72, height: 88 }); gsap.set('.po', { autoAlpha: 0 }); gsap.set('.pt', { autoAlpha: 1 }); setStamps(n) }
+      stampN = n
+    }
   }
   function render11(_p: number) {
     // L-8: S11 마무리 장면 갱신
   }
+
+  /* ===== passport tab ===== */
+  const STAMPS = [R(5.3), R(6.6), R(8.45), 11.8, 13.75], STL = ['계좌 개설', '입고', '매도', '확정', '외부감시']
+  const pass = byId('pass'), stI = $$('.st i'); let stampN = 0, passFx: gsap.core.Timeline | undefined
+  function setStamps(n: number) { stI.forEach((st_, i) => gsap.set(st_, { opacity: i < n ? 1 : 0, scale: 1 })); byId('pCount').textContent = `${n}/5`; byId('stLab').textContent = n ? `${STL[n - 1]} 도장` : '' }
+  function stampFx(n: number) {
+    if (passFx) passFx.kill()
+    setStamps(n - 1); byId('pCount').textContent = `${n}/5`; byId('stLab').textContent = `${STL[n - 1]} 도장`
+    ctx.add(() => {
+      passFx = gsap.timeline()
+        .to(pass, { width: 160, height: 212, duration: 0.35, ease: 'power3.out' })
+        .to('.pt', { autoAlpha: 0, duration: 0.12 }, 0).to('.po', { autoAlpha: 1, duration: 0.2 }, 0.12)
+        .fromTo(stI[n - 1], { opacity: 0, scale: 2.4 }, { opacity: 1, scale: 1, duration: 0.22, ease: 'power3.in' }, 0.38)
+        .to('.po', { autoAlpha: 0, duration: 0.15 }, 1.4).to('.pt', { autoAlpha: 1, duration: 0.15 }, 1.5)
+        .to(pass, { width: 72, height: 88, duration: 0.3, ease: 'power3.inOut' }, 1.4)
+    })
+  }
+  cleanups.push(() => passFx?.kill())
 
   /* ===== master timeline (one take) ===== */
   const stageEl = $('#stage')
@@ -141,7 +209,8 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
 
     const sw = $('#s1w'); sw.style.transform = ''
     const SK = Math.min(1, (vh - 56) / sw.offsetHeight); sw.style.transform = SK < 1 ? `scale(${SK})` : ''
-    const TB = r$('#thumb') // L-4: CD, PS, BD도 같은 방식으로 잰다
+    const TB = r$('#thumb'), CD = r$('#card1'), PS = r$('#pass'), BD = r$('#board') // BD: L-5(전광판)에서 사용
+    void BD
 
     /* seat-back monitor geometry */
     const mw = Math.min(1040, vw * (mob ? 0.92 : 0.78), ((vh * (mob ? 0.5 : 0.66)) - 28) * 16 / 9 + 28), mh = (mw - 28) * 9 / 16 + 28
@@ -155,7 +224,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
 
     Object.assign(V, { x: 0, y: 0, w: vw, h: vh, r: 0, bg: 0, o: 1 })
     Object.assign(C, { cx: MW / 2, cy: MH / 2, z: 1 })
-    Object.assign(A, { sw: -0.2, krDot: 0, ro: 0, krLit: 0, lit: 0, dimOn: 0 }); P.v = 0 // L-5: K.v = 0, K.last = -1
+    Object.assign(A, { sw: -0.2, krDot: 0, ro: 0, krLit: 0, lit: 0, dimOn: 0 }); P.v = 0; K.v = 0; K.last = -1
 
     gsap.set(['#bg1', '#bg2', '#bg3', '#bg4', '#s1', '#c1', '#c1p', '#card1', '#seal', '.kv b', '#c2', '#c2p', '#card2', '.c2res', '.c2n', '#board', '#c3', '#mon', '#monUI', '#c4', '#c4a', '#c4b', '#c4lab', '#hero', '#slogan', '#pass'], { autoAlpha: 0 })
     gsap.set('.ml>span', { yPercent: 0 })
@@ -163,7 +232,10 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     tl = gsap.timeline({ paused: true, defaults: { ease: 'none' }, onUpdate: onTL })
     wrapTL(tl)
     const FADE = (t: number, sel: string, to: number, d = 0.6) => tl!.fromTo(sel, { autoAlpha: to ? 0 : 1 }, { autoAlpha: to, duration: d }, t)
-    // L-4: REV / IN / OUT 도우미
+    const q = (sel: string | string[]) => $$(String(sel))
+    const REV = (t: number, sel: string) => { tl!.set(sel, { autoAlpha: 1 }, t); tl!.fromTo($$(sel + ' .ml>span'), { yPercent: 112 }, { yPercent: 0, duration: 0.2, stagger: 0.06, ease: 'power3.out' }, t) }
+    const IN = (t: number, sel: string | string[], d = 0.18, y = 14) => tl!.fromTo(q(sel), { autoAlpha: 0, y }, { autoAlpha: 1, y: 0, duration: d, ease: 'power2.out' }, t)
+    const OUT = (t: number, sel: string | string[], d = 0.16, y = -10) => tl!.to(q(sel), { autoAlpha: 0, y, duration: d, ease: 'power1.in' }, t)
 
     /* S0 — whole world in currency symbols, slow approach ×1.35, one light sweep */
     tl.to('#hdr', { autoAlpha: 0, y: -8, duration: 0.22 }, 0.05)
@@ -177,12 +249,37 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     tl.to(V, { x: TB.x, y: TB.y, w: TB.w, h: TB.h, r: 10, bg: 1, duration: 0.7, ease: 'power2.inOut' }, 2.3)
     tl.to(C, { cx: MW * 0.5, cy: (Mp.seoul[1] || MH * 0.4), z: 1.25, duration: 0.7, ease: 'power2.inOut' }, 2.3)
     tl.to(A, { krDot: 1, duration: 0.25 }, 2.75)
-    // L-4 이후: S1(계좌 카드) ~ S4 장면 tween
+
+    /* S1 — account card fills in slowly (≈2 screens) */
+    REV(3.0, '#c1'); IN(3.08, '#c1p')
+    const glns = $$('.gln'), pulse = (g: HTMLElement, t: number, d: number) => { tl!.fromTo(g, { opacity: 0 }, { opacity: 1, duration: 0.04, immediateRender: false }, t); tl!.to(g, { opacity: 0, duration: 0.06 }, t + d) }
+    $$('.kv b').forEach((b, i) => { const t = 3.2 + i * 0.25; tl!.fromTo(b, { autoAlpha: 0, x: -8 }, { autoAlpha: 1, x: 0, duration: 0.12, ease: 'power2.out' }, t); pulse(glns[i], t, 0.19) })
+    tl.fromTo(K, { v: 0 }, { v: 1, duration: 0.45, ease: 'power2.out' }, 3.95); pulse(glns[3], 3.95, 0.39)
+    tl.fromTo('#seal', { autoAlpha: 0, scale: 2.2, rotate: -28 }, { autoAlpha: 1, scale: 1, rotate: -12, duration: 0.15, ease: 'power3.in' }, 4.4)
+    OUT(4.83, ['#c1', '#c1p'])
+    tl.to(V, { o: 0, duration: 0.08 }, 4.85)
+    const tdx = ((PS.x + PS.w / 2) - (CD.x + CD.w / 2)) / SK, tdy = ((PS.y + PS.h / 2) - (CD.y + CD.h / 2)) / SK
+    tl.to('#card1', { scaleY: 0.5, duration: 0.12, ease: 'power2.in' }, 4.85)
+    tl.to('#card1', { x: tdx, y: tdy, scaleX: 0.1, scaleY: 0.06, duration: 0.3, ease: 'power2.inOut' }, 4.97)
+    tl.to('#card1', { autoAlpha: 0, duration: 0.08 }, 5.19)
+    tl.fromTo('#pass', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, 5.21)
+    FADE(4.85, '#bg2', 1)
+    tl.set('#s1', { autoAlpha: 0 }, 5.28)
+
+    /* S2 — transfer in: right card, left type */
+    REV(5.45, '#c2'); IN(5.63, '#c2p')
+    tl.fromTo('#card2', { autoAlpha: 0, x: 64 }, { autoAlpha: 1, x: 0, duration: 0.3, ease: 'power2.out' }, 5.5)
+    const rws = $$('.c2r')
+    tl.to([rws[0], rws[2]], { opacity: 0.28, duration: 0.15 }, 6.1)
+    tl.fromTo('.c2res', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.14 }, 6.3)
+    tl.fromTo('.c2n', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.1 }, 6.42)
+    OUT(6.75, ['#c2', '#c2p']); tl.to('#card2', { autoAlpha: 0, x: -48, duration: 0.18 }, 6.75)
+    // L-5 이후: S2→S3 전환(벨트 사진·회색 벽·전광판), S3 ~ S4 장면 tween
     tl.add(() => {}, TOTAL)
 
     st = ScrollTrigger.create({ trigger: '#pinA', start: 'top top', end: 'bottom bottom', scrub: RM ? true : 0.6, animation: tl,
       snap: RM ? { snapTo: SCN.map((s) => s.done / TOTAL), duration: 0.01, delay: 0.05 } : undefined })
-    tl.progress(prog); onTL()
+    stampN = -1; tl.progress(prog); onTL()
     build11(); updNav()
   }
 
@@ -289,8 +386,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
   cleanups.push(() => lo.removeEventListener('click', onLogo))
 
   /* ===== 시작: 첫 build ===== */
-  // L-4: setP(), paintNums()
-  ctx.add(build)
+  setP(); ctx.add(build); paintNums()
 
   /* ===== 스크롤 복원(⑦): 뒤로 가기(POP)면 이전 위치, 그 밖의 진입은 맨 위 ===== */
   const savedY = opts.pop ? readSavedScroll(opts.historyKey) : null
@@ -332,6 +428,17 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     timers.add(rT)
   })
 
+  /* ===== live numbers ===== */
+  const kick = () => ctx.add(() => { gsap.to({}, { duration: 0.7, onUpdate: () => { /* L-6: if (tl) renderLate(tl.time()) */ if (tl2) render11(tl2.time()) } }) })
+  on(amt, 'input', kick)
+  $$('#rates button').forEach((b) => on(b, 'click', () => {
+    $$('#rates7 button').forEach((x) => x.classList.toggle('on', x.dataset.r === b.dataset.r)); kick()
+  }))
+  $$('#rates7 button').forEach((b) => on(b, 'click', () => {
+    my.r = +b.dataset.r!; $$('#rates button, #rates7 button').forEach((x) => x.classList.toggle('on', x.dataset.r === b.dataset.r)); refreshNums(); kick()
+  }))
+  cleanups.push(() => gsap.killTweensOf(disp))
+
   /* ===== 개발 모드에서만 비교용 훅 ===== */
   let hook: object | undefined
   if (import.meta.env.DEV) {
@@ -341,7 +448,8 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
       get tl2() { return tl2 },
       get st2() { return st2 },
       get GEO() { return GEO },
-      Mp, V, C, A, P, map,
+      Mp, V, C, A, P, map, my, disp, K,
+      get passFx() { return passFx },
       lenis, gsap, ScrollTrigger,
     }
     ;(window as unknown as { __landing?: object }).__landing = hook
