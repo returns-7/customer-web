@@ -5,7 +5,7 @@
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
-import { calc as calcAt, clamp, LIMIT, man, MY, won } from './landingCalc'
+import { calc as calcAt, clamp, confirmDate, LIMIT, man, MY, won, withdrawDate, ymd } from './landingCalc'
 import { BOARD_ROWS, BOARD_STATES } from './landingBoardData'
 import { createLandingMap } from './landingMap'
 import { MH, MW, SYM1 } from './landingMapData'
@@ -73,7 +73,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
 
   /* ===== 상태 ===== */
   type Rect = { x: number; y: number; w: number; h: number }
-  const LG: { vw: number; vh: number; pad: number; r5?: Rect; l6?: Rect; k7: number; sv?: Rect } = { vw: 0, vh: 0, pad: 96, k7: 1 }
+  const LG: { vw: number; vh: number; pad: number; r5?: Rect; l6?: Rect; k7: number; sv?: Rect; fly?: { x: number; y: number }; flyH?: number } = { vw: 0, vh: 0, pad: 96, k7: 1 }
   let GEO: { SCR: { x: number; y: number; w: number; h: number }; MOFF: number; vw: number; vh: number; T1x: number; T4: number; TX: number; dR: number; dX: number } | null = null
   let tl: gsap.core.Timeline | undefined, st: ScrollTrigger | undefined
   let tl2: gsap.core.Timeline | undefined, st2: ScrollTrigger | undefined
@@ -176,11 +176,64 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
   const L$: Record<string, HTMLElement> = {}
   ;['late', 'lb5', 'lb6', 'lb7', 'lb8', 'lb9', 's5', 's6', 's7', 's8', 's9', 'tt5', 'd5', 'big5', 'd5b', 'seal5', 'rail5', 'rf5', 'dot5', 'cnt5', 'warn5',
     'ph6a', 'ph6b', 'beam6', 'beam6b', 'tt6', 'p6', 'list6', 'big6', 'pct6', 'col7', 'tt7', 'big7', 'note7', 'rul7', 'rul7in', 'today7', 'rc7', 'paper', 'strike', 'save7', 'fn7',
-    'tt8', 'p8', 'fl8', 'svg8', 'pm8', 'flyW', 'fly8', 'big8', 'tt9', 'list9', 'app9', 'kiroo', 'bub9', 'disc9', 'lkT'].forEach((id) => { L$[id] = byId(id) })
+    'tt8', 'p8', 'fl8', 'svg8', 'pm8', 'flyW', 'fly8', 'big8', 'tt9', 'list9', 'app9', 'kiroo', 'bub9', 'disc9', 'lkT', 'passD'].forEach((id) => { L$[id] = byId(id) })
   const LL = (n: string) => $$(`[data-l="${n}"]`)
   const ticks5 = $$('.tk5') // S5 rail ticks (13개, 마크업에서 그린 것)
   const rows6 = $$('.r6'), ems6 = rows6.map((r) => r.querySelector('em') as HTMLElement), items7 = $$('.i7')
-  // L-7: S8 흐름도(NODES, FLY, placeLab, fixOverlap), S9 항목 목록·탭
+  const lanes8 = $$('.ln8')
+  const items9 = $$('.l9'), panels9 = $$('.a9p'), tabs9 = $$('.a9tab span:not(.ex)'), TABS9 = [0, 0, 2, 1, 3, 0, -1]
+
+  /* S8 flow nodes */
+  interface Lab { lab: HTMLElement; dir: 'up' | 'dn'; shift: number; px: number; py: number; flipped?: number; end?: number }
+  interface FlowNode extends Lab { x: number; at: number; lane?: number; date?: number; ex?: number; val?: () => number; d: string | (() => string); el: HTMLElement; b: HTMLElement; dir0?: 'up' | 'dn' }
+  const NODES = [
+    { x: 0, dir: 'dn', at: 0, val: () => disp.A, d: '해외주식' },
+    { x: 0.15, dir: 'up', at: 0.15 / 0.46 * 0.35, val: () => disp.A, d: 'RIA 매도' },
+    { x: 0.27, dir: 'dn', at: 0.27 / 0.46 * 0.35, val: () => disp.A, d: () => '원화 확정 · ' + ymd(confirmDate()) },
+    { x: 0.66, lane: 0, dir: 'up', at: 0.35 + 0.65 * 0.4, val: () => disp.A * 0.5, d: '국내 상장주식 50%', ex: 1 },
+    { x: 0.57, lane: 1, dir: 'up', at: 0.35 + 0.65 * 0.2, val: () => disp.A * 0.3, d: '국내 주식형 펀드 30%', ex: 1 },
+    { x: 0.66, lane: 2, dir: 'dn', at: 0.35 + 0.65 * 0.33, val: () => disp.A * 0.2, d: '예탁금 20%', ex: 1 },
+    { x: 1, dir: 'up', end: 1, at: 0.97, date: 1, d: '인출 가능' },
+  ] as unknown as FlowNode[]
+  NODES.forEach((n) => {
+    n.el = document.createElement('div'); n.el.className = 'nd'; n.el.innerHTML = '<i></i>'; L$.fl8.appendChild(n.el)
+    n.lab = document.createElement('div'); n.lab.className = 'nlab' + (n.end ? ' end' : '')
+    n.lab.innerHTML = `<b></b><small>${typeof n.d === 'function' ? n.d() : n.d}${n.ex ? '<span class="ex">예시</span>' : ''}</small>`
+    L$.fl8.appendChild(n.lab); n.b = n.lab.querySelector('b') as HTMLElement; n.shift = 0
+  })
+  // 엔진이 만든 노드·라벨 요소는 언마운트 때(그리고 StrictMode 재마운트 때 중복되지 않게) 지운다
+  cleanups.push(() => NODES.forEach((n) => { n.el.remove(); n.lab.remove() }))
+  const FLY: Lab = { lab: L$.flyW, dir: 'dn', shift: 0, px: 0, py: 0 }
+  const fin = (n: FlowNode) => n.date ? ymd(withdrawDate()) : won(n.val!())
+  function placeLab(n: Lab) {
+    const w = n.lab.offsetWidth, h = n.lab.offsetHeight, gap = 14 + n.shift
+    n.lab.style.left = (n.end ? n.px - w + 6 : n.px - 6) + 'px'
+    n.lab.style.top = (n.dir === 'up' ? n.py - gap - h : n.py + gap) + 'px'
+  }
+  const boxOf = (n: Lab) => ({ x: parseFloat(n.lab.style.left), y: parseFloat(n.lab.style.top), w: n.lab.offsetWidth, h: n.lab.offsetHeight })
+  const hit = (a: Rect, b: Rect, m: number) => a.x < b.x + b.w + m && b.x < a.x + a.w + m && a.y < b.y + b.h + m && b.y < a.y + a.h + m
+  let nudges = 0 // 겹침 해소에서 라벨을 민 횟수(원본은 console.info로만 출력 — 비교용으로 개발 훅에 노출)
+  function fixOverlap() {
+    const pts: number[][] = []
+    ;[L$.pm8, ...lanes8].forEach((p_) => { const sp = p_ as unknown as SVGPathElement, len = sp.getTotalLength(); for (let i = 0; i <= 90; i++) { const q = sp.getPointAtLength(len * i / 90); pts.push([q.x, q.y]) } })
+    const labs: Lab[] = [...NODES, FLY]; let moved = 0
+    for (let it = 0; it < 12; it++) {
+      let any = false
+      labs.forEach((a, i) => {
+        const r = boxOf(a)
+        const onLine = pts.some(([x, y]) => x > r.x - 12 && x < r.x + r.w + 12 && y > r.y - 12 && y < r.y + r.h + 12)
+        const onLab = labs.some((b, j) => j !== i && hit(r, boxOf(b), 8))
+        if (onLine || onLab) {
+          if (a.shift >= 36 && !a.flipped) { a.flipped = 1; a.dir = a.dir === 'up' ? 'dn' : 'up'; a.shift = 0 }
+          else a.shift += 6
+          placeLab(a); any = true; moved++
+        }
+      })
+      if (!any) break
+    }
+    nudges = moved
+  }
+
 
   /* S6 duotone baked once into images (no live filters while scrolling) */
   const bakeSrc = new Image()
@@ -226,9 +279,34 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     const rc = rel(L$.rc7), ru = rel(L$.rul7), kr = Math.min(1, (ru.y - 28 - rc.y) / rc.h); LG.k7 = kr
     L$.rc7.style.transform = kr < 1 ? `scale(${kr})` : 'none'
     const room = rc.x + rc.w * (1 - kr) - 40 - pad; L$.col7.style.maxWidth = room + 'px'
+    // 원본과 다른 곳: 원본은 이전 빌드에서 정한 flex-wrap을 그대로 둔 채 scrollWidth를 재서, 빌드할 때마다 wrap ↔ nowrap이 번갈아 바뀌었다
+    // (빌드 횟수의 홀짝에 따라 결과가 달라짐 — 창 크기를 바꾸면 nowrap이 되어 글자가 영수증 밑으로 들어감). 매 빌드를 첫 빌드와 같은 조건에서 재도록 먼저 비운다.
+    L$.big7.style.flexWrap = ''
     L$.big7.style.flexWrap = L$.big7.scrollWidth > room ? 'wrap' : 'nowrap'
     LG.sv = rel(L$.save7)
-    // L-7: S8 흐름도 배치(fl8·svg8·NODES·FLY·fixOverlap), S9 캐릭터(kiroo·bub9) 위치
+    /* S8 flow */
+    L$.big8.style.top = ''; L$.big8.style.bottom = ''
+    const t8 = rel(L$.tt8), b8 = rel(L$.big8), LAB = 62
+    const fw = vw - pad * 2, L = clamp(vh * 0.13, 86, 112), mid = L + LAB + 12, fh = mid * 2
+    FLY.px = 0
+    const yTop = t8.y + t8.h + 20 + L + LAB; let yBot = b8.y - 16 - L - LAB
+    if (yBot < yTop) { Object.assign(L$.big8.style, { top: t8.y + 'px', bottom: 'auto' }); yBot = vh - 24 - L - LAB }
+    const cy = yBot >= yTop ? (yTop + yBot) / 2 : yTop
+    const top = cy - mid
+    Object.assign(L$.fl8.style, { left: pad + 'px', top: top + 'px', width: fw + 'px', height: fh + 'px' })
+    L$.svg8.setAttribute('width', String(fw)); L$.svg8.setAttribute('height', String(fh)); L$.svg8.setAttribute('viewBox', `0 0 ${fw} ${fh}`)
+    const X = (f_: number) => f_ * fw, sx = X(0.46), ys = [mid - L, mid, mid + L]
+    L$.pm8.setAttribute('d', `M0,${mid} L${sx},${mid}`)
+    ys.forEach((y, i) => lanes8[i].setAttribute('d', `M${sx},${mid} C${X(0.50)},${mid} ${X(0.50)},${y} ${X(0.54)},${y} L${X(0.80)},${y} C${X(0.84)},${y} ${X(0.84)},${mid} ${X(0.88)},${mid} L${fw},${mid}`))
+    NODES.forEach((n) => { n.px = X(n.x); n.py = n.lane == null ? mid : ys[n.lane]; n.shift = 0; n.flipped = 0; n.dir = n.dir0 || (n.dir0 = n.dir); Object.assign(n.el.style, { left: n.px + 'px', top: n.py + 'px' }); n.b.textContent = fin(n); placeLab(n) })
+    FLY.px = 0; FLY.py = mid + L; FLY.shift = 0; FLY.flipped = 1; FLY.dir = 'dn'; L$.fly8.textContent = won(calc(disp.A, my.r).save); L$.fly8.style.transform = 'none'; placeLab(FLY)
+    fixOverlap()
+    LG.fly = { x: pad + parseFloat(FLY.lab.style.left), y: top + parseFloat(FLY.lab.style.top) }
+    LG.flyH = L$.fly8.getBoundingClientRect().height || 25
+    /* S9 character beside the app screen */
+    const ap = { x: L$.app9.offsetLeft, y: L$.app9.offsetTop, h: L$.app9.offsetHeight }
+    Object.assign(L$.kiroo.style, { left: (ap.x - 44) + 'px', top: (ap.y + ap.h - 70) + 'px' })
+    Object.assign(L$.bub9.style, { left: (ap.x + 40) + 'px', top: (ap.y + ap.h - 92) + 'px' })
   }
   function paintLate() {
     const c = calc(disp.A, my.r), lt = lateTexts(disp.A, my.r)
@@ -296,7 +374,41 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
       setT(L$.save7, won(c.save * e3o(seg(t, 15.7, 16.0))))
       L$.save7.style.visibility = t >= 16.2 ? 'hidden' : ''
     }
-    // L-7: S8(t≥16.2 전체 폭 자금 흐름), S9(t≥18.2 서비스 목록·앱 화면)
+    /* S8 — full-width fund flow */
+    const on8 = t >= 16.2 && t < 18.55; vis(L$.s8, on8 ? 1 : 0); vis(L$.passD, t >= 16.5 ? 1 : 0)
+    if (on8) {
+      const out = seg(t, 18.2, 18.4)
+      L$.s8.style.opacity = String(1 - out)
+      const k = e2io(seg(t, 16.2, 16.5)), src = LG.sv!, tg = LG.fly!, sc = LG.flyH ? src.h / LG.flyH : 1
+      L$.fly8.style.transform = `translate(${(src.x - tg.x) * (1 - k)}px,${(src.y - tg.y) * (1 - k)}px) scale(${sc + (1 - sc) * k})`
+      setT(L$.fly8, won(c.save)); FLY.lab.style.visibility = 'visible'; FLY.lab.querySelector<HTMLElement>('small')!.style.opacity = String(seg(t, 16.5, 16.65))
+      revL(L$.tt8, 16.5, t); vis(L$.tt8, t >= 16.5 ? 1 : 0); L$.p8.style.opacity = String(seg(t, 16.6, 16.8))
+      const fp = seg(t, 16.8, 17.7)
+      L$.pm8.style.strokeDashoffset = String(1 - seg(fp, 0, 0.35))
+      lanes8.forEach((p_) => { p_.style.strokeDashoffset = String(1 - seg(fp, 0.35, 1)) })
+      NODES.forEach((n) => {
+        const a = n.at, v = fp >= a - 0.005 && t >= 16.8 ? 1 : 0; n.el.style.visibility = n.lab.style.visibility = v ? 'visible' : 'hidden'
+        setT(n.b, n.date ? ymd(withdrawDate()) : won(n.val!() * e3o(seg(fp, a, a + 0.17))))
+      })
+      const bk = seg(t, 17.7, 18.0); vis(L$.big8, bk > 0 ? 1 : 0, `translateY(${(1 - e3o(bk)) * 16}px)`)
+      LL('A8').forEach((e) => setT(e, won(disp.A * e3o(bk))))
+    }
+    /* S9 — service list + one live app screen */
+    const on9 = t >= 18.2; vis(L$.s9, on9 ? 1 : 0)
+    if (on9) {
+      revL(L$.tt9, 18.5, t); vis(L$.tt9, t >= 18.5 ? 1 : 0)
+      vis(L$.list9, seg(t, 18.55, 18.75))
+      const ai = e3o(seg(t, 18.6, 18.8)); vis(L$.app9, ai, `translateY(${(1 - ai) * 24}px)`)
+      const live = t >= 18.8, idx = clamp(Math.floor((t - 18.8) / 0.4), 0, 6)
+      items9.forEach((e, i) => e.classList.toggle('on', live && i === idx))
+      panels9.forEach((p_, i) => {
+        const s0 = 18.8 + i * 0.4, kin = i ? e3o(seg(t, s0, s0 + 0.18)) : 1, kout = i < 6 ? e3o(seg(t, s0 + 0.4, s0 + 0.58)) : 0
+        p_.style.visibility = kin > 0 && kout < 1 ? 'visible' : 'hidden'; p_.style.transform = `translateY(${((1 - kin) - kout) * 100}%)`
+      })
+      tabs9.forEach((e, i) => e.classList.toggle('on', i === TABS9[live ? idx : 0]))
+      vis(L$.kiroo, seg(t, 18.7, 18.85)); vis(L$.bub9, seg(t, 18.8, 18.9) * (1 - seg(t, 19.1, 19.2)))
+      L$.disc9.style.opacity = String(seg(t, 18.8, 19.0))
+    }
   }
 
   /* ===== frame render ===== */
@@ -649,6 +761,8 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
       get GEO() { return GEO },
       Mp, V, C, A, P, map, my, disp, K, LG,
       get passFx() { return passFx },
+      get nudges() { return nudges },
+      NODES, FLY,
       lenis, gsap, ScrollTrigger,
     }
     ;(window as unknown as { __landing?: object }).__landing = hook
