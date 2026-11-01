@@ -1,0 +1,21 @@
+// 통화 지도 데이터 — 원본 landing-journey.html "currency map" 구역의 상수(국가 숫자 코드 → 통화 → 기호)
+export const MW = 1600
+export const MH = 820
+export const CUR_SRC =
+  'USD:840,630,16,316,580,850,218,222,591,626,583,584,585,796,92,716|EUR:40,56,191,196,233,246,250,276,300,372,380,428,440,442,470,528,620,703,705,724,20,492,674,336,499|GBP:826,833,832,831,654|JPY:392|CNY:156|HKD:344|MOP:446|KRW:410|KPW:408|TWD:158|MNT:496|CAD:124|AUD:36,334|NZD:554,184|MXN:484|BRL:76|ARS:32|CLP:152|COP:170|PEN:604|BOB:68|PYG:600|UYU:858|VES:862|GYD:328|SRD:740|CRC:188|NIO:558|HNL:340|GTQ:320|BZD:84|CUP:192|DOP:214|HTG:332|JMD:388|TTD:780|BSD:44|BBD:52|XCD:28,212,308,659,662,670,660,500|AWG:533|ANG:531,534|KYD:136|BMD:60|FKP:238|DKK:208,304,234|NOK:578,744|SEK:752|ISK:352|CHF:756,438|PLN:616|CZK:203|HUF:348|RON:642|BGN:100|RSD:688|BAM:70|MKD:807|ALL:8|MDL:498|UAH:804|BYN:112|RUB:643|GEL:268|AMD:51|AZN:31|TRY:792|KZT:398|UZS:860|TMT:795|KGS:417|TJS:762|AFN:4|IRR:364|IQD:368|SYP:760|LBP:422|JOD:400|ILS:376,275|SAR:682|AED:784|QAR:634|BHD:48|KWD:414|OMR:512|YER:887|EGP:818|LYD:434|TND:788|DZD:12|MAD:504,732|MRU:478|XOF:204,854,384,624,466,562,686,768|XAF:120,140,148,178,226,266|GMD:270|GNF:324|SLE:694|LRD:430|GHS:288|NGN:566|CVE:132|STN:678|SDG:729|SSP:728|ETB:231|ERN:232|DJF:262|SOS:706|KES:404|UGX:800|TZS:834|RWF:646|BIF:108|CDF:180|AOA:24|ZMW:894|MWK:454|MZN:508|MGA:450|MUR:480|KMF:174|SCR:690|ZAR:710|NAD:516|BWP:72|LSL:426|SZL:748|SHP:654|INR:356|PKR:586|BDT:50|LKR:144|NPR:524|BTN:64|MVR:462|MMK:104|THB:764|LAK:418|KHR:116|VND:704|MYR:458|SGD:702|BND:96|IDR:360|PHP:608|PGK:598|SBD:90|VUV:548|FJD:242|WST:882|TOP:776|KID:296|XPF:540,258,876'
+
+export const ISO2CUR: Record<number, string> = {}
+CUR_SRC.split('|').forEach((g) => {
+  const [c, ids] = g.split(':')
+  ids.split(',').forEach((i) => { ISO2CUR[+i] = c })
+})
+export const NAME2CUR: Record<string, string> = { Kosovo: 'EUR', 'N. Cyprus': 'TRY', Somaliland: 'SOS', 'Siachen Glacier': 'INR', 'Indian Ocean Ter.': 'AUD', 'Ashmore and Cartier Is.': 'AUD' }
+export const EUROZONE = [40, 56, 191, 196, 233, 246, 250, 276, 300, 372, 380, 428, 440, 442, 470, 528, 620, 703, 705, 724]
+export const MAJOR = new Set([840, 826, 392, 156, 344, ...EUROZONE])
+/* single-glyph currency symbols only — never letters */
+export const SYM1 = '$€£¥₩₹₽₺₫฿₱₦₪₴₸₾₼₡₲₵₭₮₨৳¤'
+export const CODE_SYM: Record<string, string> = { EUR: '€', GBP: '£', FKP: '£', SHP: '£', GIP: '£', JPY: '¥', CNY: '¥', KRW: '₩', KPW: '₩', INR: '₹', RUB: '₽', TRY: '₺', VND: '₫', THB: '฿', PHP: '₱', NGN: '₦', ILS: '₪', UAH: '₴', KZT: '₸', GEL: '₾', AZN: '₼', CRC: '₡', PYG: '₲', GHS: '₵', LAK: '₭', MNT: '₮', PKR: '₨', LKR: '₨', NPR: '₨', MUR: '₨', SCR: '₨', BDT: '৳' }
+export const DOLLAR = new Set('USD CAD AUD SGD HKD TWD NZD MXN ARS CLP COP CUP DOP UYU BSD BBD BZD BMD BND FJD GYD JMD KYD LRD NAD SBD SRD TTD XCD KID TOP'.split(' '))
+export const MAPFONT = '"Noto Sans"'
+export const ORIG_PT = { ny: [-74, 40.7], tk: [139.69, 35.69] } as Record<string, [number, number]>
+export const SEOUL: [number, number] = [126.98, 37.57]

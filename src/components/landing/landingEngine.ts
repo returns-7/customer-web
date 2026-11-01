@@ -6,6 +6,8 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { clamp } from './landingCalc'
+import { createLandingMap } from './landingMap'
+import { MH, MW, SYM1 } from './landingMapData'
 import { R, SCN, TOTAL } from './landingScenes'
 
 export interface LandingMountOptions {
@@ -36,6 +38,7 @@ function writeSavedScroll(historyKey: string, y: number): void {
 
 export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () => void {
   const $ = <T extends HTMLElement = HTMLElement>(s: string): T => root.querySelector(s) as T
+  const $$ = <T extends HTMLElement = HTMLElement>(s: string): T[] => [...root.querySelectorAll<T>(s)]
   const byId = (id: string) => root.querySelector<HTMLElement>('#' + id)!
 
   let dead = false
@@ -73,6 +76,10 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
   let tl2: gsap.core.Timeline | undefined, st2: ScrollTrigger | undefined
 
   const ctx = gsap.context(() => {}, root)
+  const ac = new AbortController() // 마운트 중 시작한 지도 fetch를 언마운트 때 취소
+  cleanups.push(() => ac.abort())
+  const map = createLandingMap($('#map') as HTMLCanvasElement)
+  const { Mp, V, C, A, P } = map
 
   /* ===== smooth scroll ===== */
   gsap.registerPlugin(ScrollTrigger)
@@ -90,23 +97,51 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     lenis.destroy?.()
   })
 
-  /* ===== 프레임 갱신 자리 ===== */
+  /* ===== frame render ===== */
+  const e2o = (q: number) => 1 - (1 - q) * (1 - q), e2io = (q: number) => q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2
+  function monitorFrame(t: number) {
+    const g = GEO; if (!g) return
+    A.sil = t < g.T4 ? 1 : 0
+    const on = t >= g.T4 && t < g.TX, rise = e2o(clamp((t - g.T4) / g.dR))
+    gsap.set(['#mon', '#monUI'], { autoAlpha: on ? 1 : 0, y: on ? (1 - rise) * g.MOFF : 0 })
+    if (t < g.T1x) return                       // S0–S1: map viewport is tween-driven
+    if (t < g.T4) { V.o = 0; return }
+    const S = g.SCR
+    if (t < g.TX) { Object.assign(V, { x: S.x, y: S.y + (1 - rise) * g.MOFF, w: S.w, h: S.h, r: 6, bg: 1, o: 1 }); return }
+    const k = e2io(clamp((t - g.TX) / g.dX))
+    Object.assign(V, { x: S.x * (1 - k), y: S.y * (1 - k), w: S.w + (g.vw - S.w) * k, h: S.h + (g.vh - S.h) * k, r: 6 * (1 - k), bg: 1, o: 1 - clamp((t - g.TX - g.dX * 0.33) / (g.dX * 0.67)) })
+  }
   function onTL() {
-    // L-3 이후: monitorFrame, drawMap, renderLate, updBoard, 숫자·도장 갱신
+    if (!tl) return
+    const t = tl.time()
+    monitorFrame(t); map.drawMap()
+    // L-5 이후: renderLate, updBoard, 숫자·도장 갱신
   }
   function render11(_p: number) {
     // L-8: S11 마무리 장면 갱신
   }
 
   /* ===== master timeline (one take) ===== */
+  const stageEl = $('#stage')
+  const rel = (el: Element) => { const s = stageEl.getBoundingClientRect(), r = el.getBoundingClientRect(); return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height } }
+  const r$ = (s: string) => rel($(s))
+  const ANIM = '#hdr,#c0,#scrim,#bg1,#bg2,#bg2 img,#bg3,#bg4,#s1,#c1,#c1p,#card1,#seal,.kv b,.gln,#c2,#c2p,#card2,.c2r,.c2res,.c2n,#board,#c3,#mon,#monUI,#c4,#c4a,#c4b,#c4lab,#hero,#hero img,#slogan,#pass,.ml>span'
+
   function build() {
     const prog = st ? st.progress : 0
     if (st) st.kill()
     if (tl) tl.kill()
     const vw = innerWidth, vh = innerHeight, mob = vw <= 760
     $('#pinA').style.height = (TOTAL + 1) * vh + 'px'
-    // L-3: 지도 캔버스 크기, buildGrid()
-    // L-3~: gsap.set(clearProps) 와 장면 초기 autoAlpha
+    map.readColors(document.documentElement) // 캔버스 색은 build() 때 CSS 변수에서 읽는다
+    map.resize(vw, vh)
+    map.buildGrid()
+    gsap.set($$(ANIM).filter((e) => !e.closest('#c0')), { clearProps: 'all' })
+    gsap.set(['#hdr', '#c0', '#scrim'], { clearProps: 'all' })
+
+    const sw = $('#s1w'); sw.style.transform = ''
+    const SK = Math.min(1, (vh - 56) / sw.offsetHeight); sw.style.transform = SK < 1 ? `scale(${SK})` : ''
+    const TB = r$('#thumb') // L-4: CD, PS, BD도 같은 방식으로 잰다
 
     /* seat-back monitor geometry */
     const mw = Math.min(1040, vw * (mob ? 0.92 : 0.78), ((vh * (mob ? 0.5 : 0.66)) - 28) * 16 / 9 + 28), mh = (mw - 28) * 9 / 16 + 28
@@ -116,10 +151,33 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     const SCR = { x: mx + 14, y: my0 + 14, w: mw - 28, h: mh - 28 }, MOFF = vh - my0 + 80
     GEO = { SCR, MOFF, vw, vh, T1x: R(4.93), T4: R(8.7), TX: R(11.15), dR: R(9.15) - R(8.7), dX: R(11.6) - R(11.15) }
     // L-7: buildLate(vw, vh, PS)
+    gsap.set('#board', { transformPerspective: 1400, transformOrigin: '0% 50%' })
+
+    Object.assign(V, { x: 0, y: 0, w: vw, h: vh, r: 0, bg: 0, o: 1 })
+    Object.assign(C, { cx: MW / 2, cy: MH / 2, z: 1 })
+    Object.assign(A, { sw: -0.2, krDot: 0, ro: 0, krLit: 0, lit: 0, dimOn: 0 }); P.v = 0 // L-5: K.v = 0, K.last = -1
+
+    gsap.set(['#bg1', '#bg2', '#bg3', '#bg4', '#s1', '#c1', '#c1p', '#card1', '#seal', '.kv b', '#c2', '#c2p', '#card2', '.c2res', '.c2n', '#board', '#c3', '#mon', '#monUI', '#c4', '#c4a', '#c4b', '#c4lab', '#hero', '#slogan', '#pass'], { autoAlpha: 0 })
+    gsap.set('.ml>span', { yPercent: 0 })
 
     tl = gsap.timeline({ paused: true, defaults: { ease: 'none' }, onUpdate: onTL })
     wrapTL(tl)
-    // L-3~L-5: S0~S4 장면 tween (REV / IN / OUT / FADE)
+    const FADE = (t: number, sel: string, to: number, d = 0.6) => tl!.fromTo(sel, { autoAlpha: to ? 0 : 1 }, { autoAlpha: to, duration: d }, t)
+    // L-4: REV / IN / OUT 도우미
+
+    /* S0 — whole world in currency symbols, slow approach ×1.35, one light sweep */
+    tl.to('#hdr', { autoAlpha: 0, y: -8, duration: 0.22 }, 0.05)
+    tl.to(C, { z: 1.35, cy: MH * 0.46, duration: 2.0, ease: 'power1.inOut' }, 0.1)
+    tl.fromTo(A, { sw: -0.2 }, { sw: 1.2, duration: 1.1, ease: 'power1.inOut', immediateRender: false }, 0.6)
+    tl.to(['#c0', '#scrim'], { autoAlpha: 0, duration: 0.18 }, 1.95)
+    /* → map shrinks into the card thumbnail while night turns to ivory */
+    FADE(2.4, '#bg1', 1)
+    tl.set('#s1', { autoAlpha: 1 }, 2.4)
+    tl.fromTo('#card1', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.3 }, 2.5)
+    tl.to(V, { x: TB.x, y: TB.y, w: TB.w, h: TB.h, r: 10, bg: 1, duration: 0.7, ease: 'power2.inOut' }, 2.3)
+    tl.to(C, { cx: MW * 0.5, cy: (Mp.seoul[1] || MH * 0.4), z: 1.25, duration: 0.7, ease: 'power2.inOut' }, 2.3)
+    tl.to(A, { krDot: 1, duration: 0.25 }, 2.75)
+    // L-4 이후: S1(계좌 카드) ~ S4 장면 tween
     tl.add(() => {}, TOTAL)
 
     st = ScrollTrigger.create({ trigger: '#pinA', start: 'top top', end: 'bottom bottom', scrub: RM ? true : 0.6, animation: tl,
@@ -252,14 +310,20 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
 
   /* ===== 다시 빌드: 글꼴 로드·창 크기·(L-3) 지도 로드 ===== */
   const rebuild = () => ctx.add(() => { build(); ScrollTrigger.refresh(); onTL() })
-  const loadMap = (): Promise<void> => Promise.resolve() // L-3: 지도 데이터·캔버스 준비
-  // L-3: 원본은 Noto Sans(SYM1) 글자 존재 확인도 이 Promise에 포함
-  const fontsReady = Promise.all([
-    document.fonts.load('500 16px Pretendard'),
-    document.fonts.load('600 16px "Noto Sans"'),
-    document.fonts.load('500 16px "Roboto Condensed"'),
-  ])
-  fontsReady.then(loadMap).then(() => { if (!dead) rebuild() }).catch((e) => console.warn('map', e))
+  // 폰트 <link>는 마운트 때 막 붙었을 수 있어서(원본은 <head>에 있어 렌더 전에 로드됨) 스타일시트 로드를 먼저 기다린다.
+  // 안 그러면 fonts.load()가 아직 모르는 글꼴이라 바로 끝나 버리고, 글리프 확인(FONT_OK)이 틀어진다.
+  const linkReady = (id: string) => new Promise<void>((resolve) => {
+    const el = document.getElementById(id) as HTMLLinkElement | null
+    if (!el || el.sheet) return resolve()
+    const done = () => { el.removeEventListener('load', done); el.removeEventListener('error', done); resolve() }
+    el.addEventListener('load', done); el.addEventListener('error', done)
+    cleanups.push(() => { el.removeEventListener('load', done); el.removeEventListener('error', done) })
+  })
+  const fontsReady = Promise.all(['landing-font-pretendard', 'landing-font-css'].map(linkReady))
+    .then(() => Promise.all([document.fonts.load('500 16px Pretendard'), document.fonts.load('600 16px "Noto Sans"', SYM1), document.fonts.load('500 16px "Roboto Condensed"')]))
+    .then(() => { [...SYM1].forEach((c) => { map.FONT_OK[c] = document.fonts.check('600 16px "Noto Sans"', c) }); const bad = [...SYM1].filter((c) => !map.FONT_OK[c]); if (bad.length) console.warn('Noto Sans missing:', bad.join(' ')) })
+  const loadMap = () => (dead ? Promise.resolve() : map.loadMap(ac.signal))
+  fontsReady.then(loadMap).then(() => { if (!dead && Mp.ready) rebuild() }).catch((e) => { if (e?.name !== 'AbortError') console.warn('map', e) })
   document.fonts.ready.then(() => { if (!dead && tl) rebuild() })
   let rT: ReturnType<typeof setTimeout> | undefined
   listen('resize', () => {
@@ -277,6 +341,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
       get tl2() { return tl2 },
       get st2() { return st2 },
       get GEO() { return GEO },
+      Mp, V, C, A, P, map,
       lenis, gsap, ScrollTrigger,
     }
     ;(window as unknown as { __landing?: object }).__landing = hook
