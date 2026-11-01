@@ -9,6 +9,7 @@ import { MyInfoAssessDialog } from '../components/myinfo/MyInfoAssessDialog'
 import { MyInfoBasicBox } from '../components/myinfo/MyInfoBasicBox'
 import { MyInfoCommunityBox } from '../components/myinfo/MyInfoCommunityBox'
 import { MyInfoConsentBox } from '../components/myinfo/MyInfoConsentBox'
+import { MyInfoDevPanel } from '../components/myinfo/MyInfoDevPanel'
 import { MyInfoNotifyBox } from '../components/myinfo/MyInfoNotifyBox'
 import { MyInfoThemeBox } from '../components/myinfo/MyInfoThemeBox'
 import { MyInfoRiskyNotice } from '../components/myinfo/MyInfoRiskyNotice'
@@ -159,6 +160,7 @@ export function MyInfoPage() {
           }}
         />
       )}
+      <MyInfoDevPanel onChange={(assess) => RD.setDemo({ assess })} />
       <Toast message={toast} />
     </>
   )
