@@ -185,3 +185,58 @@
   --stock-avgo: #cc092f;
   --stock-nflx: #e50914;
 }
+
+/* ===== 랜딩(/) — 원본 landing-journey.html에서 쓰인 값. 이미 있는 토큰과 같은 값은 새로 만들지 않고 기존 토큰을 쓴다 ===== */
+:root {
+  --landing-bg-s1: #f3f0ea; /* S1 배경 */
+  --landing-bg-s2: #e6e9ed; /* S2 배경 */
+  --landing-bg-s3: #d5d9df; /* S3 배경 */
+  --landing-bg-s4: #0a1428; /* S4 배경 */
+  --landing-dawn-top: #1b2e4f; /* S5 새벽 그라데이션 위쪽·#lb5·잠금화면 화면 */
+  --landing-dawn-bottom: #e8d5b5; /* S5 새벽 그라데이션 아래쪽·#lb5 */
+  --landing-bg-s6: #0f2326; /* S6 배경 */
+  --landing-bg-s7: #dce8f5; /* S7 배경 */
+  --landing-bg-s9: #f5efe6; /* S9 배경 */
+  --landing-navy-deep: #0f2a52; /* FAQ 링크 hover·#cta11 hover */
+  --landing-gold-light: #e6c27e; /* 링크 hover */
+  --landing-gold-text: #b8862f; /* 절세액 글자·#fly8·앱 화면 큰 금액 */
+  --landing-gold-dark: #8a6a2c; /* 앱 화면 말풍선 작은 글자 */
+  --landing-gold-pale: #fbf4e6; /* 앱 화면 답변 말풍선 배경 */
+  --landing-text-sub: #4a5466; /* 보조 글자(S7·S8·S9·패스포트 목록) */
+  --landing-text-body: #3a4456; /* 앱 화면 본문 글자 */
+  --landing-text-faint: #8a94a6; /* S7 눈금 선 */
+  --landing-text-faint-2: #8a93a3; /* 앱 화면 탭 글자 */
+  --landing-dot: #b8c0cc; /* 패스포트 목록 점 */
+  --landing-surface-soft: #f4f6f9; /* 앱 화면 행·말풍선·패스포트 매도 예정 버튼 배경 */
+  --landing-surface-hover: #e9edf3; /* 패스포트 매도 예정 버튼 hover */
+  --landing-ceil: #e9ebee; /* S3 천장 */
+  --landing-ceil-line: #c9cdd3; /* S3 천장 테두리 */
+  --landing-perf: #c9d1dc; /* 계좌 개설 확인서 절취선 */
+  --landing-line-strong: #ccd3dd; /* 세액 계산서 줄 */
+  --landing-line-faq: #d5dbe3; /* FAQ 항목 테두리 */
+  --landing-seat-bezel: #0c0d10; /* S4 좌석 모니터 베젤 */
+  --landing-seat-bezel-edge: #24262c; /* S4 좌석 모니터 베젤 가장자리 */
+  --landing-seat: #1a1c22; /* S4 좌석 등받이 */
+  --landing-rod-dark: #2a2e34; /* S3 전광판 프레임 어두운 쪽 */
+  --landing-rod-mid: #4a4f57; /* S3 전광판 프레임 중간 */
+  --landing-rod-light: #7e848c; /* S3 전광판 걸이 밝은 쪽 */
+  --landing-rod-highlight: #9aa0a8; /* S3 전광판 걸이 하이라이트 */
+  --landing-pnl-strip: #121a5e; /* S3 전광판 하단 띠 */
+  --landing-pnl-bottom: #18237a; /* S3 전광판 패널 아래쪽 */
+  --landing-pnl-top: #24339a; /* S3 전광판 패널 위쪽 */
+  --landing-pic: #1e2b8c; /* S3 전광판 비행기 아이콘 바탕 */
+  --landing-amber: #f2c230; /* S3 전광판 체결 시각·상태·시계 */
+  --landing-orange: #f08a3c; /* S3 전광판 금액·하단 띠 금액 */
+  --landing-orange-deep: #e8742a; /* S3 전광판 "원화 환전 중" 상태 */
+  --landing-orange-soft: #f0a35e; /* S6 순매수 있음 표시·공제 인정 비율 */
+  --landing-green: #3ccb7f; /* S3 전광판 "원화 확정" 표시 */
+  --landing-teal: #5fd3c6; /* S6 스캔 빔 */
+  --landing-teal-light: #9bebe2; /* S6 순매수 없음 표시 */
+  --landing-map-cell: #e8eef7; /* 캔버스 지도 글자(₩·$ 격자) */
+  --landing-map-land: #2b4a78; /* 캔버스 지도 대륙 실루엣 */
+  --landing-mk-nasdaq: #0e8a8a; /* 전광판 시장 NASDAQ */
+  --landing-mk-nyse: #2a4fc4; /* 전광판 시장 NYSE */
+  --landing-mk-tse: #c4302b; /* 전광판 시장 TSE */
+  --landing-mk-lse: #5e626b; /* 전광판 시장 LSE */
+  --landing-mk-hkex: #dd7a1f; /* 전광판 시장 HKEX */
+}
