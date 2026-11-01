@@ -1,0 +1,54 @@
+/* 기본 정보·계좌 박스가 같이 쓰는 '이름 | 값 | 보조' 3칸 표 */
+.grid {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr) auto;
+  padding: 0 var(--space-16);
+}
+
+.label,
+.value,
+.aux,
+.cell {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--color-line-soft);
+}
+
+.label {
+  font-size: var(--font-size-13);
+  color: var(--color-sub);
+}
+
+.value {
+  font-size: var(--font-size-14);
+  min-width: 0;
+}
+
+.span2 {
+  grid-column: span 2;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.aux {
+  font-size: var(--font-size-12);
+  color: var(--color-muted);
+  white-space: nowrap;
+}
+
+.cell {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  padding: var(--space-4) 0;
+  font-size: var(--font-size-14);
+  grid-column: span 2;
+  min-width: 0;
+}
+
+.last {
+  border-bottom: 0;
+}

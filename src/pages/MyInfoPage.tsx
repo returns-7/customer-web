@@ -4,6 +4,8 @@ import { Toast } from '../components/common/Toast'
 import { cx } from '../components/common/cx'
 import { useToast } from '../components/common/useToast'
 import styles from '../components/myinfo/MyInfoLayout.module.css'
+import { MyInfoAccountBox } from '../components/myinfo/MyInfoAccountBox'
+import { MyInfoBasicBox } from '../components/myinfo/MyInfoBasicBox'
 import { MyInfoRiskyNotice } from '../components/myinfo/MyInfoRiskyNotice'
 import { MyInfoProfileBox } from '../components/myinfo/MyInfoProfileBox'
 import { MyInfoSlot } from '../components/myinfo/MyInfoSlot'
@@ -83,8 +85,8 @@ export function MyInfoPage() {
             />
           )}
           {assessState() !== 'none' && <MyInfoTradeBox className={styles.trade} onOpenAssess={openAssess} />}
-          <MyInfoSlot box="basic" className={cx(styles.basic, styles.hBasic)} />
-          <MyInfoSlot box="account" className={cx(styles.account, styles.hAccount)} />
+          <MyInfoBasicBox className={styles.basic} onToast={showToast} />
+          <MyInfoAccountBox className={styles.account} onToast={showToast} />
           <MyInfoSlot box="community" className={cx(styles.community, styles.hCommunity)} />
         </div>
         <div className={styles.col}>
