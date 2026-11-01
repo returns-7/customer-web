@@ -6,6 +6,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Lenis from 'lenis'
 import { calc as calcAt, clamp, LIMIT, man, MY, won } from './landingCalc'
+import { BOARD_ROWS, BOARD_STATES } from './landingBoardData'
 import { createLandingMap } from './landingMap'
 import { MH, MW, SYM1 } from './landingMapData'
 import { R, SCN, TOTAL } from './landingScenes'
@@ -97,6 +98,26 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     lenis.destroy?.()
   })
 
+  /* ===== S3 departure board ===== */
+  const ROWS = BOARD_ROWS, STATES = BOARD_STATES
+  const TH = ROWS.map((_, i) => { const b = 7.4 + i * 0.05; return [R(b), R(b + 0.25), R(b + 0.45)] })
+  const rowEls = $$('#rows .br')
+  const flEls = rowEls.map((r) => r.children[1] as HTMLElement), krwEls = rowEls.map((r) => r.children[5] as HTMLElement), stEls = rowEls.map((r) => r.children[6].firstElementChild as HTMLElement)
+  let rowState = ROWS.map(() => -1)
+  function updBoard(t: number, anim?: boolean, force?: boolean) {
+    ROWS.forEach((r, i) => {
+      const n = TH[i].filter((x) => t >= x).length
+      if (n === rowState[i] && !force) return
+      const changed = n !== rowState[i]; rowState[i] = n
+      const el = stEls[i]; el.textContent = STATES[n]; el.className = 'sx s' + n
+      flEls[i].textContent = n >= 1 ? r.f : ''
+      krwEls[i].textContent = n >= 1 ? won(disp.A * r.share) : '-'
+      if (anim && changed) ctx.add(() => { gsap.fromTo(el, { opacity: 0.1 }, { opacity: 1, duration: 0.28, ease: 'steps(3)', overwrite: true }) })
+    })
+  }
+  const boardLive = () => !!tl && tl.time() > R(7.25) && tl.time() < R(8.65)
+  // 시계(#clkH/#clkM)는 React 훅(useLandingClock)이 열 때와 10초마다 실제 시각으로 갱신한다(원본 tick()과 같음)
+
   /* ===== numbers ===== */
   const on = <K extends keyof HTMLElementEventMap>(el: HTMLElement, type: K, fn: (e: HTMLElementEventMap[K]) => void) => {
     el.addEventListener(type, fn)
@@ -119,7 +140,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     $$('[data-n=Aman]').forEach((e) => { e.textContent = man(disp.A) })
     $$('[data-n=remain]').forEach((e) => { e.textContent = won(disp.remain) })
     paintBig()
-    // L-5: updBoard(tl ? tl.time() : 0, false, true)
+    updBoard(tl ? tl.time() : 0, false, true)
   }
   function refreshNums() {
     const c = calc()
@@ -141,6 +162,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
 
   /* ===== frame render ===== */
   const e2o = (q: number) => 1 - (1 - q) * (1 - q), e2io = (q: number) => q < 0.5 ? 2 * q * q : 1 - Math.pow(-2 * q + 2, 2) / 2
+  let lastPct = -1
   function monitorFrame(t: number) {
     const g = GEO; if (!g) return
     A.sil = t < g.T4 ? 1 : 0
@@ -157,8 +179,15 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     if (!tl) return
     const t = tl.time()
     monitorFrame(t); map.drawMap()
-    // L-5 이후: renderLate(t), updBoard(t, boardLive()), 진행률 #mPct
+    // L-6: renderLate(t)
+    updBoard(t, boardLive())
     if (K.v !== K.last) { K.last = K.v; paintBig() }
+    const pct = Math.round(P.v * 100)
+    if (pct !== lastPct) {
+      lastPct = pct; byId('mPct').textContent = `진행률 ${pct}%`
+      byId('mDay').textContent = P.v >= 1 ? 'D-0' : P.v > 0.5 ? 'D-1' : 'D-2'
+      byId('mLab1').textContent = P.v >= 1 ? '확정 원화 금액' : '예상 원화 금액(가환전)'
+    }
     const n = STAMPS.filter((x) => t >= x).length
     if (stampN < 0) { setStamps(n); stampN = n; return }
     if (n !== stampN) {
@@ -209,8 +238,7 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
 
     const sw = $('#s1w'); sw.style.transform = ''
     const SK = Math.min(1, (vh - 56) / sw.offsetHeight); sw.style.transform = SK < 1 ? `scale(${SK})` : ''
-    const TB = r$('#thumb'), CD = r$('#card1'), PS = r$('#pass'), BD = r$('#board') // BD: L-5(전광판)에서 사용
-    void BD
+    const TB = r$('#thumb'), CD = r$('#card1'), PS = r$('#pass'), BD = r$('#board')
 
     /* seat-back monitor geometry */
     const mw = Math.min(1040, vw * (mob ? 0.92 : 0.78), ((vh * (mob ? 0.5 : 0.66)) - 28) * 16 / 9 + 28), mh = (mw - 28) * 9 / 16 + 28
@@ -274,12 +302,41 @@ export function mountLanding(root: HTMLElement, opts: LandingMountOptions): () =
     tl.fromTo('.c2res', { autoAlpha: 0, y: 10 }, { autoAlpha: 1, y: 0, duration: 0.14 }, 6.3)
     tl.fromTo('.c2n', { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.1 }, 6.42)
     OUT(6.75, ['#c2', '#c2p']); tl.to('#card2', { autoAlpha: 0, x: -48, duration: 0.18 }, 6.75)
-    // L-5 이후: S2→S3 전환(벨트 사진·회색 벽·전광판), S3 ~ S4 장면 tween
+    /* → belt photo slides left, grey wall + ceiling, board lowers from above */
+    tl.to('#bg2 img', { x: -vw * 0.18, duration: 0.6, ease: 'power1.inOut' }, 6.85)
+    FADE(6.9, '#bg3', 1, 0.5)
+    tl.fromTo('#board', { autoAlpha: 1, y: -(BD.y + BD.h + 40) }, { autoAlpha: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 6.9)
+    tl.fromTo('#board', { rotateY: -10, rotateX: 3 }, { rotateY: 0, rotateX: 0, duration: 1.5, ease: 'power1.out' }, 6.9)
+
+    /* S3 — departure board: statuses roll top → bottom */
+    REV(7.4, '#c3')
+    OUT(8.47, '#c3', 0.12, 16)
+    /* → board lifts away, seat-back monitor rises from below (monitor + map viewport: monitorFrame) */
+    tl.to('#board', { y: -(BD.y + BD.h + 60), duration: 0.45, ease: 'power2.in' }, 8.55)
+    FADE(8.65, '#bg4', 1, 0.4)
+    tl.set(C, { cx: MW / 2, cy: MH * 0.47, z: 1 }, 8.7)
+    tl.set(A, { krDot: 0, sw: 2, ro: 1, dimOn: 1 }, 8.7)
+
+    /* S4 — inflight map: NY & Tokyo → Seoul */
+    tl.set('#c4', { autoAlpha: 1 }, 9.15); IN(9.15, '#c4lab'); REV(9.2, '#c4a'); OUT(9.85, '#c4a')
+    tl.fromTo(P, { v: 0 }, { v: 1, duration: 1.15, ease: 'power1.inOut', immediateRender: false }, 9.2)
+    tl.fromTo(A, { krLit: 0 }, { krLit: 1.15, duration: 0.4, immediateRender: false }, 10.0)
+    REV(10.0, '#c4b')
+    const kb = Mp.krB || [[1000, 300], [1030, 330]], kh = kb[1][1] - kb[0][1], kcx = (kb[0][0] + kb[1][0]) / 2, kcy = (kb[0][1] + kb[1][1]) / 2
+    const kz = (SCR.h * 0.8 / kh) / (SCR.w * 0.9 / MW)
+    tl.to(A, { ro: 0, duration: 0.2 }, 10.35)
+    tl.to(C, { cx: kcx, cy: kcy, z: kz, duration: 0.7, ease: 'power2.inOut' }, 10.35)
+    tl.to(A, { lit: 1.06, duration: 0.5 }, 10.6)
+    /* → screen grows to full frame (11.15), ₩ fade while Seoul at night appears */
+    OUT(11.1, ['#c4b', '#c4lab'])
+    tl.to('#hero', { autoAlpha: 1, duration: 0.4 }, 11.3)
+    tl.fromTo('#hero img', { scale: 1.15 }, { scale: 1, duration: 0.85, ease: 'power1.out' }, 11.3)
+    // L-6 이후: S5~S9(renderLate)
     tl.add(() => {}, TOTAL)
 
     st = ScrollTrigger.create({ trigger: '#pinA', start: 'top top', end: 'bottom bottom', scrub: RM ? true : 0.6, animation: tl,
       snap: RM ? { snapTo: SCN.map((s) => s.done / TOTAL), duration: 0.01, delay: 0.05 } : undefined })
-    stampN = -1; tl.progress(prog); onTL()
+    stampN = -1; rowState = rowState.map(() => -1); tl.progress(prog); onTL()
     build11(); updNav()
   }
 
