@@ -1,0 +1,137 @@
+/* 보이지 않는 페이지 제목(원본 h1) */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+}
+
+/* 1280px 이하: 한 줄로 쌓기 — 두 열·짝(수신 동의|테마) 묶음이 사라지고(contents) 박스들이 각자의 order 순서로 한 줄에 선다 */
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.col,
+.pair {
+  display: contents;
+}
+
+/* 1281px 이상: 왼쪽 4 : 오른쪽 8 두 열 */
+@media (min-width: 1281px) {
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+    align-items: start;
+  }
+
+  .col {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-16);
+  }
+
+  .pair {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-16);
+    align-items: stretch;
+  }
+}
+
+/* 박스 순서(원본 order 값 그대로) */
+.profile {
+  order: 1;
+}
+.trade {
+  order: 2;
+}
+.basic {
+  order: 3;
+}
+.account {
+  order: 4;
+}
+.community {
+  order: 5;
+}
+.notify {
+  order: 6;
+}
+.pair {
+  order: 7;
+}
+.consent {
+  order: 7;
+}
+.theme {
+  order: 8;
+}
+.security {
+  order: 9;
+}
+.logins {
+  order: 10;
+}
+
+/* 주소 해시(#assess·#notify·#theme)로 들어오면 80px 아래로 스크롤하고 테두리가 잠깐 네이비로 바뀜 */
+.flashable {
+  transition: border-color 0.4s;
+  scroll-margin-top: 80px;
+}
+
+section.flashOn {
+  border-color: var(--color-navy);
+}
+
+/* 아직 만들지 않은 박스 자리(M-2~M-4에서 채움). 원본과 같은 높이만 차지 */
+.slot {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-8);
+  min-width: 0;
+}
+
+.hBasic,
+.hAccount,
+.hSecurity {
+  height: 226px;
+}
+.hCommunity {
+  height: 146px;
+}
+.hNotify {
+  height: 471px;
+}
+.hConsent {
+  height: 174px;
+}
+.hTheme {
+  height: 182px;
+}
+.hLogins {
+  height: 282px;
+}
+
+@media (min-width: 1281px) {
+  .hNotify {
+    height: 266px;
+  }
+
+  /* 짝으로 묶였을 때는 옆 박스(테마) 높이에 맞춰 늘어남 */
+  .hConsent {
+    height: auto;
+  }
+}
+
+.note {
+  margin: 0;
+  font-size: var(--font-size-12);
+  color: var(--color-sub);
+}

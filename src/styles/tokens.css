@@ -48,6 +48,8 @@
   --color-green: #00b386; /* 성공 */
   --color-green-bg: #e6f7f1;
   --color-orange: #c2620a; /* 주의 안내 글자 */
+  --color-orange-bg: #fff7ed; /* 내 정보 '거래 위험' 안내 배너 배경 */
+  --color-orange-line: #f3d3ae; /* 내 정보 '거래 위험' 안내 배너 테두리 */
   --color-danger: #d92d3f; /* 알림 목록 '경고' 태그 글자 */
 
   --color-on-navy: #ffffff;
