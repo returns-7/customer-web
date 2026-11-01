@@ -10,7 +10,7 @@ export interface AssessHistItem {
   profile: string
 }
 
-// 진단 이력(최신이 위) 저장 위치. 원본 '이 결과로 저장'(M-5)이 앞에 쌓는다
+// 진단 이력(최신이 위) 저장 위치. "이 결과로 저장"이 앞에 쌓는다
 export const HIST_KEY = 'returns-assess-hist'
 export const readHist = (): AssessHistItem[] | null => {
   try {

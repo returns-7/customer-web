@@ -3,7 +3,7 @@ import { cx } from '../common/cx'
 
 interface Props {
   className?: string
-  onOpenAssess: () => void // 다시 진단하기 — 창은 M-5에서 연결
+  onOpenAssess: () => void // 다시 진단하기 창 열기
   onSnooze: () => void
 }
 

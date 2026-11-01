@@ -5,6 +5,7 @@ import { cx } from '../components/common/cx'
 import { useToast } from '../components/common/useToast'
 import styles from '../components/myinfo/MyInfoLayout.module.css'
 import { MyInfoAccountBox } from '../components/myinfo/MyInfoAccountBox'
+import { MyInfoAssessDialog } from '../components/myinfo/MyInfoAssessDialog'
 import { MyInfoBasicBox } from '../components/myinfo/MyInfoBasicBox'
 import { MyInfoCommunityBox } from '../components/myinfo/MyInfoCommunityBox'
 import { MyInfoConsentBox } from '../components/myinfo/MyInfoConsentBox'
@@ -16,9 +17,11 @@ import { MyInfoLoginsBox } from '../components/myinfo/MyInfoLoginsBox'
 import { MyInfoPwDialog } from '../components/myinfo/MyInfoPwDialog'
 import { MyInfoSecurityBox } from '../components/myinfo/MyInfoSecurityBox'
 import { MyInfoTradeBox } from '../components/myinfo/MyInfoTradeBox'
-import { assessState, readHist } from '../components/myinfo/myinfoProfile'
+import { HIST_KEY, assessState, readHist } from '../components/myinfo/myinfoProfile'
 import { useAppShell } from '../layouts/appShell'
 import { RETURNS_DATA as RD } from '../data/returns'
+import type { ProfileKey } from '../data/returns'
+import { F } from '../lib/calc'
 
 const HASH_BOXES = ['assess', 'notify', 'theme']
 const INPUTS = ['wheel', 'touchstart', 'keydown', 'pointerdown'] // 사용자가 직접 움직였다는 신호
@@ -30,7 +33,8 @@ export function MyInfoPage() {
   const { message: toast, showToast } = useToast()
   const [, refresh] = useReducer((n: number) => n + 1, 0)
   const [riskyHide, setRiskyHide] = useState(false)
-  const [hist] = useState(readHist)
+  const [hist, setHist] = useState(readHist)
+  const [asOpen, setAsOpen] = useState(false)
   const [pwOpen, setPwOpen] = useState(false)
   const [flash, setFlash] = useState<string | null>(null)
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -96,8 +100,22 @@ export function MyInfoPage() {
     fontWatch.current?.()
   }, [])
 
-  // 다시 진단하기 창은 M-5에서 연결 (지금은 모양만)
-  const openAssess = () => {}
+  const openAssess = () => setAsOpen(true)
+
+  // 원본 "이 결과로 저장": 진단 이력 맨 앞에 추가(날짜는 업무일) + 시연 설정의 성향 바꿈 → 홈·추천·상단 바에 바로 반영
+  const saveAssess = (score: number, profile: string) => {
+    const base = hist ?? [{ date: RD.ASSESSMENT.date, score: RD.ASSESSMENT.score, profile: RD.ASSESSMENT.profile }]
+    const next = [{ date: F.today(), score, profile }, ...base]
+    try {
+      localStorage.setItem(HIST_KEY, JSON.stringify(next))
+    } catch {
+      // 저장소를 못 쓰면 이번 화면에서만 반영
+    }
+    setHist(next)
+    setAsOpen(false)
+    RD.setDemo({ profile: profile as ProfileKey })
+    showToast('투자성향을 저장했어요 · 홈·추천에 바로 반영돼요')
+  }
 
   return (
     <>
@@ -131,6 +149,7 @@ export function MyInfoPage() {
         </div>
       </div>
       <p className={styles.note}>개인정보는 화면에 일부만 보여드려요 · 리턴증권은 교육용 프로젝트의 가상 증권사입니다</p>
+      {asOpen && <MyInfoAssessDialog onClose={() => setAsOpen(false)} onSave={saveAssess} />}
       {pwOpen && (
         <MyInfoPwDialog
           onClose={() => setPwOpen(false)}

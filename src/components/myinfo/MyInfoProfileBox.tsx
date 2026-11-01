@@ -9,7 +9,7 @@ import styles from './MyInfoProfileBox.module.css'
 interface Props {
   className?: string
   hist: AssessHistItem[] | null // localStorage 'returns-assess-hist' (없으면 기본 진단 1건)
-  onOpenAssess: () => void // 다시 진단하기 — 창은 M-5에서 연결
+  onOpenAssess: () => void // 다시 진단하기 창 열기
 }
 
 // 내 프로필 · 투자성향 (id="assess": 주소 #assess 로 들어오면 여기로 스크롤)

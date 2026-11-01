@@ -5,7 +5,7 @@ import styles from './MyInfoTradeBox.module.css'
 
 interface Props {
   className?: string
-  onOpenAssess: () => void // 다시 진단하기 — 창은 M-5에서 연결
+  onOpenAssess: () => void // 다시 진단하기 창 열기
 }
 
 // 거래로 본 성향(참고용). 미진단일 때는 페이지가 이 박스를 아예 그리지 않음(원본)
